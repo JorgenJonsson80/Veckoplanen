@@ -1,0 +1,14 @@
+/* Grundläggande reset för Veckoplanen */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f0f7ef;
+}
+
+#root {
+  width: 100%;
+}
