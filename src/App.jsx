@@ -139,7 +139,10 @@ export default function App() {
   const dragIndexRef = useRef(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
-  const { recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
+  const { history, recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
+
+  // Autocomplete-förslag för extra varor
+  const [extraSuggestions, setExtraItemSuggestions] = useState([]);
   const { state, loading, updateState } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
@@ -207,6 +210,33 @@ export default function App() {
     else removePurchase(itemName);
   }
 
+  // Beräkna ISO-veckonummer som sträng, t.ex. "2026-v16"
+  function getISOWeek(date = new Date()) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    const week1 = new Date(d.getFullYear(), 0, 4);
+    const weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    return `${d.getFullYear()}-v${weekNum}`;
+  }
+
+  // Spara veckans handlingslista med veckonummer
+  function saveWeeklyList() {
+    const weekKey = getISOWeek();
+    const allItems = Object.values(allItemsGrouped).flat().map(i => ({ name: i.name, amount: i.amount || '' }));
+    updateState(
+      prev => ({
+        ...prev,
+        savedLists: {
+          ...(prev.savedLists || {}),
+          [weekKey]: { items: allItems, meals: { ...meals }, savedAt: new Date().toISOString() },
+        },
+      }),
+      `sparade handlingslistan för ${weekKey}`
+    );
+    alert(`Lista sparad för ${weekKey}!`);
+  }
+
   function addExtraItem() {
     if (!newExtraItem.trim()) return;
     const item = {
@@ -216,6 +246,21 @@ export default function App() {
     };
     updateState(prev => ({ ...prev, extraItems: [...(prev.extraItems || []), item] }), `lade till extra vara "${item.name}"`);
     setNewExtraItem('');
+    setExtraItemSuggestions([]);
+  }
+
+  // Filtrera historiken för autocomplete i extra-varor-fältet
+  function handleExtraItemInput(value) {
+    setNewExtraItem(value);
+    if (value.length >= 1) {
+      const suggestions = Object.keys(history)
+        .filter(n => n.toLowerCase().startsWith(value.toLowerCase()))
+        .sort((a, b) => (history[b].count || 0) - (history[a].count || 0)) // vanligaste först
+        .slice(0, 5);
+      setExtraItemSuggestions(suggestions);
+    } else {
+      setExtraItemSuggestions([]);
+    }
   }
 
   function removeExtraItem(id) {
@@ -347,7 +392,14 @@ export default function App() {
     <div style={s.app}>
       {/* Header */}
       <header style={s.header}>
-        <h1 style={s.headerTitle}>Veckoplanen</h1>
+        <div>
+          <h1 style={s.headerTitle}>Veckoplanen</h1>
+          {user?.email && (
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '1px' }}>
+              {session.name} · {user.email.split('@')[0]}
+            </div>
+          )}
+        </div>
         <div style={s.headerRight}>
           {session.roomCode && <span style={s.roomBadge}>{session.roomCode}</span>}
           {session.roomCode && (
@@ -458,12 +510,21 @@ export default function App() {
               Handlingslista
             </h2>
 
-            {/* Framstegsbar */}
+            {/* Framstegsbar + Spara-knapp */}
             {totalItems > 0 && (
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b8f5e', marginBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#6b8f5e', marginBottom: '4px' }}>
                   <span>{checkedCount} av {totalItems} plockat</span>
-                  <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
+                    <button
+                      onClick={saveWeeklyList}
+                      title={`Spara lista för ${getISOWeek()}`}
+                      style={{ background: '#f0f7ef', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: '#2d5016', cursor: 'pointer' }}
+                    >
+                      💾 {getISOWeek()}
+                    </button>
+                  </div>
                 </div>
                 <div style={{ height: '8px', background: '#c8e6c9', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: '#2d5016', borderRadius: '4px', width: `${(checkedCount / totalItems) * 100}%`, transition: 'width 0.3s' }} />
@@ -532,13 +593,31 @@ export default function App() {
             <div style={{ background: '#fff', borderRadius: '12px', padding: '14px', marginTop: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
               <p style={{ margin: '0 0 10px', fontWeight: '700', color: '#2d5016', fontSize: '14px' }}>Lägg till extra vara</p>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <input
-                  style={{ flex: 1, padding: '9px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit' }}
-                  value={newExtraItem}
-                  onChange={e => setNewExtraItem(e.target.value)}
-                  placeholder="Varunamn"
-                  onKeyDown={e => e.key === 'Enter' && addExtraItem()}
-                />
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input
+                    style={{ width: '100%', padding: '9px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    value={newExtraItem}
+                    onChange={e => handleExtraItemInput(e.target.value)}
+                    onBlur={() => setTimeout(() => setExtraItemSuggestions([]), 150)}
+                    placeholder="Varunamn"
+                    onKeyDown={e => e.key === 'Enter' && addExtraItem()}
+                  />
+                  {/* Autocomplete-dropdown från historiken */}
+                  {extraSuggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                      {extraSuggestions.map(name => (
+                        <div
+                          key={name}
+                          style={{ padding: '9px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid #f0f7ef', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                          onMouseDown={() => { setNewExtraItem(name); setExtraItemSuggestions([]); }}
+                        >
+                          <span>{name}</span>
+                          <span style={{ fontSize: '11px', color: '#aaa' }}>köpt {history[name]?.count || 0}×</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <select
                   style={{ padding: '9px 6px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '14px', background: '#fff', fontFamily: 'inherit' }}
                   value={newExtraCat}
