@@ -1,7 +1,61 @@
 // Bottom sheet för att skapa och redigera en butik med egen kategoriordning
-import { useState, useRef } from 'react';
+import { useState } from 'react';
+import {
+  DndContext, closestCenter, PointerSensor,
+  KeyboardSensor, useSensor, useSensors, DragOverlay,
+} from '@dnd-kit/core';
+import {
+  SortableContext, useSortable,
+  verticalListSortingStrategy, arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const STORE_EMOJIS = ['🏪','🛒','🏬','🏦','🌿','🥩','🥖','🧺','🏡','🚗','🌊','❄️','🌻','🇸🇪'];
+
+function SortableStoreRow({ cat }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: cat.id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{
+        display: 'flex', alignItems: 'center',
+        background: '#fff', borderRadius: '10px',
+        padding: '10px 12px', marginBottom: '8px',
+        boxShadow: isDragging ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
+        gap: '10px', cursor: isDragging ? 'grabbing' : 'grab',
+        userSelect: 'none', touchAction: 'none',
+        border: '2px solid transparent',
+        transform: CSS.Transform.toString(transform),
+        transition: transition || 'transform 200ms ease',
+        opacity: isDragging ? 0.3 : 1,
+      }}
+    >
+      <span style={{ color: '#bbb', fontSize: '18px', userSelect: 'none' }}>⠿</span>
+      <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
+      <span style={{ flex: 1, fontSize: '15px' }}>{cat.name}</span>
+    </div>
+  );
+}
+
+function StoreRowGhost({ cat }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center',
+      background: '#fff', borderRadius: '10px',
+      padding: '10px 12px',
+      boxShadow: '0 12px 32px rgba(45,80,22,0.25)',
+      gap: '10px', cursor: 'grabbing', userSelect: 'none',
+      border: '2px solid #2d5016',
+    }}>
+      <span style={{ color: '#bbb', fontSize: '18px' }}>⠿</span>
+      <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
+      <span style={{ flex: 1, fontSize: '15px' }}>{cat.name}</span>
+    </div>
+  );
+}
 
 const s = {
   overlay: {
@@ -84,43 +138,19 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
   });
 
   // Drag-and-drop för kategoriordningen
-  const dragIdxRef = useRef(null);
-  const [dragOver, setDragOver] = useState(null);
-  const rowRefs = useRef([]);
+  const [activeStoreRowId, setActiveStoreRowId] = useState(null);
 
-  function commitReorder(toIdx) {
-    const from = dragIdxRef.current;
-    if (from === null || from === toIdx) { dragIdxRef.current = null; setDragOver(null); return; }
-    const next = [...catOrder];
-    const [moved] = next.splice(from, 1);
-    next.splice(toIdx, 0, moved);
-    dragIdxRef.current = null;
-    setDragOver(null);
-    setCatOrder(next);
-  }
+  const storeSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
-  function onPointerDown(e, idx) {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragIdxRef.current = idx;
-  }
-
-  function onPointerMove(e) {
-    if (dragIdxRef.current === null) return;
-    const y = e.clientY;
-    rowRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const { top, bottom } = el.getBoundingClientRect();
-      if (y >= top && y <= bottom) setDragOver(i);
-    });
-  }
-
-  function onPointerUp() {
-    commitReorder(dragOver ?? dragIdxRef.current);
-  }
-
-  function onPointerCancel() {
-    dragIdxRef.current = null;
-    setDragOver(null);
+  function handleStoreDragEnd({ active, over }) {
+    setActiveStoreRowId(null);
+    if (!over || active.id === over.id) return;
+    const oldIndex = catOrder.indexOf(active.id);
+    const newIndex = catOrder.indexOf(over.id);
+    setCatOrder(arrayMove(catOrder, oldIndex, newIndex));
   }
 
   function handleSave() {
@@ -167,21 +197,22 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         <label style={s.label}>Kategoriordning i den här butiken</label>
         <p style={{ fontSize: '12px', color: '#888', margin: '0 0 10px' }}>Dra för att sätta butikens ordning</p>
 
-        {sortedCats.map((cat, idx) => (
-          <div
-            key={cat.id}
-            ref={el => rowRefs.current[idx] = el}
-            onPointerDown={e => onPointerDown(e, idx)}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerCancel}
-            style={{ ...s.catRow, ...(dragOver === idx ? s.catRowOver : {}), touchAction: 'none', userSelect: 'none' }}
-          >
-            <span style={{ color: '#bbb', fontSize: '18px', userSelect: 'none' }}>⠿</span>
-            <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
-            <span style={{ flex: 1, fontSize: '15px' }}>{cat.name}</span>
-          </div>
-        ))}
+        <DndContext
+          sensors={storeSensors}
+          collisionDetection={closestCenter}
+          onDragStart={({ active }) => setActiveStoreRowId(active.id)}
+          onDragEnd={handleStoreDragEnd}
+          onDragCancel={() => setActiveStoreRowId(null)}
+        >
+          <SortableContext items={catOrder} strategy={verticalListSortingStrategy}>
+            {sortedCats.map(cat => (
+              <SortableStoreRow key={cat.id} cat={cat} />
+            ))}
+          </SortableContext>
+          <DragOverlay dropAnimation={{ duration: 180, easing: 'ease' }}>
+            {activeStoreRowId && <StoreRowGhost cat={sortedCats.find(c => c.id === activeStoreRowId)} />}
+          </DragOverlay>
+        </DndContext>
 
         <div style={s.footer}>
           <button style={s.cancelBtn} onClick={onClose}>Avbryt</button>

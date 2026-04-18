@@ -1,5 +1,15 @@
 // Veckoplanen – Huvudkomponent
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
+import {
+  DndContext, closestCenter, PointerSensor,
+  KeyboardSensor, useSensor, useSensors, DragOverlay,
+} from '@dnd-kit/core';
+import {
+  SortableContext, useSortable,
+  verticalListSortingStrategy, arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import RoomSetup from './components/RoomSetup';
 import AuthScreen from './components/AuthScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
@@ -12,6 +22,62 @@ import { usePurchaseHistory } from './hooks/usePurchaseHistory';
 import { useAuth } from './hooks/useAuth';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { DEFAULT_RECIPES } from './constants/recipes';
+
+// ---------- Drag-and-drop helpers (module level – hooks kräver egna komponenter) ----------
+
+function SortableCatItem({ cat, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: cat.id });
+  const isCustom = cat.id.startsWith('custom_');
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{
+        display: 'flex', alignItems: 'center',
+        background: '#fff', borderRadius: '10px',
+        padding: '10px 12px', marginBottom: '8px',
+        boxShadow: isDragging ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
+        gap: '10px', cursor: isDragging ? 'grabbing' : 'grab',
+        userSelect: 'none', touchAction: 'none',
+        border: '2px solid transparent',
+        transform: CSS.Transform.toString(transform),
+        transition: transition || 'transform 200ms ease',
+        opacity: isDragging ? 0.3 : 1,
+      }}
+    >
+      <span style={{ color: '#bbb', fontSize: '18px', lineHeight: 1 }}>⠿</span>
+      <span style={{ fontSize: '22px' }}>{cat.emoji}</span>
+      <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
+      {isCustom && (
+        <button
+          style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#c62828', fontSize: '14px' }}
+          onPointerDown={e => e.stopPropagation()}
+          onClick={() => onRemove(cat.id)}
+        >×</button>
+      )}
+    </div>
+  );
+}
+
+function CatDragGhost({ cat }) {
+  const isCustom = cat.id.startsWith('custom_');
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center',
+      background: '#fff', borderRadius: '10px',
+      padding: '10px 12px',
+      boxShadow: '0 12px 32px rgba(45,80,22,0.25)',
+      gap: '10px', cursor: 'grabbing', userSelect: 'none',
+      border: '2px solid #2d5016',
+    }}>
+      <span style={{ color: '#bbb', fontSize: '18px', lineHeight: 1 }}>⠿</span>
+      <span style={{ fontSize: '22px' }}>{cat.emoji}</span>
+      <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
+      {isCustom && <span style={{ width: 31 }} />}
+    </div>
+  );
+}
 
 // Session-nyckel i localStorage
 const SESSION_KEY = 'veckoplanen_session';
@@ -144,9 +210,12 @@ export default function App() {
   const [newExtraItem, setNewExtraItem] = useState('');
   const [newExtraCat, setNewExtraCat] = useState('');
 
-  // Drag-and-drop state för kategorier
-  const dragIndexRef = useRef(null);
-  const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [activeCatId, setActiveCatId] = useState(null);
+
+  const catSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const { history, recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
 
@@ -299,57 +368,13 @@ export default function App() {
     setEditingRecipe(null);
   }
 
-  // ---------- Kategorier: drag-and-drop ----------
-  function onDragStart(idx) {
-    dragIndexRef.current = idx;
-  }
-
-  function onDragOver(e, idx) {
-    e.preventDefault();
-    setDragOverIdx(idx);
-  }
-
-  function commitReorder(toIdx) {
-    const from = dragIndexRef.current;
-    if (from === null || from === toIdx) {
-      dragIndexRef.current = null;
-      setDragOverIdx(null);
-      return;
-    }
-    const cats = [...categories];
-    const [moved] = cats.splice(from, 1);
-    cats.splice(toIdx, 0, moved);
-    dragIndexRef.current = null;
-    setDragOverIdx(null);
-    updateState(prev => ({ ...prev, categories: cats }));
-  }
-
-  function onDrop(idx) { commitReorder(idx); }
-
-  function onDragEnd() {
-    dragIndexRef.current = null;
-    setDragOverIdx(null);
-  }
-
-  // Touch-drag: använd elementFromPoint för att hitta vilket element fingret är över
-  function onTouchStart(e, idx) {
-    dragIndexRef.current = idx;
-  }
-
-  function onTouchMove(e) {
-    // Förhindra scroll-beteende medan man drar
-    e.preventDefault();
-    const touch = e.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const row = el?.closest('[data-catidx]');
-    if (row) {
-      const overIdx = parseInt(row.dataset.catidx, 10);
-      if (!isNaN(overIdx)) setDragOverIdx(overIdx);
-    }
-  }
-
-  function onTouchEnd() {
-    commitReorder(dragOverIdx ?? dragIndexRef.current);
+  // ---------- Kategorier: drag-and-drop med dnd-kit ----------
+  function handleCatDragEnd({ active, over }) {
+    setActiveCatId(null);
+    if (!over || active.id === over.id) return;
+    const oldIndex = categories.findIndex(c => c.id === active.id);
+    const newIndex = categories.findIndex(c => c.id === over.id);
+    updateState(prev => ({ ...prev, categories: arrayMove(categories, oldIndex, newIndex) }));
   }
 
   function addCategory(cat) {
@@ -798,45 +823,22 @@ export default function App() {
             <p style={{ color: '#6b8f5e', fontSize: '13px', margin: '0 0 16px' }}>
               Ordningen bestämmer hur varorna sorteras i handlingslistan.
             </p>
-            {categories.map((cat, idx) => {
-              const isCustom = cat.id.startsWith('custom_');
-              const isOver = dragOverIdx === idx;
-              return (
-                <div
-                  key={cat.id}
-                  data-catidx={idx}
-                  draggable
-                  onDragStart={() => onDragStart(idx)}
-                  onDragOver={e => onDragOver(e, idx)}
-                  onDrop={() => onDrop(idx)}
-                  onDragEnd={onDragEnd}
-                  onTouchStart={e => onTouchStart(e, idx)}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={onTouchEnd}
-                  style={{
-                    display: 'flex', alignItems: 'center',
-                    background: '#fff', borderRadius: '10px',
-                    padding: '10px 12px', marginBottom: '8px',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)', gap: '10px',
-                    border: isOver ? '2px solid #2d5016' : '2px solid transparent',
-                    transition: 'border-color 0.1s',
-                    cursor: 'grab',
-                    touchAction: 'none', // krävs för att preventDefault ska fungera på touch
-                  }}
-                >
-                  {/* Draghandtag */}
-                  <span style={{ color: '#bbb', fontSize: '18px', lineHeight: 1, userSelect: 'none' }}>⠿</span>
-                  <span style={{ fontSize: '22px' }}>{cat.emoji}</span>
-                  <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
-                  {isCustom && (
-                    <button
-                      style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#c62828', fontSize: '14px' }}
-                      onClick={() => removeCategory(cat.id)}
-                    >×</button>
-                  )}
-                </div>
-              );
-            })}
+            <DndContext
+              sensors={catSensors}
+              collisionDetection={closestCenter}
+              onDragStart={({ active }) => setActiveCatId(active.id)}
+              onDragEnd={handleCatDragEnd}
+              onDragCancel={() => setActiveCatId(null)}
+            >
+              <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                {categories.map(cat => (
+                  <SortableCatItem key={cat.id} cat={cat} onRemove={removeCategory} />
+                ))}
+              </SortableContext>
+              <DragOverlay dropAnimation={{ duration: 180, easing: 'ease' }}>
+                {activeCatId && <CatDragGhost cat={categories.find(c => c.id === activeCatId)} />}
+              </DragOverlay>
+            </DndContext>
 
             <button
               style={{ width: '100%', padding: '12px', marginTop: '8px', background: '#f0f7ef', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: '#2d5016', fontSize: '15px', cursor: 'pointer' }}
