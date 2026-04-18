@@ -1,17 +1,33 @@
 // Hook för Supabase-synkronisering i realtid
+// Strategi: localStorage som omedelbar cache, Supabase som källa för sanning
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Veckodag-ordning
 const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag'];
 
-// Standardvärden för ett nytt rum
+function cacheKey(roomCode) {
+  return `veckoplanen_cache_${roomCode}`;
+}
+
+function readCache(roomCode) {
+  try {
+    const raw = localStorage.getItem(cacheKey(roomCode));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function writeCache(roomCode, state) {
+  try {
+    localStorage.setItem(cacheKey(roomCode), JSON.stringify(state));
+  } catch { /* fullt localStorage – ignorera */ }
+}
+
 function defaultState(categories) {
   return {
     meals: Object.fromEntries(WEEKDAYS.map(d => [d, ''])),
     checkedItems: {},
     extraItems: [],
-    categories: categories,
+    categories,
     customRecipes: [],
     recipeOverrides: {},
     hiddenBuiltin: [],
@@ -20,91 +36,102 @@ function defaultState(categories) {
 }
 
 export function useSharedState(roomCode, userName, defaultCategories) {
-  const [state, setState] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Initialisera direkt från cache så ingenting försvinner vid omladdning
+  const [state, setState] = useState(() => {
+    if (!roomCode) return null;
+    return readCache(roomCode) || null;
+  });
+
+  // loading=true bara när vi INTE har något cached att visa
+  const [loading, setLoading] = useState(() => !roomCode || !readCache(roomCode));
   const [error, setError] = useState(null);
   const channelRef = useRef(null);
   const roomIdRef = useRef(null);
 
-  // Hämta eller skapa rum
+  // Spara till cache och uppdatera React-state i ett
+  function applyState(newState, code = roomCode) {
+    if (code) writeCache(code, newState);
+    setState(newState);
+  }
+
   useEffect(() => {
     if (!roomCode) {
       setState(defaultState(defaultCategories));
       setLoading(false);
       return;
     }
+
     if (!supabase) {
-      // Utan Supabase: använd localStorage som fallback
-      const key = `veckoplanen_room_${roomCode}`;
-      const stored = localStorage.getItem(key);
-      setState(stored ? JSON.parse(stored) : defaultState(defaultCategories));
+      // Utan Supabase: enbart localStorage
+      const cached = readCache(roomCode);
+      setState(cached || defaultState(defaultCategories));
       setLoading(false);
       return;
     }
 
     async function initRoom() {
       try {
-        // Sök efter befintligt rum med den angivna koden
         const { data, error: fetchError } = await supabase
           .from('rooms')
           .select('*')
           .eq('code', roomCode)
           .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          throw fetchError;
-        }
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
         if (data) {
           roomIdRef.current = data.id;
-          setState(data.state);
-          // Registrera användaren som medlem om hen inte redan är det
-          await ensureMembership(data.id);
+          applyState(data.state);
+          ensureMembership(data.id);
         } else {
-          // Skapa nytt rum
-          const newState = defaultState(defaultCategories);
+          // Rum finns inte – skapa det
+          const fresh = readCache(roomCode) || defaultState(defaultCategories);
           const { data: created, error: createError } = await supabase
             .from('rooms')
-            .insert({ code: roomCode, state: newState })
+            .insert({ code: roomCode, state: fresh })
             .select()
             .single();
           if (createError) throw createError;
           roomIdRef.current = created.id;
-          setState(newState);
-          // Lägg till skaparen som första medlem
-          await ensureMembership(created.id);
+          applyState(fresh);
+          ensureMembership(created.id);
         }
+      } catch (err) {
+        // Supabase misslyckades – visa cache om vi har den, annars default
+        if (!readCache(roomCode)) {
+          setState(defaultState(defaultCategories));
+        }
+        setError(err.message);
+        console.error('Supabase-fel vid ruminit:', err.message);
+      } finally {
         setLoading(false);
         subscribeToRoom(roomCode);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
       }
     }
 
     initRoom();
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode]);
 
-  // Lägg till den inloggade användaren i room_members (ignorera om redan finns)
+  // Registrera användaren som rumsmedlem (tyst om room_members inte finns ännu)
   async function ensureMembership(roomId) {
     if (!supabase) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase
-      .from('room_members')
-      .upsert(
-        { room_id: roomId, user_id: user.id, display_name: userName },
-        { onConflict: 'room_id,user_id', ignoreDuplicates: true }
-      );
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase
+        .from('room_members')
+        .upsert(
+          { room_id: roomId, user_id: user.id, display_name: userName },
+          { onConflict: 'room_id,user_id', ignoreDuplicates: true }
+        );
+    } catch { /* room_members kanske inte skapats ännu – ignorera */ }
   }
 
-  // Prenumerera på realtidsuppdateringar
+  // Prenumerera på realtidsändringar från Supabase
   function subscribeToRoom(code) {
     if (!supabase) return;
     const channel = supabase
@@ -113,30 +140,30 @@ export function useSharedState(roomCode, userName, defaultCategories) {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },
         (payload) => {
-          setState(payload.new.state);
+          applyState(payload.new.state, code);
         }
       )
       .subscribe();
     channelRef.current = channel;
   }
 
-  // Uppdatera delat tillstånd
-  const updateState = useCallback(async (updater, activityEntry) => {
+  // Uppdatera state: skriver till cache omedelbart, skickar till Supabase asynkront
+  const updateState = useCallback((updater, activityEntry) => {
     setState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
 
-      // Lägg till aktivitetslogg om det finns
       if (activityEntry && userName) {
         const log = next.activityLog || [];
-        const entry = {
-          user: userName,
-          action: activityEntry,
-          time: new Date().toISOString(),
-        };
-        next.activityLog = [entry, ...log].slice(0, 50);
+        next.activityLog = [
+          { user: userName, action: activityEntry, time: new Date().toISOString() },
+          ...log,
+        ].slice(0, 50);
       }
 
-      // Synka till Supabase eller localStorage
+      // Spara lokalt direkt (nollställs aldrig vid omladdning)
+      if (roomCode) writeCache(roomCode, next);
+
+      // Skicka till Supabase i bakgrunden
       if (supabase && roomIdRef.current) {
         supabase
           .from('rooms')
@@ -145,9 +172,6 @@ export function useSharedState(roomCode, userName, defaultCategories) {
           .then(({ error }) => {
             if (error) console.error('Supabase-uppdateringsfel:', error);
           });
-      } else if (roomCode) {
-        const key = `veckoplanen_room_${roomCode}`;
-        localStorage.setItem(key, JSON.stringify(next));
       }
 
       return next;

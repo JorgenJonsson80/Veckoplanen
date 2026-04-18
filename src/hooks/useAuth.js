@@ -3,21 +3,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export function useAuth() {
-  // undefined = laddar fortfarande, null = ej inloggad, object = inloggad
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(undefined); // undefined = laddar, null = ej inloggad
 
   useEffect(() => {
-    if (!supabase) {
-      setUser(null);
-      return;
-    }
+    if (!supabase) { setUser(null); return; }
 
-    // Hämta befintlig session (t.ex. efter magic link-klick)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Lyssna på förändringar: inloggning, utloggning, token-refresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -25,7 +19,23 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Skicka magic link till angiven e-postadress
+  // Logga in med e-post + lösenord
+  async function signInWithPassword(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
+  }
+
+  // Skapa konto med e-post + lösenord
+  async function signUp(email, password) {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    return { error };
+  }
+
+  // Magic link – skickar inloggningslänk via e-post
   async function signInWithMagicLink(email) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -41,6 +51,8 @@ export function useAuth() {
   return {
     user,
     loading: user === undefined,
+    signInWithPassword,
+    signUp,
     signInWithMagicLink,
     signOut,
   };

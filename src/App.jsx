@@ -5,6 +5,7 @@ import AuthScreen from './components/AuthScreen';
 import RecipeEditor from './components/RecipeEditor';
 import ActivityDrawer from './components/ActivityDrawer';
 import NewCategoryForm from './components/NewCategoryForm';
+import StoreEditor from './components/StoreEditor';
 import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
 import { usePurchaseHistory } from './hooks/usePurchaseHistory';
 import { useAuth } from './hooks/useAuth';
@@ -117,7 +118,7 @@ function collectIngredients(meals, allRecipes) {
 
 export default function App() {
   // ---------- Auth ----------
-  const { user, loading: authLoading, signInWithMagicLink, signOut } = useAuth();
+  const { user, loading: authLoading, signInWithPassword, signUp, signInWithMagicLink, signOut } = useAuth();
 
   // ---------- Rumsession (vem du är + vilket rum) ----------
   const [session, setSession] = useState(() => {
@@ -131,6 +132,7 @@ export default function App() {
   const [showActivity, setShowActivity] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [showNewCat, setShowNewCat] = useState(false);
+  const [editingStore, setEditingStore] = useState(null); // null | store-objekt
   const [autocomplete, setAutocomplete] = useState({ day: null, results: [] });
   const [newExtraItem, setNewExtraItem] = useState('');
   const [newExtraCat, setNewExtraCat] = useState('');
@@ -143,7 +145,7 @@ export default function App() {
 
   // Autocomplete-förslag för extra varor
   const [extraSuggestions, setExtraItemSuggestions] = useState([]);
-  const { state, loading, updateState } = useSharedState(
+  const { state, loading, error, updateState } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
     DEFAULT_CATEGORIES
@@ -300,24 +302,47 @@ export default function App() {
     setDragOverIdx(idx);
   }
 
-  function onDrop(idx) {
+  function commitReorder(toIdx) {
     const from = dragIndexRef.current;
-    if (from === null || from === idx) {
+    if (from === null || from === toIdx) {
       dragIndexRef.current = null;
       setDragOverIdx(null);
       return;
     }
     const cats = [...categories];
     const [moved] = cats.splice(from, 1);
-    cats.splice(idx, 0, moved);
+    cats.splice(toIdx, 0, moved);
     dragIndexRef.current = null;
     setDragOverIdx(null);
     updateState(prev => ({ ...prev, categories: cats }));
   }
 
+  function onDrop(idx) { commitReorder(idx); }
+
   function onDragEnd() {
     dragIndexRef.current = null;
     setDragOverIdx(null);
+  }
+
+  // Touch-drag: använd elementFromPoint för att hitta vilket element fingret är över
+  function onTouchStart(e, idx) {
+    dragIndexRef.current = idx;
+  }
+
+  function onTouchMove(e) {
+    // Förhindra scroll-beteende medan man drar
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const row = el?.closest('[data-catidx]');
+    if (row) {
+      const overIdx = parseInt(row.dataset.catidx, 10);
+      if (!isNaN(overIdx)) setDragOverIdx(overIdx);
+    }
+  }
+
+  function onTouchEnd() {
+    commitReorder(dragOverIdx ?? dragIndexRef.current);
   }
 
   function addCategory(cat) {
@@ -335,6 +360,33 @@ export default function App() {
     updateState(prev => ({ ...prev, categories: (prev.categories || DEFAULT_CATEGORIES).filter(c => c.id !== catId) }));
   }
 
+  // ---------- Butiker ----------
+  function saveStore(store) {
+    updateState(prev => {
+      const stores = prev.stores || [];
+      const exists = stores.some(s => s.id === store.id);
+      return {
+        ...prev,
+        stores: exists ? stores.map(s => s.id === store.id ? store : s) : [...stores, store],
+        activeStoreId: prev.activeStoreId || store.id,
+      };
+    }, `sparade butiken "${store.name}"`);
+    setEditingStore(null);
+  }
+
+  function deleteStore(storeId) {
+    updateState(prev => ({
+      ...prev,
+      stores: (prev.stores || []).filter(s => s.id !== storeId),
+      activeStoreId: prev.activeStoreId === storeId ? null : prev.activeStoreId,
+    }));
+    setEditingStore(null);
+  }
+
+  function setActiveStore(storeId) {
+    updateState(prev => ({ ...prev, activeStoreId: storeId }));
+  }
+
   // ---------- Tidiga returer ----------
 
   // Vänta på att auth-status är klar
@@ -347,7 +399,13 @@ export default function App() {
   }
 
   // Ej inloggad – visa magic link-skärmen
-  if (!user) return <AuthScreen onSignIn={signInWithMagicLink} />;
+  if (!user) return (
+    <AuthScreen
+      onSignInWithPassword={signInWithPassword}
+      onSignUp={signUp}
+      onSignInWithMagicLink={signInWithMagicLink}
+    />
+  );
 
   // Inloggad men inget rum valt ännu
   if (!session) return <RoomSetup onStart={handleStart} />;
@@ -363,10 +421,22 @@ export default function App() {
   const meals = state?.meals || {};
   const checkedItems = state?.checkedItems || {};
   const extraItems = state?.extraItems || [];
+  const stores = state?.stores || [];
+  const activeStoreId = state?.activeStoreId || null;
 
-  // Varor grupperade per kategori
+  // Aktiv butik bestämmer kategoriordningen – annars global ordning
+  const activeStore = stores.find(s => s.id === activeStoreId) || null;
+  const orderedCategories = activeStore
+    ? activeStore.categoryOrder
+        .map(id => categories.find(c => c.id === id))
+        .filter(Boolean)
+        // Lägg till eventuella nya kategorier som saknas i butikens ordning
+        .concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
+    : categories;
+
+  // Varor grupperade per kategori (i butikens ordning)
   const allItemsGrouped = {};
-  categories.forEach(cat => { allItemsGrouped[cat.id] = []; });
+  orderedCategories.forEach(cat => { allItemsGrouped[cat.id] = []; });
   Object.entries(ingredientMap).forEach(([name, info]) => {
     const catId = info.category || 'ovrigt';
     if (!allItemsGrouped[catId]) allItemsGrouped[catId] = [];
@@ -401,17 +471,33 @@ export default function App() {
           )}
         </div>
         <div style={s.headerRight}>
-          {session.roomCode && <span style={s.roomBadge}>{session.roomCode}</span>}
+          {session.roomCode && (
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(session.roomCode);
+              }}
+              title="Kopiera rumskod"
+              style={{ ...s.roomBadge, background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', color: '#fff', fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px', padding: '3px 10px', borderRadius: '12px' }}
+            >
+              {session.roomCode}
+            </button>
+          )}
           {session.roomCode && (
             <button style={s.activityBtn} onClick={() => setShowActivity(true)} title="Aktivitetsfeed">📋</button>
           )}
           <button
-            style={{ ...s.activityBtn, fontSize: '14px' }}
+            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }}
             onClick={handleSignOut}
-            title="Logga ut"
-          >↩</button>
+          >Logga ut</button>
         </div>
       </header>
+
+      {/* Felbanderoll – visas om Supabase-synken misslyckas */}
+      {error && (
+        <div style={{ background: '#fff3e0', borderBottom: '1px solid #ffcc02', padding: '8px 16px', fontSize: '13px', color: '#e65100', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          ⚠️ Kunde inte synka med servern – ändringar sparas lokalt tills uppkopplingen är tillbaka.
+        </div>
+      )}
 
       {/* Flikar */}
       <nav style={s.tabs}>
@@ -510,6 +596,55 @@ export default function App() {
               Handlingslista
             </h2>
 
+            {/* Butiksväljare */}
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '2px' }}>
+              {/* Standard – ingen butik */}
+              <button
+                onClick={() => setActiveStore(null)}
+                style={{
+                  flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer',
+                  border: '1.5px solid', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                  background: !activeStoreId ? '#2d5016' : '#fff',
+                  color: !activeStoreId ? '#fff' : '#2d5016',
+                  borderColor: !activeStoreId ? '#2d5016' : '#c8e6c9',
+                }}
+              >📋 Standard</button>
+
+              {stores.map(store => (
+                <button
+                  key={store.id}
+                  onClick={() => setActiveStore(store.id)}
+                  onDoubleClick={() => setEditingStore(store)}
+                  style={{
+                    flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer',
+                    border: '1.5px solid', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                    background: activeStoreId === store.id ? '#2d5016' : '#fff',
+                    color: activeStoreId === store.id ? '#fff' : '#2d5016',
+                    borderColor: activeStoreId === store.id ? '#2d5016' : '#c8e6c9',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                  }}
+                >
+                  {store.emoji} {store.name}
+                  {activeStoreId === store.id && (
+                    <span
+                      onClick={e => { e.stopPropagation(); setEditingStore(store); }}
+                      style={{ fontSize: '12px', opacity: 0.8 }}
+                    >✏️</span>
+                  )}
+                </button>
+              ))}
+
+              {/* Ny butik */}
+              <button
+                onClick={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: categories.map(c => c.id) })}
+                style={{
+                  flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer',
+                  border: '1.5px dashed #6b8f5e', background: '#f0f7ef', color: '#2d5016',
+                  fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+              >+ Butik</button>
+            </div>
+
             {/* Framstegsbar + Spara-knapp */}
             {totalItems > 0 && (
               <div style={{ marginBottom: '16px' }}>
@@ -532,8 +667,8 @@ export default function App() {
               </div>
             )}
 
-            {/* Varor per kategori */}
-            {categories.map(cat => {
+            {/* Varor per kategori – i aktiv butiks ordning */}
+            {orderedCategories.map(cat => {
               const items = allItemsGrouped[cat.id] || [];
               if (items.length === 0) return null;
               return (
@@ -653,11 +788,15 @@ export default function App() {
               return (
                 <div
                   key={cat.id}
+                  data-catidx={idx}
                   draggable
                   onDragStart={() => onDragStart(idx)}
                   onDragOver={e => onDragOver(e, idx)}
                   onDrop={() => onDrop(idx)}
                   onDragEnd={onDragEnd}
+                  onTouchStart={e => onTouchStart(e, idx)}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
                   style={{
                     display: 'flex', alignItems: 'center',
                     background: '#fff', borderRadius: '10px',
@@ -666,6 +805,7 @@ export default function App() {
                     border: isOver ? '2px solid #2d5016' : '2px solid transparent',
                     transition: 'border-color 0.1s',
                     cursor: 'grab',
+                    touchAction: 'none', // krävs för att preventDefault ska fungera på touch
                   }}
                 >
                   {/* Draghandtag */}
@@ -707,6 +847,16 @@ export default function App() {
         <ActivityDrawer
           log={state?.activityLog || []}
           onClose={() => setShowActivity(false)}
+        />
+      )}
+
+      {editingStore && (
+        <StoreEditor
+          store={editingStore}
+          allCategories={categories}
+          onSave={saveStore}
+          onDelete={deleteStore}
+          onClose={() => setEditingStore(null)}
         />
       )}
     </div>

@@ -138,7 +138,11 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
     setIngredients(prev => prev.filter((_, i) => i !== idx));
   }
 
+  const [nameErr, setNameErr] = useState('');
+
   function handleSave() {
+    if (!name.trim()) { setNameErr('Receptet måste ha ett namn.'); return; }
+    setNameErr('');
     const valid = ingredients.filter(i => i.name.trim());
     onSave({ ...recipe, name: name.trim(), ingredients: valid });
   }
@@ -157,7 +161,9 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="t.ex. Tacos"
+          style={{ ...styles.input, marginBottom: nameErr ? '4px' : '16px', fontSize: '16px', borderColor: nameErr ? '#c62828' : undefined }}
         />
+        {nameErr && <p style={{ color: '#c62828', fontSize: '13px', margin: '0 0 12px' }}>{nameErr}</p>}
 
         {/* Kolumnrubriker */}
         <div style={{ ...styles.row, marginBottom: '4px' }}>
