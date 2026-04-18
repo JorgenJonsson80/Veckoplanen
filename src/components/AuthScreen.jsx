@@ -48,8 +48,8 @@ const s = {
   },
 };
 
-export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWithMagicLink }) {
-  const [tab, setTab] = useState('login'); // 'login' | 'register' | 'magic'
+export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWithMagicLink, onResetPassword }) {
+  const [tab, setTab] = useState('login'); // 'login' | 'register' | 'magic' | 'forgot'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,6 +78,16 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
     setLoading(false);
     if (error) { setErr('Något gick fel. E-postadressen kanske redan används.'); return; }
     setRegisterDone(true);
+  }
+
+  async function handleForgotPassword() {
+    setErr('');
+    if (!email.includes('@')) { setErr('Ange en giltig e-postadress.'); return; }
+    setLoading(true);
+    const { error } = await onResetPassword(email);
+    setLoading(false);
+    if (error) { setErr('Något gick fel. Försök igen.'); return; }
+    setMagicSent(true); // återanvänd "kolla inkorgen"-skärmen
   }
 
   async function handleMagicLink() {
@@ -143,6 +153,9 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             <button style={s.secondaryBtn} onClick={() => { setTab('magic'); reset(); }}>
               📬 Skicka magic link istället
             </button>
+            <button style={{ ...s.secondaryBtn, border: 'none', color: '#aaa', fontSize: '13px', marginTop: '4px' }} onClick={() => { setTab('forgot'); reset(); }}>
+              Glömt lösenord?
+            </button>
           </>
         )}
 
@@ -157,6 +170,22 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             {err && <p style={s.err}>{err}</p>}
             <button style={s.primaryBtn} onClick={handleRegister} disabled={loading}>
               {loading ? 'Skapar konto...' : 'Skapa konto'}
+            </button>
+          </>
+        )}
+
+        {/* Glömt lösenord */}
+        {tab === 'forgot' && (
+          <>
+            <p style={s.info}>Ange din e-post så skickar vi en länk för att återställa lösenordet.</p>
+            <label style={s.label}>E-postadress</label>
+            <input style={s.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="din@epost.se" autoFocus onKeyDown={e => e.key === 'Enter' && handleForgotPassword()} />
+            {err && <p style={s.err}>{err}</p>}
+            <button style={s.primaryBtn} onClick={handleForgotPassword} disabled={loading}>
+              {loading ? 'Skickar...' : 'Skicka återställningslänk'}
+            </button>
+            <button style={s.secondaryBtn} onClick={() => { setTab('login'); reset(); }}>
+              ← Tillbaka till inloggning
             </button>
           </>
         )}

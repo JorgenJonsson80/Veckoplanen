@@ -65,10 +65,11 @@ const styles = {
   checking: { color: '#6b8f5e', fontSize: '13px', marginBottom: '8px' },
 };
 
-export default function RoomSetup({ onStart }) {
-  const [mode, setMode] = useState(null);
+export default function RoomSetup({ onStart, initialJoinCode }) {
+  // Om en inbjudningslänk användes – välj join-läget direkt
+  const [mode, setMode] = useState(initialJoinCode ? 'join' : null);
   const [name, setName] = useState('');
-  const [joinCode, setJoinCode] = useState('');
+  const [joinCode, setJoinCode] = useState(initialJoinCode || '');
   const [generatedCode, setGeneratedCode] = useState('');
   const [codeChecking, setCodeChecking] = useState(false);
   const [copied, setCopied] = useState(false);

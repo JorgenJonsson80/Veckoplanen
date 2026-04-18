@@ -2,6 +2,7 @@
 import { useState, useMemo, useRef } from 'react';
 import RoomSetup from './components/RoomSetup';
 import AuthScreen from './components/AuthScreen';
+import ResetPasswordScreen from './components/ResetPasswordScreen';
 import RecipeEditor from './components/RecipeEditor';
 import ActivityDrawer from './components/ActivityDrawer';
 import NewCategoryForm from './components/NewCategoryForm';
@@ -118,7 +119,13 @@ function collectIngredients(meals, allRecipes) {
 
 export default function App() {
   // ---------- Auth ----------
-  const { user, loading: authLoading, signInWithPassword, signUp, signInWithMagicLink, signOut } = useAuth();
+  const { user, loading: authLoading, isRecovery, signInWithPassword, signUp, signInWithMagicLink, resetPassword, updatePassword, signOut } = useAuth();
+
+  // Detektera inbjudningslänk: /join/ERIK7
+  const pendingJoinCode = (() => {
+    const match = window.location.pathname.match(/^\/join\/([A-Z0-9]{5})$/i);
+    return match ? match[1].toUpperCase() : null;
+  })();
 
   // ---------- Rumsession (vem du är + vilket rum) ----------
   const [session, setSession] = useState(() => {
@@ -399,16 +406,20 @@ export default function App() {
   }
 
   // Ej inloggad – visa magic link-skärmen
+  // Lösenordsåterställning – visas när användaren klickat länken i mailet
+  if (isRecovery) return <ResetPasswordScreen onUpdatePassword={updatePassword} />;
+
   if (!user) return (
     <AuthScreen
       onSignInWithPassword={signInWithPassword}
       onSignUp={signUp}
       onSignInWithMagicLink={signInWithMagicLink}
+      onResetPassword={resetPassword}
     />
   );
 
   // Inloggad men inget rum valt ännu
-  if (!session) return <RoomSetup onStart={handleStart} />;
+  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} />;
 
   if (loading) {
     return (
@@ -474,9 +485,14 @@ export default function App() {
           {session.roomCode && (
             <button
               onClick={() => {
-                navigator.clipboard.writeText(session.roomCode);
+                const url = `${window.location.origin}/join/${session.roomCode}`;
+                if (navigator.share) {
+                  navigator.share({ title: 'Gå med i Veckoplanen', url });
+                } else {
+                  navigator.clipboard.writeText(url);
+                }
               }}
-              title="Kopiera rumskod"
+              title="Dela inbjudningslänk"
               style={{ ...s.roomBadge, background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', color: '#fff', fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px', padding: '3px 10px', borderRadius: '12px' }}
             >
               {session.roomCode}

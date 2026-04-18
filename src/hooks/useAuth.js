@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 
 export function useAuth() {
   const [user, setUser] = useState(undefined); // undefined = laddar, null = ej inloggad
+  const [isRecovery, setIsRecovery] = useState(false); // true när användaren klickat reset-länk
 
   useEffect(() => {
     if (!supabase) { setUser(null); return; }
@@ -12,35 +13,49 @@ export function useAuth() {
       setUser(session?.user ?? null);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      // PASSWORD_RECOVERY körs när användaren klickar länken i återställningsmailet
+      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
+      if (event === 'SIGNED_OUT') setIsRecovery(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Logga in med e-post + lösenord
   async function signInWithPassword(email, password) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   }
 
-  // Skapa konto med e-post + lösenord
   async function signUp(email, password) {
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
+      email, password,
       options: { emailRedirectTo: window.location.origin },
     });
     return { error };
   }
 
-  // Magic link – skickar inloggningslänk via e-post
   async function signInWithMagicLink(email) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin },
     });
+    return { error };
+  }
+
+  // Skicka återställningslänk via e-post
+  async function resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    return { error };
+  }
+
+  // Sätt nytt lösenord (används efter PASSWORD_RECOVERY-event)
+  async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!error) setIsRecovery(false);
     return { error };
   }
 
@@ -51,9 +66,12 @@ export function useAuth() {
   return {
     user,
     loading: user === undefined,
+    isRecovery,
     signInWithPassword,
     signUp,
     signInWithMagicLink,
+    resetPassword,
+    updatePassword,
     signOut,
   };
 }
