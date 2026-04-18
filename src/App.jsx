@@ -82,6 +82,18 @@ function CatDragGhost({ cat }) {
 
 // Session-nyckel i localStorage
 const SESSION_KEY = 'veckoplanen_session';
+const RECENT_ROOMS_KEY = 'veckoplanen_recent_rooms';
+
+function getRecentRooms() {
+  try { return JSON.parse(localStorage.getItem(RECENT_ROOMS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveRecentRoom({ name, roomCode, mode }) {
+  const rooms = getRecentRooms().filter(r => !(r.roomCode === roomCode && r.mode === mode));
+  rooms.unshift({ name, roomCode, mode, lastUsed: Date.now() });
+  localStorage.setItem(RECENT_ROOMS_KEY, JSON.stringify(rooms.slice(0, 5)));
+}
 
 // ---------- Stilar ----------
 const s = {
@@ -207,6 +219,8 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [showNewCat, setShowNewCat] = useState(false);
   const [editingStore, setEditingStore] = useState(null); // null | store-objekt
+  const [openListKey, setOpenListKey] = useState(null);
+  const [openMealKey, setOpenMealKey] = useState(null);
   const [autocomplete, setAutocomplete] = useState({ day: null, results: [] });
   const [newExtraItem, setNewExtraItem] = useState('');
   const [newExtraCat, setNewExtraCat] = useState('');
@@ -231,6 +245,7 @@ export default function App() {
   function handleStart({ name, roomCode, mode }) {
     const sess = { name, roomCode, mode };
     localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
+    saveRecentRoom(sess);
     setSession(sess);
   }
 
@@ -319,6 +334,25 @@ export default function App() {
       `sparade handlingslistan för ${weekKey}`
     );
     alert(`Lista sparad för ${weekKey}!`);
+  }
+
+  function saveMealPlan() {
+    if (!WEEKDAYS.some(d => meals[d])) return;
+    const weekKey = getISOWeek();
+    updateState(
+      prev => ({
+        ...prev,
+        savedMeals: { ...(prev.savedMeals || {}), [weekKey]: { meals: { ...meals }, savedAt: new Date().toISOString() } },
+      }),
+      `sparade matsedeln för ${weekKey}`
+    );
+  }
+
+  function loadMealPlan(weekKey) {
+    const saved = savedMeals[weekKey];
+    if (!saved) return;
+    updateState(prev => ({ ...prev, meals: { ...saved.meals } }));
+    setOpenMealKey(null);
   }
 
   function addExtraItem() {
@@ -450,7 +484,7 @@ export default function App() {
   );
 
   // Inloggad men inget rum valt ännu
-  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} />;
+  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms()} />;
 
   if (loading) {
     return (
@@ -464,6 +498,8 @@ export default function App() {
   const checkedItems = state?.checkedItems || {};
   const extraItems = state?.extraItems || [];
   const stores = state?.stores || [];
+  const savedLists = state?.savedLists || {};
+  const savedMeals = state?.savedMeals || {};
   const activeStoreId = state?.activeStoreId || null;
 
   // Aktiv butik bestämmer kategoriordningen – annars global ordning
@@ -638,6 +674,66 @@ export default function App() {
             >
               + Skapa nytt recept
             </button>
+
+            {/* Spara veckans matsedel */}
+            <button
+              onClick={saveMealPlan}
+              disabled={!WEEKDAYS.some(d => meals[d])}
+              style={{
+                display: 'block', width: '100%', padding: '12px', marginTop: '8px',
+                background: WEEKDAYS.some(d => meals[d]) ? '#2d5016' : '#e0e0e0',
+                border: 'none', borderRadius: '10px', color: '#fff',
+                fontSize: '15px', cursor: WEEKDAYS.some(d => meals[d]) ? 'pointer' : 'default',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              💾 Spara matsedeln ({getISOWeek()})
+            </button>
+
+            {/* Sparade matsedlar */}
+            {Object.keys(savedMeals).length > 0 && (
+              <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+                <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: '0 0 12px' }}>
+                  📅 Sparade matsedlar
+                </h3>
+                {Object.entries(savedMeals)
+                  .sort(([a], [b]) => b.localeCompare(a))
+                  .map(([week, data]) => {
+                    const isOpen = openMealKey === week;
+                    const count = WEEKDAYS.filter(d => data.meals?.[d]).length;
+                    return (
+                      <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+                        <button
+                          onClick={() => setOpenMealKey(isOpen ? null : week)}
+                          style={{ width: '100%', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}
+                        >
+                          <span style={{ fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{week}</span>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#6b8f5e' }}>{count} rätter</span>
+                            <span style={{ color: '#6b8f5e' }}>{isOpen ? '▲' : '▼'}</span>
+                          </div>
+                        </button>
+                        {isOpen && (
+                          <div style={{ padding: '4px 14px 14px', background: '#fafff9' }}>
+                            {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
+                              <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid #f0f7ef', fontSize: '14px' }}>
+                                <span style={{ minWidth: '72px', color: '#888', textTransform: 'capitalize' }}>{d}</span>
+                                <span style={{ color: '#222' }}>{data.meals[d]}</span>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => loadMealPlan(week)}
+                              style={{ marginTop: '12px', padding: '8px 16px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+                            >
+                              ↩ Ladda den här matsedeln
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
 
@@ -822,6 +918,52 @@ export default function App() {
                 Lägg till
               </button>
             </div>
+
+            {/* Arkiverade handlingslistor */}
+            {Object.keys(savedLists).length > 0 && (
+              <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+                <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: '0 0 12px' }}>
+                  📦 Arkiverade listor
+                </h3>
+                {Object.entries(savedLists)
+                  .sort(([a], [b]) => b.localeCompare(a))
+                  .map(([week, data]) => {
+                    const isOpen = openListKey === week;
+                    return (
+                      <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+                        <button
+                          onClick={() => setOpenListKey(isOpen ? null : week)}
+                          style={{ width: '100%', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}
+                        >
+                          <span style={{ fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{week}</span>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#6b8f5e' }}>{data.items?.length || 0} varor</span>
+                            <span style={{ color: '#6b8f5e' }}>{isOpen ? '▲' : '▼'}</span>
+                          </div>
+                        </button>
+                        {isOpen && (
+                          <div style={{ padding: '4px 14px 14px', background: '#fafff9' }}>
+                            {data.meals && Object.entries(data.meals).filter(([, v]) => v).length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px 0 10px' }}>
+                                {Object.entries(data.meals).filter(([, v]) => v).map(([, meal]) => (
+                                  <span key={meal} style={{ fontSize: '12px', background: '#f0f7ef', borderRadius: '4px', padding: '2px 7px', color: '#2d5016' }}>{meal}</span>
+                                ))}
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {(data.items || []).map((item, i) => (
+                                <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>
+                                  {item.amount ? `${item.amount} ` : ''}{item.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
 

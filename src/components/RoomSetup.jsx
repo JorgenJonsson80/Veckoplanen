@@ -65,7 +65,7 @@ const styles = {
   checking: { color: '#6b8f5e', fontSize: '13px', marginBottom: '8px' },
 };
 
-export default function RoomSetup({ onStart, initialJoinCode }) {
+export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [] }) {
   // Om en inbjudningslänk användes – välj join-läget direkt
   const [mode, setMode] = useState(initialJoinCode ? 'join' : null);
   const [name, setName] = useState('');
@@ -112,6 +112,26 @@ export default function RoomSetup({ onStart, initialJoinCode }) {
       <div style={styles.card}>
         <h1 style={styles.title}>Veckoplanen</h1>
         <p style={styles.subtitle}>Din familjens matsedel och handlingslista</p>
+
+        {/* Senaste rum */}
+        {recentRooms.length > 0 && (
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ color: '#6b8f5e', fontSize: '12px', fontWeight: '700', margin: '0 0 8px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Senast använda</p>
+            {recentRooms.map((r, i) => (
+              <button
+                key={i}
+                style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '11px 14px', marginBottom: '7px', background: '#f0f7ef', border: '1.5px solid #c8e6c9', borderRadius: '10px', cursor: 'pointer', gap: '10px', textAlign: 'left' }}
+                onClick={() => onStart(r)}
+              >
+                <span style={{ fontSize: '20px' }}>{r.mode === 'solo' ? '👤' : '🏠'}</span>
+                <span style={{ flex: 1, color: '#2d5016', fontWeight: '600', fontSize: '15px' }}>{r.name}</span>
+                {r.roomCode && <span style={{ fontFamily: 'monospace', fontSize: '13px', color: '#6b8f5e', letterSpacing: '1px' }}>{r.roomCode}</span>}
+                <span style={{ fontSize: '12px', color: '#aaa' }}>{r.mode === 'solo' ? 'Eget' : 'Familjerum'}</span>
+              </button>
+            ))}
+            <div style={{ borderTop: '1px solid #e8f5e9', margin: '16px 0' }} />
+          </div>
+        )}
 
         <div style={{ marginBottom: '20px' }}>
           {[
