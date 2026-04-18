@@ -19,21 +19,22 @@ function SortableStoreRow({ cat }) {
     <div
       ref={setNodeRef}
       {...attributes}
-      {...listeners}
       style={{
         display: 'flex', alignItems: 'center',
         background: '#fff', borderRadius: '10px',
         padding: '10px 12px', marginBottom: '8px',
         boxShadow: isDragging ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
-        gap: '10px', cursor: isDragging ? 'grabbing' : 'grab',
-        userSelect: 'none', touchAction: 'none',
+        gap: '10px', userSelect: 'none',
         border: '2px solid transparent',
         transform: CSS.Transform.toString(transform),
         transition: transition || 'transform 200ms ease',
         opacity: isDragging ? 0.3 : 1,
       }}
     >
-      <span style={{ color: '#bbb', fontSize: '18px', userSelect: 'none' }}>⠿</span>
+      <span
+        {...listeners}
+        style={{ color: '#bbb', fontSize: '22px', padding: '4px 6px', cursor: 'grab', touchAction: 'none' }}
+      >⠿</span>
       <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
       <span style={{ flex: 1, fontSize: '15px' }}>{cat.name}</span>
     </div>
