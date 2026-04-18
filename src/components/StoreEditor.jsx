@@ -86,6 +86,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
   // Drag-and-drop för kategoriordningen
   const dragIdxRef = useRef(null);
   const [dragOver, setDragOver] = useState(null);
+  const rowRefs = useRef([]);
 
   function commitReorder(toIdx) {
     const from = dragIdxRef.current;
@@ -98,14 +99,28 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
     setCatOrder(next);
   }
 
-  function onTouchMove(e) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('[data-storeidx]');
-    if (el) {
-      const idx = parseInt(el.dataset.storeidx, 10);
-      if (!isNaN(idx)) setDragOver(idx);
-    }
+  function onPointerDown(e, idx) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragIdxRef.current = idx;
+  }
+
+  function onPointerMove(e) {
+    if (dragIdxRef.current === null) return;
+    const y = e.clientY;
+    rowRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const { top, bottom } = el.getBoundingClientRect();
+      if (y >= top && y <= bottom) setDragOver(i);
+    });
+  }
+
+  function onPointerUp() {
+    commitReorder(dragOver ?? dragIdxRef.current);
+  }
+
+  function onPointerCancel() {
+    dragIdxRef.current = null;
+    setDragOver(null);
   }
 
   function handleSave() {
@@ -155,16 +170,12 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         {sortedCats.map((cat, idx) => (
           <div
             key={cat.id}
-            data-storeidx={idx}
-            draggable
-            onDragStart={() => { dragIdxRef.current = idx; }}
-            onDragOver={e => { e.preventDefault(); setDragOver(idx); }}
-            onDrop={() => commitReorder(idx)}
-            onDragEnd={() => { dragIdxRef.current = null; setDragOver(null); }}
-            onTouchStart={() => { dragIdxRef.current = idx; }}
-            onTouchMove={onTouchMove}
-            onTouchEnd={() => commitReorder(dragOver ?? dragIdxRef.current)}
-            style={{ ...s.catRow, ...(dragOver === idx ? s.catRowOver : {}) }}
+            ref={el => rowRefs.current[idx] = el}
+            onPointerDown={e => onPointerDown(e, idx)}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
+            style={{ ...s.catRow, ...(dragOver === idx ? s.catRowOver : {}), touchAction: 'none', userSelect: 'none' }}
           >
             <span style={{ color: '#bbb', fontSize: '18px', userSelect: 'none' }}>⠿</span>
             <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
