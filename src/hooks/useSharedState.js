@@ -178,7 +178,21 @@ export function useSharedState(roomCode, userName, defaultCategories) {
     });
   }, [roomCode, userName]);
 
-  return { state, loading, error, updateState };
+  async function deleteRoom() {
+    if (roomCode) localStorage.removeItem(cacheKey(roomCode));
+    if (!supabase || !roomIdRef.current) return { error: null };
+    try {
+      // Ta bort rumsmedlemmar först, sedan rummet
+      await supabase.from('room_members').delete().eq('room_id', roomIdRef.current);
+      const { error: delErr } = await supabase.from('rooms').delete().eq('id', roomIdRef.current);
+      if (delErr) throw delErr;
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
+  }
+
+  return { state, loading, error, updateState, deleteRoom };
 }
 
 export { WEEKDAYS };

@@ -236,7 +236,7 @@ export default function App() {
 
   // Autocomplete-förslag för extra varor
   const [extraSuggestions, setExtraItemSuggestions] = useState([]);
-  const { state, loading, error, updateState } = useSharedState(
+  const { state, loading, error, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
     DEFAULT_CATEGORIES
@@ -256,6 +256,17 @@ export default function App() {
   }
 
   function handleSwitchRoom() {
+    localStorage.removeItem(SESSION_KEY);
+    setSession(null);
+  }
+
+  async function handleDeleteRoom() {
+    if (!window.confirm(`Radera rummet ${session.roomCode} och all dess data? Det går inte att ångra.`)) return;
+    const { error: delErr } = await deleteRoom();
+    if (delErr) { alert('Kunde inte radera rummet: ' + delErr.message); return; }
+    // Ta bort från senaste rum
+    const updated = getRecentRooms().filter(r => r.roomCode !== session.roomCode);
+    localStorage.setItem(RECENT_ROOMS_KEY, JSON.stringify(updated));
     localStorage.removeItem(SESSION_KEY);
     setSession(null);
   }
@@ -1000,6 +1011,19 @@ export default function App() {
               {showNewCat ? 'Avbryt' : '+ Lägg till kategori'}
             </button>
             {showNewCat && <NewCategoryForm onAdd={addCategory} />}
+
+            {/* Radera rum */}
+            {session.roomCode && (
+              <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid #ffcdd2' }}>
+                <p style={{ color: '#aaa', fontSize: '12px', margin: '0 0 8px' }}>Farozon</p>
+                <button
+                  onClick={handleDeleteRoom}
+                  style={{ width: '100%', padding: '12px', background: '#fff', border: '1.5px solid #ef9a9a', borderRadius: '10px', color: '#c62828', fontSize: '15px', cursor: 'pointer' }}
+                >
+                  🗑 Radera rummet {session.roomCode}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
