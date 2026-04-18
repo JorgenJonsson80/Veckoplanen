@@ -1,11 +1,13 @@
 // Veckoplanen – Huvudkomponent
 import { useState, useMemo, useRef } from 'react';
 import RoomSetup from './components/RoomSetup';
+import AuthScreen from './components/AuthScreen';
 import RecipeEditor from './components/RecipeEditor';
 import ActivityDrawer from './components/ActivityDrawer';
 import NewCategoryForm from './components/NewCategoryForm';
 import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
 import { usePurchaseHistory } from './hooks/usePurchaseHistory';
+import { useAuth } from './hooks/useAuth';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { DEFAULT_RECIPES } from './constants/recipes';
 
@@ -114,7 +116,10 @@ function collectIngredients(meals, allRecipes) {
 }
 
 export default function App() {
-  // ---------- Session ----------
+  // ---------- Auth ----------
+  const { user, loading: authLoading, signInWithMagicLink, signOut } = useAuth();
+
+  // ---------- Rumsession (vem du är + vilket rum) ----------
   const [session, setSession] = useState(() => {
     try {
       const stored = localStorage.getItem(SESSION_KEY);
@@ -131,8 +136,8 @@ export default function App() {
   const [newExtraCat, setNewExtraCat] = useState('');
 
   // Drag-and-drop state för kategorier
-  const dragIndexRef = useRef(null);       // index som dras
-  const [dragOverIdx, setDragOverIdx] = useState(null); // index som hovras över
+  const dragIndexRef = useRef(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
 
   const { recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
   const { state, loading, updateState } = useSharedState(
@@ -145,6 +150,12 @@ export default function App() {
     const sess = { name, roomCode, mode };
     localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
     setSession(sess);
+  }
+
+  function handleSignOut() {
+    localStorage.removeItem(SESSION_KEY);
+    setSession(null);
+    signOut();
   }
 
   // Alla recept (inbyggda + anpassade)
@@ -280,6 +291,20 @@ export default function App() {
   }
 
   // ---------- Tidiga returer ----------
+
+  // Vänta på att auth-status är klar
+  if (authLoading) {
+    return (
+      <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <p style={{ color: '#2d5016', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
+      </div>
+    );
+  }
+
+  // Ej inloggad – visa magic link-skärmen
+  if (!user) return <AuthScreen onSignIn={signInWithMagicLink} />;
+
+  // Inloggad men inget rum valt ännu
   if (!session) return <RoomSetup onStart={handleStart} />;
 
   if (loading) {
@@ -330,8 +355,8 @@ export default function App() {
           )}
           <button
             style={{ ...s.activityBtn, fontSize: '14px' }}
-            onClick={() => { localStorage.removeItem(SESSION_KEY); setSession(null); }}
-            title="Byt läge"
+            onClick={handleSignOut}
+            title="Logga ut"
           >↩</button>
         </div>
       </header>

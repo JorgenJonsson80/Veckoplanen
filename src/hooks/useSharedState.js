@@ -1,15 +1,6 @@
 // Hook för Supabase-synkronisering i realtid
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase-konfiguration – ersätt med dina egna värden
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-let supabase = null;
-if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
+import { supabase } from '../lib/supabase';
 
 // Veckodag-ordning
 const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag'];
@@ -53,7 +44,7 @@ export function useSharedState(roomCode, userName, defaultCategories) {
 
     async function initRoom() {
       try {
-        // Sök efter befintligt rum
+        // Sök efter befintligt rum med den angivna koden
         const { data, error: fetchError } = await supabase
           .from('rooms')
           .select('*')
@@ -67,6 +58,8 @@ export function useSharedState(roomCode, userName, defaultCategories) {
         if (data) {
           roomIdRef.current = data.id;
           setState(data.state);
+          // Registrera användaren som medlem om hen inte redan är det
+          await ensureMembership(data.id);
         } else {
           // Skapa nytt rum
           const newState = defaultState(defaultCategories);
@@ -78,6 +71,8 @@ export function useSharedState(roomCode, userName, defaultCategories) {
           if (createError) throw createError;
           roomIdRef.current = created.id;
           setState(newState);
+          // Lägg till skaparen som första medlem
+          await ensureMembership(created.id);
         }
         setLoading(false);
         subscribeToRoom(roomCode);
@@ -95,6 +90,19 @@ export function useSharedState(roomCode, userName, defaultCategories) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode]);
+
+  // Lägg till den inloggade användaren i room_members (ignorera om redan finns)
+  async function ensureMembership(roomId) {
+    if (!supabase) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase
+      .from('room_members')
+      .upsert(
+        { room_id: roomId, user_id: user.id, display_name: userName },
+        { onConflict: 'room_id,user_id', ignoreDuplicates: true }
+      );
+  }
 
   // Prenumerera på realtidsuppdateringar
   function subscribeToRoom(code) {
@@ -125,7 +133,7 @@ export function useSharedState(roomCode, userName, defaultCategories) {
           action: activityEntry,
           time: new Date().toISOString(),
         };
-        next.activityLog = [entry, ...log].slice(0, 50); // Behåll de 50 senaste
+        next.activityLog = [entry, ...log].slice(0, 50);
       }
 
       // Synka till Supabase eller localStorage
