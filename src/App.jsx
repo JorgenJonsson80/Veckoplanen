@@ -240,6 +240,11 @@ export default function App() {
     signOut();
   }
 
+  function handleSwitchRoom() {
+    localStorage.removeItem(SESSION_KEY);
+    setSession(null);
+  }
+
   // Alla recept (inbyggda + anpassade)
   const allRecipes = useMemo(() => {
     if (!state) return DEFAULT_RECIPES;
@@ -527,6 +532,11 @@ export default function App() {
           {session.roomCode && (
             <button style={s.activityBtn} onClick={() => setShowActivity(true)} title="Aktivitetsfeed">📋</button>
           )}
+          <button
+            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }}
+            onClick={handleSwitchRoom}
+            title="Byt rum eller läge"
+          >⇄ Byt rum</button>
           <button
             style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }}
             onClick={handleSignOut}
