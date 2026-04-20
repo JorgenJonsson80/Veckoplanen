@@ -1,0 +1,161 @@
+import { useState } from 'react';
+import { WEEKDAYS } from '../hooks/useSharedState';
+
+export default function MatsedelTab({
+  meals, allRecipes, savedMeals, currentWeek,
+  onSetMeal, onSaveMealPlan, onLoadMealPlan, onEditRecipe,
+}) {
+  const [autocomplete, setAutocomplete] = useState({ day: null, results: [] });
+  const [openMealKey, setOpenMealKey] = useState(null);
+  const hasMeal = WEEKDAYS.some(d => meals[d]);
+
+  function handleMealInput(day, value) {
+    onSetMeal(day, value);
+    if (value.length > 0) {
+      const results = allRecipes
+        .filter(r => r.name.toLowerCase().startsWith(value.toLowerCase()))
+        .map(r => r.name)
+        .slice(0, 5);
+      setAutocomplete({ day, results });
+    } else {
+      setAutocomplete({ day: null, results: [] });
+    }
+  }
+
+  function selectAutocomplete(day, name) {
+    onSetMeal(day, name);
+    setAutocomplete({ day: null, results: [] });
+  }
+
+  function handleLoadMealPlan(weekKey) {
+    onLoadMealPlan(weekKey);
+    setOpenMealKey(null);
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', margin: '0 0 16px', fontSize: '22px' }}>
+        Veckans matsedel
+      </h2>
+
+      {WEEKDAYS.map(day => {
+        const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+        const mealValue = meals[day] || '';
+        const isOpen = autocomplete.day === day && autocomplete.results.length > 0;
+        const recipe = allRecipes.find(r => r.name.toLowerCase() === mealValue.toLowerCase());
+
+        return (
+          <div key={day} style={{ background: '#fff', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ minWidth: '80px', fontWeight: '700', color: '#2d5016', fontSize: '14px' }}>{dayLabel}</span>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  value={mealValue}
+                  onChange={e => handleMealInput(day, e.target.value)}
+                  onBlur={() => setTimeout(() => setAutocomplete({ day: null, results: [] }), 150)}
+                  placeholder="Välj rätt..."
+                />
+                {isOpen && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    {autocomplete.results.map(name => (
+                      <div
+                        key={name}
+                        style={{ padding: '10px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid #f0f7ef' }}
+                        onMouseDown={() => selectAutocomplete(day, name)}
+                      >{name}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {mealValue && (
+                <button
+                  style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#6b8f5e', padding: '4px' }}
+                  onClick={() => onEditRecipe(recipe || { id: null, name: mealValue, ingredients: [] })}
+                  title="Redigera recept"
+                >✏️</button>
+              )}
+            </div>
+            {recipe && (
+              <div style={{ marginTop: '8px', paddingLeft: '90px' }}>
+                <div style={{ fontSize: '12px', color: '#888', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {(recipe.ingredients || []).slice(0, 5).map((ing, i) => (
+                    <span key={i} style={{ background: '#f0f7ef', borderRadius: '4px', padding: '1px 6px' }}>{ing.name}</span>
+                  ))}
+                  {(recipe.ingredients || []).length > 5 && (
+                    <span style={{ color: '#aaa' }}>+{recipe.ingredients.length - 5} till</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <button
+        style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: '#f0f7ef', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: '#2d5016', fontSize: '15px', cursor: 'pointer' }}
+        onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}
+      >
+        + Skapa nytt recept
+      </button>
+
+      <button
+        onClick={onSaveMealPlan}
+        disabled={!hasMeal}
+        style={{
+          display: 'block', width: '100%', padding: '12px', marginTop: '8px',
+          background: hasMeal ? '#2d5016' : '#e0e0e0',
+          border: 'none', borderRadius: '10px', color: '#fff',
+          fontSize: '15px', cursor: hasMeal ? 'pointer' : 'default',
+          fontFamily: 'Georgia, serif',
+        }}
+      >
+        💾 Spara matsedeln ({currentWeek})
+      </button>
+
+      {Object.keys(savedMeals).length > 0 && (
+        <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+          <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: '0 0 12px' }}>
+            📅 Sparade matsedlar
+          </h3>
+          {Object.entries(savedMeals)
+            .sort(([a], [b]) => b.localeCompare(a))
+            .map(([week, data]) => {
+              const isOpen = openMealKey === week;
+              const count = WEEKDAYS.filter(d => data.meals?.[d]).length;
+              return (
+                <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+                  <button
+                    onClick={() => setOpenMealKey(isOpen ? null : week)}
+                    style={{ width: '100%', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}
+                  >
+                    <span style={{ fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{week}</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', color: '#6b8f5e' }}>{count} rätter</span>
+                      <span style={{ color: '#6b8f5e' }}>{isOpen ? '▲' : '▼'}</span>
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div style={{ padding: '4px 14px 14px', background: '#fafff9' }}>
+                      {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
+                        <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid #f0f7ef', fontSize: '14px' }}>
+                          <span style={{ minWidth: '72px', color: '#888', textTransform: 'capitalize' }}>{d}</span>
+                          <span style={{ color: '#222' }}>{data.meals[d]}</span>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => handleLoadMealPlan(week)}
+                        style={{ marginTop: '12px', padding: '8px 16px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+                      >
+                        ↩ Ladda den här matsedeln
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      )}
+    </div>
+  );
+}
