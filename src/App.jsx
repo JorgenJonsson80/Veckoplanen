@@ -208,6 +208,11 @@ export default function App() {
     updateState(prev => ({ ...prev, extraItems: (prev.extraItems || []).filter(i => i.id !== id) }));
   }
 
+  function clearChecked() {
+    if (!window.confirm('Rensa alla ikryssade varor? Listan är redo för nästa vecka.')) return;
+    updateState(prev => ({ ...prev, checkedItems: {} }), 'rensade handlingslistan');
+  }
+
   // ---------- Recept ----------
   function saveRecipe(updatedRecipe) {
     const isBuiltin = DEFAULT_RECIPES.some(r => r.id === updatedRecipe.id);
@@ -445,6 +450,7 @@ export default function App() {
             onEditStore={setEditingStore}
             onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: categories.map(c => c.id) })}
             onSaveWeeklyList={saveWeeklyList}
+            onClearChecked={clearChecked}
           />
         )}
         {activeTab === 'kategorier' && (

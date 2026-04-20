@@ -5,7 +5,7 @@ export default function HandlingslistaTab({
   checkedItems, totalItems, checkedCount, likelyEmptyItems,
   savedLists, history, categories, currentWeek,
   onToggleItem, onRemoveExtraItem, onAddExtraItem,
-  onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList,
+  onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
 }) {
   const [newExtraItem, setNewExtraItem] = useState('');
   const [newExtraCat, setNewExtraCat] = useState('');
@@ -103,6 +103,14 @@ export default function HandlingslistaTab({
           <div style={{ height: '8px', background: '#c8e6c9', borderRadius: '4px', overflow: 'hidden' }}>
             <div style={{ height: '100%', background: '#2d5016', borderRadius: '4px', width: `${(checkedCount / totalItems) * 100}%`, transition: 'width 0.3s' }} />
           </div>
+          {checkedCount > 0 && (
+            <button
+              onClick={onClearChecked}
+              style={{ marginTop: '10px', width: '100%', padding: '10px', background: checkedCount === totalItems ? '#2d5016' : '#f5f5f5', color: checkedCount === totalItems ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}
+            >
+              {checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
+            </button>
+          )}
         </div>
       )}
 
