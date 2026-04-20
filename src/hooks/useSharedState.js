@@ -45,6 +45,7 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
   // loading=true bara när vi INTE har något cached att visa
   const [loading, setLoading] = useState(() => !roomCode || !readCache(roomCode));
   const [error, setError] = useState(null);
+  const [syncError, setSyncError] = useState(null);
   const [roomNotFound, setRoomNotFound] = useState(false);
   const channelRef = useRef(null);
   const roomIdRef = useRef(null);
@@ -173,8 +174,11 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
           .from('rooms')
           .update({ state: next, updated_at: new Date().toISOString() })
           .eq('id', roomIdRef.current)
-          .then(({ error }) => {
-            if (error) console.error('Supabase-uppdateringsfel:', error);
+          .then(({ error: writeError }) => {
+            if (writeError) {
+              console.error('Supabase-uppdateringsfel:', writeError);
+              setSyncError(writeError.message || 'Okänt fel');
+            }
           });
       }
 
@@ -196,7 +200,7 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
     }
   }
 
-  return { state, loading, error, roomNotFound, updateState, deleteRoom };
+  return { state, loading, error, syncError, clearSyncError: () => setSyncError(null), roomNotFound, updateState, deleteRoom };
 }
 
 export { WEEKDAYS };

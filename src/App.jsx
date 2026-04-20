@@ -107,7 +107,7 @@ export default function App() {
   const [editingStore, setEditingStore] = useState(null);
 
   const { history, recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
-  const { state, loading, error, roomNotFound, updateState, deleteRoom } = useSharedState(
+  const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
     DEFAULT_CATEGORIES,
@@ -384,9 +384,16 @@ export default function App() {
         </div>
       </header>
 
-      {error && (
+      {(error || syncError) && (
         <div style={{ background: '#fff3e0', borderBottom: '1px solid #ffcc02', padding: '8px 16px', fontSize: '13px', color: '#e65100', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          ⚠️ Kunde inte synka med servern – ändringar sparas lokalt tills uppkopplingen är tillbaka.
+          <span style={{ flex: 1 }}>⚠️ Kunde inte synka med servern – ändringar sparas lokalt.</span>
+          {syncError && (
+            <button
+              onClick={clearSyncError}
+              style={{ background: 'none', border: 'none', color: '#e65100', cursor: 'pointer', fontSize: '16px', padding: '0 4px', lineHeight: 1 }}
+              title="Stäng"
+            >×</button>
+          )}
         </div>
       )}
 
