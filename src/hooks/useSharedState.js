@@ -140,8 +140,12 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
   // Prenumerera på realtidsändringar från Supabase
   function subscribeToRoom(code) {
     if (!supabase) return;
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
     const channel = supabase
-      .channel(`room_${code}`)
+      .channel(`room_${code}_${Date.now()}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },
