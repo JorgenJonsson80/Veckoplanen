@@ -45,17 +45,20 @@ function getISOWeek(date = new Date()) {
 }
 
 const SESSION_KEY = 'veckoplanen_session';
-const RECENT_ROOMS_KEY = 'veckoplanen_recent_rooms';
+function recentRoomsKey(userId) {
+  return `veckoplanen_recent_rooms_${userId}`;
+}
 
-function getRecentRooms() {
-  try { return JSON.parse(localStorage.getItem(RECENT_ROOMS_KEY) || '[]'); }
+function getRecentRooms(userId) {
+  try { return JSON.parse(localStorage.getItem(recentRoomsKey(userId)) || '[]'); }
   catch { return []; }
 }
 
-function saveRecentRoom({ name, roomCode, mode }) {
-  const rooms = getRecentRooms().filter(r => !(r.roomCode === roomCode && r.mode === mode));
+function saveRecentRoom(userId, { name, roomCode, mode }) {
+  const key = recentRoomsKey(userId);
+  const rooms = getRecentRooms(userId).filter(r => !(r.roomCode === roomCode && r.mode === mode));
   rooms.unshift({ name, roomCode, mode, lastUsed: Date.now() });
-  localStorage.setItem(RECENT_ROOMS_KEY, JSON.stringify(rooms.slice(0, 5)));
+  localStorage.setItem(key, JSON.stringify(rooms.slice(0, 5)));
 }
 
 // ---------- Stilar ----------
@@ -113,7 +116,7 @@ export default function App() {
   // ---------- Session ----------
   function handleStart(sess) {
     localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
-    saveRecentRoom(sess);
+    saveRecentRoom(user.id, sess);
     setSession(sess);
   }
 
@@ -132,8 +135,8 @@ export default function App() {
     if (!window.confirm(`Radera rummet ${session.roomCode} och all dess data? Det går inte att ångra.`)) return;
     const { error: delErr } = await deleteRoom();
     if (delErr) { alert('Kunde inte radera rummet: ' + delErr.message); return; }
-    const updated = getRecentRooms().filter(r => r.roomCode !== session.roomCode);
-    localStorage.setItem(RECENT_ROOMS_KEY, JSON.stringify(updated));
+    const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode);
+    localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated));
     localStorage.removeItem(SESSION_KEY);
     setSession(null);
   }
@@ -270,7 +273,7 @@ export default function App() {
     />
   );
 
-  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms()} />;
+  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms(user.id)} />;
 
   if (loading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
