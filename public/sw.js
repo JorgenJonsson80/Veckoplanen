@@ -1,5 +1,5 @@
 // Service Worker för Veckoplanen – cache-first för app-skalet
-const CACHE = 'veckoplanen-v1';
+const CACHE = 'veckoplanen-__BUILD__';
 
 // Filer som alltid ska cachas vid installation
 const PRECACHE = ['/', '/index.html', '/manifest.json', '/icon.svg'];
