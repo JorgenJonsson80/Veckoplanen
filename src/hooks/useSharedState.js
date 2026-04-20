@@ -35,7 +35,7 @@ function defaultState(categories) {
   };
 }
 
-export function useSharedState(roomCode, userName, defaultCategories, userId) {
+export function useSharedState(roomCode, userName, defaultCategories, userId, shouldCreate = true) {
   // Initialisera direkt från cache så ingenting försvinner vid omladdning
   const [state, setState] = useState(() => {
     if (!roomCode) return null;
@@ -45,6 +45,7 @@ export function useSharedState(roomCode, userName, defaultCategories, userId) {
   // loading=true bara när vi INTE har något cached att visa
   const [loading, setLoading] = useState(() => !roomCode || !readCache(roomCode));
   const [error, setError] = useState(null);
+  const [roomNotFound, setRoomNotFound] = useState(false);
   const channelRef = useRef(null);
   const roomIdRef = useRef(null);
 
@@ -83,8 +84,8 @@ export function useSharedState(roomCode, userName, defaultCategories, userId) {
           roomIdRef.current = data.id;
           applyState(data.state);
           ensureMembership(data.id);
-        } else {
-          // Rum finns inte – skapa det
+        } else if (shouldCreate) {
+          // Rum finns inte – skapa det (bara i 'create'-läge)
           const fresh = readCache(roomCode) || defaultState(defaultCategories);
           const { data: created, error: createError } = await supabase
             .from('rooms')
@@ -95,6 +96,9 @@ export function useSharedState(roomCode, userName, defaultCategories, userId) {
           roomIdRef.current = created.id;
           applyState(fresh);
           ensureMembership(created.id);
+        } else {
+          // Rum hittades inte och vi ska inte skapa det (t.ex. join med ogiltig kod)
+          setRoomNotFound(true);
         }
       } catch (err) {
         // Supabase misslyckades – visa cache om vi har den, annars default
@@ -192,7 +196,7 @@ export function useSharedState(roomCode, userName, defaultCategories, userId) {
     }
   }
 
-  return { state, loading, error, updateState, deleteRoom };
+  return { state, loading, error, roomNotFound, updateState, deleteRoom };
 }
 
 export { WEEKDAYS };

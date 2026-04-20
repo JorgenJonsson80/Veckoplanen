@@ -107,11 +107,12 @@ export default function App() {
   const [editingStore, setEditingStore] = useState(null);
 
   const { history, recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
-  const { state, loading, error, updateState, deleteRoom } = useSharedState(
+  const { state, loading, error, roomNotFound, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
     DEFAULT_CATEGORIES,
-    user?.id ?? null
+    user?.id ?? null,
+    session?.mode !== 'join'  // 'join' ska aldrig skapa rum – bara hitta befintliga
   );
 
   // ---------- Session ----------
@@ -275,6 +276,29 @@ export default function App() {
   );
 
   if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms(user.id)} />;
+
+  if (roomNotFound) return (
+    <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <div style={{ textAlign: 'center', padding: '32px 24px', maxWidth: '340px' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚪</div>
+        <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', margin: '0 0 8px' }}>Rummet hittades inte</h2>
+        <p style={{ color: '#6b8f5e', marginBottom: '24px' }}>
+          Rummet <strong>{session.roomCode}</strong> verkar inte längre finnas. Det kan ha raderats av den som skapade det.
+        </p>
+        <button
+          style={{ padding: '12px 24px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+          onClick={() => {
+            localStorage.removeItem(SESSION_KEY);
+            const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode);
+            localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated));
+            setSession(null);
+          }}
+        >
+          Välj ett annat rum
+        </button>
+      </div>
+    </div>
+  );
 
   if (loading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
