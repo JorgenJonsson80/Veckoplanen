@@ -2,13 +2,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 chars, no ambiguous 0/O/1/I/L
+const CODE_LENGTH = 8;
+
 function generateRoomCode() {
-  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digits = '23456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * letters.length)];
-  code += digits[Math.floor(Math.random() * digits.length)];
-  return code;
+  const buf = new Uint8Array(CODE_LENGTH);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, b => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
 }
 
 // Kontrollera mot Supabase att koden inte redan används
@@ -65,7 +65,7 @@ const styles = {
   checking: { color: '#6b8f5e', fontSize: '13px', marginBottom: '8px' },
 };
 
-export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [] }) {
+export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], recentRoomsKey = null }) {
   // Om en inbjudningslänk användes – välj join-läget direkt
   const [mode, setMode] = useState(initialJoinCode ? 'join' : null);
   const [recent, setRecent] = useState(recentRooms);
@@ -73,7 +73,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [] }
   function removeRecent(idx) {
     const updated = recent.filter((_, i) => i !== idx);
     setRecent(updated);
-    localStorage.setItem('veckoplanen_recent_rooms', JSON.stringify(updated));
+    if (recentRoomsKey) localStorage.setItem(recentRoomsKey, JSON.stringify(updated));
   }
   const [name, setName] = useState('');
   const [joinCode, setJoinCode] = useState(initialJoinCode || '');
@@ -104,7 +104,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [] }
     if (!name.trim()) { setErr('Ange ditt namn.'); return; }
     if (mode === 'join') {
       const code = joinCode.trim().toUpperCase();
-      if (code.length !== 5) { setErr('Rumskoden måste vara 5 tecken.'); return; }
+      if (code.length !== CODE_LENGTH) { setErr(`Rumskoden måste vara ${CODE_LENGTH} tecken.`); return; }
       onStart({ name: name.trim(), roomCode: code, mode });
     } else if (mode === 'create') {
       if (!generatedCode) { setErr('Väntar på rumskod...'); return; }
@@ -197,8 +197,8 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [] }
                   style={styles.input}
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                  placeholder="t.ex. ERIK7"
-                  maxLength={5}
+                  placeholder="t.ex. ABCD2345"
+                  maxLength={CODE_LENGTH}
                   onKeyDown={e => e.key === 'Enter' && handleStart()}
                 />
               </>

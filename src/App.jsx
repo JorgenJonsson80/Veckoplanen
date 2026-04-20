@@ -93,7 +93,7 @@ export default function App() {
   const { user, loading: authLoading, isRecovery, signInWithPassword, signUp, signInWithMagicLink, resetPassword, updatePassword, signOut } = useAuth();
 
   const pendingJoinCode = (() => {
-    const match = window.location.pathname.match(/^\/join\/([A-Z0-9]{5})$/i);
+    const match = window.location.pathname.match(/^\/join\/([A-Z0-9]{8})$/i);
     return match ? match[1].toUpperCase() : null;
   })();
 
@@ -275,7 +275,7 @@ export default function App() {
     />
   );
 
-  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms(user.id)} />;
+  if (!session) return <RoomSetup onStart={handleStart} initialJoinCode={pendingJoinCode} recentRooms={getRecentRooms(user.id)} recentRoomsKey={recentRoomsKey(user.id)} />;
 
   if (roomNotFound) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
