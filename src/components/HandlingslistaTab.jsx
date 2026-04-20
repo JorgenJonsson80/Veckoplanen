@@ -4,14 +4,19 @@ export default function HandlingslistaTab({
   stores, activeStoreId, orderedCategories, allItemsGrouped,
   checkedItems, totalItems, checkedCount, likelyEmptyItems,
   savedLists, history, categories, currentWeek,
+  budget, weeklySpend,
   onToggleItem, onRemoveExtraItem, onAddExtraItem,
   onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
+  onSetBudget, onSetWeeklySpend,
 }) {
   const [newExtraItem, setNewExtraItem] = useState('');
   const [newExtraCat, setNewExtraCat] = useState('');
   const [extraSuggestions, setExtraSuggestions] = useState([]);
   const [openListKey, setOpenListKey] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showBudgetEdit, setShowBudgetEdit] = useState(false);
+  const [budgetInput, setBudgetInput] = useState('');
+  const [spendInput, setSpendInput] = useState('');
 
   const handleShare = useCallback(() => {
     const lines = [`🛒 Handlingslista ${currentWeek}\n`];
@@ -138,6 +143,85 @@ export default function HandlingslistaTab({
               {checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
             </button>
           )}
+        </div>
+      )}
+
+      {/* Budget-widget (helt valfri) */}
+      {!showBudgetEdit && !budget && (
+        <button
+          onClick={() => { setShowBudgetEdit(true); setBudgetInput(''); setSpendInput(''); }}
+          style={{ background: 'none', border: 'none', color: '#aaa', fontSize: '12px', cursor: 'pointer', padding: '0 0 12px', display: 'block' }}
+        >
+          + Lägg till budget (valfritt)
+        </button>
+      )}
+
+      {!showBudgetEdit && budget != null && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', background: '#fff', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <span style={{ fontSize: '16px' }}>💰</span>
+          <div style={{ flex: 1 }}>
+            {weeklySpend != null ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                  <span style={{ color: weeklySpend > budget ? '#c62828' : '#2d5016', fontWeight: '700' }}>
+                    {weeklySpend} kr
+                  </span>
+                  <span style={{ color: '#aaa' }}>av {budget} kr</span>
+                </div>
+                <div style={{ height: '5px', background: '#e8f5e9', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '3px', width: `${Math.min((weeklySpend / budget) * 100, 100)}%`, background: weeklySpend > budget ? '#c62828' : '#2d5016', transition: 'width 0.3s' }} />
+                </div>
+              </>
+            ) : (
+              <span style={{ fontSize: '13px', color: '#6b8f5e' }}>Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
+            )}
+          </div>
+          <button
+            onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')); }}
+            style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
+          >✏️</button>
+        </div>
+      )}
+
+      {showBudgetEdit && (
+        <div style={{ background: '#fff', borderRadius: '10px', padding: '14px', marginBottom: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <p style={{ margin: '0 0 10px', fontWeight: '700', color: '#2d5016', fontSize: '14px' }}>💰 Budget (valfritt)</p>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Budgetmål (kr)</label>
+              <input
+                type="number" inputMode="numeric" placeholder="t.ex. 800"
+                value={budgetInput}
+                onChange={e => setBudgetInput(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Vad kostade det? (kr)</label>
+              <input
+                type="number" inputMode="numeric" placeholder="t.ex. 650"
+                value={spendInput}
+                onChange={e => setSpendInput(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => {
+                const b = budgetInput.trim() ? Number(budgetInput) : null;
+                const s = spendInput.trim() ? Number(spendInput) : null;
+                onSetBudget(b);
+                onSetWeeklySpend(s);
+                setShowBudgetEdit(false);
+              }}
+              style={{ flex: 1, padding: '9px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}
+            >Spara</button>
+            <button
+              onClick={() => setShowBudgetEdit(false)}
+              style={{ padding: '9px 14px', background: '#f5f5f5', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', color: '#888' }}
+            >Avbryt</button>
+          </div>
         </div>
       )}
 

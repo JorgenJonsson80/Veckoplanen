@@ -222,7 +222,15 @@ export default function App() {
 
   function clearChecked() {
     if (!window.confirm('Rensa alla ikryssade varor? Listan är redo för nästa vecka.')) return;
-    updateState(prev => ({ ...prev, checkedItems: {} }), 'rensade handlingslistan');
+    updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan');
+  }
+
+  function setBudget(value) {
+    updateState(prev => ({ ...prev, budget: value }));
+  }
+
+  function setWeeklySpend(value) {
+    updateState(prev => ({ ...prev, weeklySpend: value }));
   }
 
   // ---------- Recept ----------
@@ -461,6 +469,10 @@ export default function App() {
             onSetActiveStore={setActiveStore}
             onEditStore={setEditingStore}
             onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: categories.map(c => c.id) })}
+            budget={state?.budget ?? null}
+            weeklySpend={state?.weeklySpend ?? null}
+            onSetBudget={setBudget}
+            onSetWeeklySpend={setWeeklySpend}
             onSaveWeeklyList={saveWeeklyList}
             onClearChecked={clearChecked}
           />
