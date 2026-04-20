@@ -35,7 +35,8 @@ self.addEventListener('fetch', e => {
     caches.match(request).then(cached => {
       const networkFetch = fetch(request).then(response => {
         if (response.ok) {
-          caches.open(CACHE).then(cache => cache.put(request, response.clone()));
+          const clone = response.clone(); // klona synkront innan body konsumeras
+          caches.open(CACHE).then(cache => cache.put(request, clone));
         }
         return response;
       });
