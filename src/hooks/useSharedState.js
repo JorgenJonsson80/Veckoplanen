@@ -166,6 +166,12 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
         ].slice(0, 50);
       }
 
+      // Avvisa om state blivit orimligt stor (skydd mot datamissbruk)
+      if (JSON.stringify(next).length > 500_000) {
+        setSyncError('Rummet har för mycket data. Ta bort gamla recept eller varor.');
+        return prev;
+      }
+
       // Spara lokalt direkt (nollställs aldrig vid omladdning)
       if (roomCode) writeCache(roomCode, next);
 

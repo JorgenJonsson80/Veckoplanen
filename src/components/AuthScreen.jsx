@@ -62,7 +62,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
   async function handleLogin() {
     setErr('');
     if (!email.includes('@')) { setErr('Ange en giltig e-postadress.'); return; }
-    if (password.length < 6) { setErr('Lösenordet måste vara minst 6 tecken.'); return; }
+    if (password.length < 8) { setErr('Lösenordet måste vara minst 8 tecken.'); return; }
     setLoading(true);
     const { error } = await onSignInWithPassword(email, password);
     setLoading(false);
@@ -72,7 +72,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
   async function handleRegister() {
     setErr('');
     if (!email.includes('@')) { setErr('Ange en giltig e-postadress.'); return; }
-    if (password.length < 6) { setErr('Lösenordet måste vara minst 6 tecken.'); return; }
+    if (password.length < 8) { setErr('Lösenordet måste vara minst 8 tecken.'); return; }
     setLoading(true);
     const { error } = await onSignUp(email, password);
     setLoading(false);
@@ -166,7 +166,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             <label style={s.label}>E-postadress</label>
             <input style={s.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="din@epost.se" autoFocus />
             <label style={s.label}>Lösenord</label>
-            <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minst 6 tecken" onKeyDown={e => e.key === 'Enter' && handleRegister()} />
+            <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minst 8 tecken" onKeyDown={e => e.key === 'Enter' && handleRegister()} />
             {err && <p style={s.err}>{err}</p>}
             <button style={s.primaryBtn} onClick={handleRegister} disabled={loading}>
               {loading ? 'Skapar konto...' : 'Skapa konto'}
