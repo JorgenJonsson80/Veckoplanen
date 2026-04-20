@@ -110,7 +110,8 @@ export default function App() {
   const { state, loading, error, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
-    DEFAULT_CATEGORIES
+    DEFAULT_CATEGORIES,
+    user?.id ?? null
   );
 
   // ---------- Session ----------

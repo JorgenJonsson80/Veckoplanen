@@ -35,7 +35,7 @@ function defaultState(categories) {
   };
 }
 
-export function useSharedState(roomCode, userName, defaultCategories) {
+export function useSharedState(roomCode, userName, defaultCategories, userId) {
   // Initialisera direkt från cache så ingenting försvinner vid omladdning
   const [state, setState] = useState(() => {
     if (!roomCode) return null;
@@ -88,7 +88,7 @@ export function useSharedState(roomCode, userName, defaultCategories) {
           const fresh = readCache(roomCode) || defaultState(defaultCategories);
           const { data: created, error: createError } = await supabase
             .from('rooms')
-            .insert({ code: roomCode, state: fresh })
+            .insert({ code: roomCode, state: fresh, created_by: userId ?? null })
             .select()
             .single();
           if (createError) throw createError;
