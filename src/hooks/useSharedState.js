@@ -32,6 +32,7 @@ function defaultState(categories) {
     recipeOverrides: {},
     hiddenBuiltin: [],
     activityLog: [],
+    purchaseHistory: {},
   };
 }
 

@@ -10,7 +10,6 @@ import MatsedelTab from './components/MatsedelTab';
 import HandlingslistaTab from './components/HandlingslistaTab';
 import KategorierTab from './components/KategorierTab';
 import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
-import { usePurchaseHistory } from './hooks/usePurchaseHistory';
 import { useAuth } from './hooks/useAuth';
 import { DEFAULT_CATEGORIES } from './constants/categories';
 import { DEFAULT_RECIPES } from './constants/recipes';
@@ -106,7 +105,6 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editingStore, setEditingStore] = useState(null);
 
-  const { history, recordPurchase, removePurchase, isLikelyEmpty } = usePurchaseHistory();
   const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
     session?.name || 'Användare',
@@ -181,12 +179,26 @@ export default function App() {
   // ---------- Handlingslista ----------
   function toggleItem(itemName, category) {
     const isChecked = !!(state?.checkedItems?.[itemName]);
-    updateState(
-      prev => ({ ...prev, checkedItems: { ...prev.checkedItems, [itemName]: !isChecked } }),
-      isChecked ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`
-    );
-    if (!isChecked) recordPurchase(itemName, category);
-    else removePurchase(itemName);
+    updateState(prev => {
+      const next = { ...prev, checkedItems: { ...prev.checkedItems, [itemName]: !isChecked } };
+      const hist = prev.purchaseHistory || {};
+      if (!isChecked) {
+        const existing = hist[itemName] || { count: 0 };
+        next.purchaseHistory = { ...hist, [itemName]: { lastBought: new Date().toISOString(), count: existing.count + 1, cat: category } };
+      } else {
+        const existing = hist[itemName];
+        if (existing) {
+          next.purchaseHistory = { ...hist, [itemName]: { ...existing, count: Math.max(0, existing.count - 1), lastBought: existing.count <= 1 ? null : existing.lastBought } };
+        }
+      }
+      return next;
+    }, isChecked ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`);
+  }
+
+  function isLikelyEmpty(itemName, shelfLifeDays) {
+    const record = (state?.purchaseHistory || {})[itemName];
+    if (!record?.lastBought) return false;
+    return (Date.now() - new Date(record.lastBought).getTime()) / 86400000 > shelfLifeDays;
   }
 
   function saveWeeklyList() {
@@ -440,7 +452,7 @@ export default function App() {
             checkedCount={checkedCount}
             likelyEmptyItems={likelyEmptyItems}
             savedLists={savedLists}
-            history={history}
+            history={state?.purchaseHistory || {}}
             categories={categories}
             currentWeek={currentWeek}
             onToggleItem={toggleItem}
