@@ -38,6 +38,8 @@ export default function HandlingslistaTab({
     }
   }, [currentWeek, orderedCategories, allItemsGrouped, checkedItems]);
 
+  const allItemNames = Object.values(allItemsGrouped).flat().map(i => i.name.toLowerCase());
+
   function handleExtraItemInput(value) {
     setNewExtraItem(value);
     if (value.length >= 1) {
@@ -50,6 +52,9 @@ export default function HandlingslistaTab({
       setExtraSuggestions([]);
     }
   }
+
+  const isDuplicate = newExtraItem.trim().length > 0 &&
+    allItemNames.includes(newExtraItem.trim().toLowerCase());
 
   function handleAddExtraItem() {
     if (!newExtraItem.trim()) return;
@@ -288,13 +293,18 @@ export default function HandlingslistaTab({
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <input
-              style={{ width: '100%', padding: '9px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 10px', border: `1.5px solid ${isDuplicate ? '#ffb300' : '#c8e6c9'}`, borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
               value={newExtraItem}
               onChange={e => handleExtraItemInput(e.target.value)}
               onBlur={() => setTimeout(() => setExtraSuggestions([]), 150)}
               placeholder="Varunamn"
               onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()}
             />
+            {isDuplicate && (
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#f57f17' }}>
+                ⚠️ Finns redan i listan
+              </p>
+            )}
             {extraSuggestions.length > 0 && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 {extraSuggestions.map(name => (
