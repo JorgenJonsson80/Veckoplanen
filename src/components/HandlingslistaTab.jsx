@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export default function HandlingslistaTab({
   stores, activeStoreId, orderedCategories, allItemsGrouped,
@@ -11,6 +11,27 @@ export default function HandlingslistaTab({
   const [newExtraCat, setNewExtraCat] = useState('');
   const [extraSuggestions, setExtraSuggestions] = useState([]);
   const [openListKey, setOpenListKey] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(() => {
+    const lines = [`🛒 Handlingslista ${currentWeek}\n`];
+    orderedCategories.forEach(cat => {
+      const items = (allItemsGrouped[cat.id] || []).filter(i => !checkedItems[i.name]);
+      if (!items.length) return;
+      lines.push(`${cat.emoji} ${cat.name}`);
+      items.forEach(i => lines.push(`• ${i.amount ? i.amount + ' ' : ''}${i.name}`));
+      lines.push('');
+    });
+    const text = lines.join('\n').trim();
+    if (navigator.share) {
+      navigator.share({ title: 'Handlingslista', text });
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  }, [currentWeek, orderedCategories, allItemsGrouped, checkedItems]);
 
   function handleExtraItemInput(value) {
     setNewExtraItem(value);
@@ -92,6 +113,12 @@ export default function HandlingslistaTab({
             <span>{checkedCount} av {totalItems} plockat</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
+              <button
+                onClick={handleShare}
+                style={{ background: '#f0f7ef', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: '#2d5016', cursor: 'pointer' }}
+              >
+                {copied ? '✅ Kopierad!' : '📤 Dela'}
+              </button>
               <button
                 onClick={onSaveWeeklyList}
                 style={{ background: '#f0f7ef', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: '#2d5016', cursor: 'pointer' }}
