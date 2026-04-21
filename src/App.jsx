@@ -1,14 +1,15 @@
 // Veckoplanen – Huvudkomponent
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import RoomSetup from './components/RoomSetup';
 import AuthScreen from './components/AuthScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
-import RecipeEditor from './components/RecipeEditor';
-import ActivityDrawer from './components/ActivityDrawer';
-import StoreEditor from './components/StoreEditor';
-import MatsedelTab from './components/MatsedelTab';
-import HandlingslistaTab from './components/HandlingslistaTab';
-import KategorierTab from './components/KategorierTab';
+
+const RecipeEditor = lazy(() => import('./components/RecipeEditor'));
+const ActivityDrawer = lazy(() => import('./components/ActivityDrawer'));
+const StoreEditor = lazy(() => import('./components/StoreEditor'));
+const MatsedelTab = lazy(() => import('./components/MatsedelTab'));
+const HandlingslistaTab = lazy(() => import('./components/HandlingslistaTab'));
+const KategorierTab = lazy(() => import('./components/KategorierTab'));
 import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
 import { useAuth } from './hooks/useAuth';
 import { DEFAULT_CATEGORIES } from './constants/categories';
@@ -460,6 +461,7 @@ export default function App() {
       </nav>
 
       <main style={s.content}>
+        <Suspense fallback={<p style={{ color: '#6b8f5e', padding: '24px', textAlign: 'center' }}>Laddar...</p>}>
         {activeTab === 'matsedel' && (
           <MatsedelTab
             meals={meals}
@@ -511,31 +513,34 @@ export default function App() {
             onDeleteRoom={handleDeleteRoom}
           />
         )}
+        </Suspense>
       </main>
 
-      {editingRecipe && (
-        <RecipeEditor
-          recipe={editingRecipe}
-          categories={categories}
-          onSave={saveRecipe}
-          onClose={() => setEditingRecipe(null)}
-        />
-      )}
-      {showActivity && (
-        <ActivityDrawer
-          log={state?.activityLog || []}
-          onClose={() => setShowActivity(false)}
-        />
-      )}
-      {editingStore && (
-        <StoreEditor
-          store={editingStore}
-          allCategories={categories}
-          onSave={saveStore}
-          onDelete={deleteStore}
-          onClose={() => setEditingStore(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {editingRecipe && (
+          <RecipeEditor
+            recipe={editingRecipe}
+            categories={categories}
+            onSave={saveRecipe}
+            onClose={() => setEditingRecipe(null)}
+          />
+        )}
+        {showActivity && (
+          <ActivityDrawer
+            log={state?.activityLog || []}
+            onClose={() => setShowActivity(false)}
+          />
+        )}
+        {editingStore && (
+          <StoreEditor
+            store={editingStore}
+            allCategories={categories}
+            onSave={saveStore}
+            onDelete={deleteStore}
+            onClose={() => setEditingStore(null)}
+          />
+        )}
+      </Suspense>
 
       {showWelcome && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
