@@ -73,6 +73,7 @@ export function useSharedState(
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
   const roomIdRef = useRef<string | null>(null)
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const writeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestStateRef = useRef<RoomState | null>(null)
   const userNameRef = useRef(userName)
   const defaultCategoriesRef = useRef(defaultCategories)
@@ -155,6 +156,7 @@ export function useSharedState(
       cancelled = true
       if (channelRef.current) supabase!.removeChannel(channelRef.current)
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
+      if (writeDebounceRef.current) clearTimeout(writeDebounceRef.current)
     }
   }, [roomCode])
 
@@ -204,7 +206,8 @@ export function useSharedState(
         ].slice(0, 50)
       }
 
-      if (JSON.stringify(next).length > 500_000) {
+      const serialized = JSON.stringify(next)
+      if (serialized.length > 500_000) {
         setSyncError('Rummet har för mycket data. Ta bort gamla recept eller varor.')
         return prev
       }
@@ -241,7 +244,11 @@ export function useSharedState(
             })
         }
 
-        attemptWrite(false)
+        if (writeDebounceRef.current) clearTimeout(writeDebounceRef.current)
+        writeDebounceRef.current = setTimeout(() => {
+          writeDebounceRef.current = null
+          attemptWrite(false)
+        }, 500)
       }
 
       return next
