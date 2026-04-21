@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { RoomStateSchema } from '../schemas'
 import type { RoomState, Category, UpdateStateFn } from '../types'
+
+function parseRoomState(raw: unknown): RoomState {
+  const result = RoomStateSchema.safeParse(raw)
+  if (result.success) return result.data as RoomState
+  console.warn('RoomState-validering misslyckades, använder rådata:', result.error.issues)
+  return raw as RoomState
+}
 
 const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
 
@@ -95,7 +103,7 @@ export function useSharedState(
 
         if (data) {
           roomIdRef.current = data.id as string
-          applyState(data.state as RoomState)
+          applyState(parseRoomState(data.state))
           ensureMembership(data.id as string)
         } else if (shouldCreate) {
           const fresh = readCache(roomCode!) ?? defaultState(defaultCategories)
@@ -156,7 +164,7 @@ export function useSharedState(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },
         (payload) => {
-          applyState((payload.new as { state: RoomState }).state, code)
+          applyState(parseRoomState((payload.new as { state: unknown }).state), code)
         }
       )
       .subscribe()
