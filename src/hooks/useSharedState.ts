@@ -3,11 +3,11 @@ import { supabase } from '../lib/supabase'
 import { RoomStateSchema } from '../schemas'
 import type { RoomState, Category, UpdateStateFn } from '../types'
 
-function parseRoomState(raw: unknown): RoomState {
+function parseRoomState(raw: unknown): RoomState | null {
   const result = RoomStateSchema.safeParse(raw)
   if (result.success) return result.data as RoomState
-  console.warn('RoomState-validering misslyckades, använder rådata:', result.error.issues)
-  return raw as RoomState
+  console.warn('RoomState-validering misslyckades:', result.error.issues)
+  return null
 }
 
 const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
@@ -19,7 +19,8 @@ function cacheKey(roomCode: string): string {
 function readCache(roomCode: string): RoomState | null {
   try {
     const raw = localStorage.getItem(cacheKey(roomCode))
-    return raw ? (JSON.parse(raw) as RoomState) : null
+    if (!raw) return null
+    return parseRoomState(JSON.parse(raw))
   } catch { return null }
 }
 
@@ -103,7 +104,7 @@ export function useSharedState(
 
         if (data) {
           roomIdRef.current = data.id as string
-          applyState(parseRoomState(data.state))
+          applyState(parseRoomState(data.state) ?? defaultState(defaultCategories))
           ensureMembership(data.id as string)
         } else if (shouldCreate) {
           const fresh = readCache(roomCode!) ?? defaultState(defaultCategories)
@@ -164,7 +165,8 @@ export function useSharedState(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },
         (payload) => {
-          applyState(parseRoomState((payload.new as { state: unknown }).state), code)
+          const parsed = parseRoomState((payload.new as { state: unknown }).state)
+          if (parsed) applyState(parsed, code)
         }
       )
       .subscribe()
