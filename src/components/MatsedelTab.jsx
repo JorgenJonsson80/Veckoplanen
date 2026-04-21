@@ -72,10 +72,13 @@ export default function MatsedelTab({
               </div>
               {mealValue && (
                 <button
-                  style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#6b8f5e', padding: '4px' }}
+                  style={{ background: '#f0f7ef', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: '#2d5016', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
                   onClick={() => onEditRecipe(recipe || { id: null, name: mealValue, ingredients: [] })}
-                  title="Redigera recept"
-                >✏️</button>
+                  title="Öppna recepteditor"
+                >
+                  <span style={{ fontSize: '14px' }}>✏️</span>
+                  <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Recept</span>
+                </button>
               )}
             </div>
             {recipe && (

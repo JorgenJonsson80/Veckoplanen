@@ -148,15 +148,18 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
 
         <div style={{ marginBottom: '20px' }}>
           {[
-            { key: 'solo', label: '👤 Eget (bara för mig)' },
-            { key: 'create', label: '🏠 Skapa familjerum' },
-            { key: 'join', label: '🔑 Gå med i rum' },
-          ].map(({ key, label }) => (
+            { key: 'solo', label: '👤 Eget (bara för mig)', desc: 'Ingen delning – perfekt om du planerar ensam.' },
+            { key: 'create', label: '🏠 Skapa familjerum', desc: 'Dela med partner eller familj via en rumskod.' },
+            { key: 'join', label: '🔑 Gå med i rum', desc: 'Du har fått en kod av en familjemedlem.' },
+          ].map(({ key, label, desc }) => (
             <button
               key={key}
-              style={{ ...styles.modeBtn, ...(mode === key ? styles.modeBtnActive : {}) }}
+              style={{ ...styles.modeBtn, ...(mode === key ? styles.modeBtnActive : {}), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}
               onClick={() => { setMode(key); setErr(''); }}
-            >{label}</button>
+            >
+              <span>{label}</span>
+              <span style={{ fontSize: '12px', opacity: mode === key ? 0.8 : 0.55, fontWeight: '400' }}>{desc}</span>
+            </button>
           ))}
         </div>
 

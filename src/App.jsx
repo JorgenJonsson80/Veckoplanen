@@ -1,5 +1,5 @@
 // Veckoplanen – Huvudkomponent
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import RoomSetup from './components/RoomSetup';
 import AuthScreen from './components/AuthScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
@@ -104,6 +104,7 @@ export default function App() {
   const [showActivity, setShowActivity] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editingStore, setEditingStore] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('veckoplanen_onboarded'));
 
   const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
     session?.roomCode || null,
@@ -155,6 +156,33 @@ export default function App() {
   const categories = useMemo(() => state?.categories || DEFAULT_CATEGORIES, [state]);
   const ingredientMap = useMemo(() => collectIngredients(state?.meals, allRecipes), [state?.meals, allRecipes]);
 
+  // Computed in useEffect so Date.now() never runs during render
+  const [likelyEmptyItems, setLikelyEmptyItems] = useState([]);
+  useEffect(() => {
+    const now = Date.now();
+    const history = state?.purchaseHistory || {};
+    const items = [];
+    Object.entries(ingredientMap).forEach(([name, info]) => {
+      const cat = categories.find(c => c.id === (info.category || 'ovrigt'));
+      if (!cat) return;
+      const record = history[name];
+      if (!record?.lastBought) return;
+      if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
+        items.push({ name, amount: info.amount, isExtra: false });
+      }
+    });
+    (state?.extraItems || []).forEach(item => {
+      const cat = categories.find(c => c.id === (item.category || 'ovrigt'));
+      if (!cat) return;
+      const record = history[item.name];
+      if (!record?.lastBought) return;
+      if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
+        items.push({ name: item.name, amount: '', isExtra: true, id: item.id });
+      }
+    });
+    setLikelyEmptyItems(items);
+  }, [ingredientMap, categories, state?.purchaseHistory, state?.extraItems]);
+
   // ---------- Matsedel ----------
   function setMeal(day, value) {
     updateState(prev => ({ ...prev, meals: { ...prev.meals, [day]: value } }), `valde "${value || 'ingen rätt'}" till ${day}`);
@@ -192,12 +220,6 @@ export default function App() {
       }
       return next;
     }, isChecked ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`);
-  }
-
-  function isLikelyEmpty(itemName, shelfLifeDays) {
-    const record = (state?.purchaseHistory || {})[itemName];
-    if (!record?.lastBought) return false;
-    return (Date.now() - new Date(record.lastBought).getTime()) / 86400000 > shelfLifeDays;
   }
 
   function saveWeeklyList() {
@@ -362,11 +384,6 @@ export default function App() {
 
   const totalItems = Object.values(allItemsGrouped).flat().length;
   const checkedCount = Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length;
-  const likelyEmptyItems = Object.values(allItemsGrouped).flat().filter(item => {
-    const catId = ingredientMap[item.name]?.category || item.category;
-    const cat = categories.find(c => c.id === catId);
-    return cat && isLikelyEmpty(item.name, cat.shelfLife);
-  });
 
   // ---------- Render ----------
   return (
@@ -388,9 +405,12 @@ export default function App() {
                 if (navigator.share) navigator.share({ title: 'Gå med i Veckoplanen', url });
                 else navigator.clipboard.writeText(url);
               }}
-              title="Dela inbjudningslänk"
-              style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', color: '#fff', fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px', padding: '3px 10px', borderRadius: '12px' }}
-            >{session.roomCode}</button>
+              title="Bjud in familjen – tryck för att dela länk"
+              style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', color: '#fff', padding: '4px 10px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, gap: '1px' }}
+            >
+              <span style={{ fontSize: '9px', opacity: 0.75, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Bjud in</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px' }}>{session.roomCode}</span>
+            </button>
           )}
           {session.roomCode && (
             <button style={s.activityBtn} onClick={() => setShowActivity(true)} title="Aktivitetsfeed">📋</button>
@@ -509,6 +529,43 @@ export default function App() {
           onDelete={deleteStore}
           onClose={() => setEditingStore(null)}
         />
+      )}
+
+      {showWelcome && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', maxWidth: '360px', width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '22px', margin: '0 0 20px', textAlign: 'center' }}>Välkommen! 🌿</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '26px', lineHeight: 1 }}>🍽</span>
+                <div>
+                  <strong style={{ color: '#2d5016', fontSize: '15px' }}>Planera veckan</strong>
+                  <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Välj middagar för varje dag under Matsedel-fliken.</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '26px', lineHeight: 1 }}>🛒</span>
+                <div>
+                  <strong style={{ color: '#2d5016', fontSize: '15px' }}>Handla smidigt</strong>
+                  <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Ingredienserna samlas automatiskt i Handlingslistan.</p>
+                </div>
+              </div>
+              {session?.roomCode && (
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '26px', lineHeight: 1 }}>👨‍👩‍👧</span>
+                  <div>
+                    <strong style={{ color: '#2d5016', fontSize: '15px' }}>Dela med familjen</strong>
+                    <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Tryck på <strong>Bjud in</strong>-knappen i toppen för att bjuda in din partner med en länk.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              style={{ width: '100%', padding: '13px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+              onClick={() => { localStorage.setItem('veckoplanen_onboarded', '1'); setShowWelcome(false); }}
+            >Kom igång!</button>
+          </div>
+        </div>
       )}
     </div>
   );
