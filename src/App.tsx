@@ -214,25 +214,35 @@ export default function App() {
   const activeStore = stores.find(s => s.id === activeStoreId) ?? null
   const currentWeek = getISOWeek()
 
-  const orderedCategories: Category[] = activeStore
-    ? activeStore.categoryOrder.map(id => categories.find(c => c.id === id)).filter((c): c is Category => c !== undefined).concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
-    : categories
+  const orderedCategories = useMemo((): Category[] => {
+    if (!activeStore) return categories
+    return activeStore.categoryOrder
+      .map(id => categories.find(c => c.id === id))
+      .filter((c): c is Category => c !== undefined)
+      .concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
+  }, [activeStore, categories])
 
-  const allItemsGrouped: Record<string, ShoppingListItem[]> = {}
-  orderedCategories.forEach(cat => { allItemsGrouped[cat.id] = [] })
-  Object.entries(ingredientMap).forEach(([name, info]) => {
-    const catId = info.category || 'ovrigt'
-    if (!allItemsGrouped[catId]) allItemsGrouped[catId] = []
-    allItemsGrouped[catId].push({ name, amount: info.amount, isExtra: false })
-  })
-  extraItems.forEach(item => {
-    const catId = item.category || 'ovrigt'
-    if (!allItemsGrouped[catId]) allItemsGrouped[catId] = []
-    allItemsGrouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
-  })
+  const allItemsGrouped = useMemo((): Record<string, ShoppingListItem[]> => {
+    const grouped: Record<string, ShoppingListItem[]> = {}
+    orderedCategories.forEach(cat => { grouped[cat.id] = [] })
+    Object.entries(ingredientMap).forEach(([name, info]) => {
+      const catId = info.category || 'ovrigt'
+      if (!grouped[catId]) grouped[catId] = []
+      grouped[catId].push({ name, amount: info.amount, isExtra: false })
+    })
+    extraItems.forEach(item => {
+      const catId = item.category || 'ovrigt'
+      if (!grouped[catId]) grouped[catId] = []
+      grouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
+    })
+    return grouped
+  }, [orderedCategories, ingredientMap, extraItems])
 
-  const totalItems = Object.values(allItemsGrouped).flat().length
-  const checkedCount = Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length
+  const totalItems = useMemo(() => Object.values(allItemsGrouped).flat().length, [allItemsGrouped])
+  const checkedCount = useMemo(
+    () => Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length,
+    [allItemsGrouped, checkedItems]
+  )
 
   return (
     <div style={s.app}>
