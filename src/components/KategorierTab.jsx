@@ -38,7 +38,7 @@ function SortableCatItem({ cat, onRemove }) {
       <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
       {isCustom && (
         <button
-          style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#c62828', fontSize: '14px' }}
+          style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--clr-error)', fontSize: '14px' }}
           onClick={() => onRemove(cat.id)}
         >×</button>
       )}
@@ -100,10 +100,10 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', margin: '0 0 16px', fontSize: '22px' }}>
+      <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 16px', fontSize: '22px' }}>
         Butiksavdelningar
       </h2>
-      <p style={{ color: '#6b8f5e', fontSize: '13px', margin: '0 0 16px' }}>
+      <p style={{ color: 'var(--clr-secondary)', fontSize: '13px', margin: '0 0 16px' }}>
         Ordningen bestämmer hur varorna sorteras i handlingslistan.
       </p>
 
@@ -125,7 +125,7 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
       </DndContext>
 
       <button
-        style={{ width: '100%', padding: '12px', marginTop: '8px', background: '#f0f7ef', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: '#2d5016', fontSize: '15px', cursor: 'pointer' }}
+        style={{ width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }}
         onClick={() => setShowNewCat(v => !v)}
       >
         {showNewCat ? 'Avbryt' : '+ Lägg till kategori'}
@@ -137,7 +137,7 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
           <p style={{ color: '#aaa', fontSize: '12px', margin: '0 0 8px' }}>Farozon</p>
           <button
             onClick={handleDeleteRoom}
-            style={{ width: '100%', padding: '12px', background: confirmDelete ? '#c62828' : '#fff', border: '1.5px solid #ef9a9a', borderRadius: '10px', color: confirmDelete ? '#fff' : '#c62828', fontSize: '15px', cursor: 'pointer', transition: 'background 0.2s' }}
+            style={{ width: '100%', padding: '12px', background: confirmDelete ? 'var(--clr-error)' : '#fff', border: '1.5px solid #ef9a9a', borderRadius: '10px', color: confirmDelete ? '#fff' : 'var(--clr-error)', fontSize: '15px', cursor: 'pointer', transition: 'background 0.2s' }}
           >
             {confirmDelete ? '⚠️ Tryck igen — detta går inte att ångra' : `🗑 Radera rummet ${session.roomCode}`}
           </button>

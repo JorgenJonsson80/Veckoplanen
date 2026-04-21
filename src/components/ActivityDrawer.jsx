@@ -23,13 +23,13 @@ const styles = {
   handle: {
     width: '40px',
     height: '4px',
-    background: '#c8e6c9',
+    background: 'var(--clr-border)',
     borderRadius: '2px',
     margin: '0 auto 16px',
   },
   title: {
     fontFamily: 'Georgia, serif',
-    color: '#2d5016',
+    color: 'var(--clr-primary)',
     fontSize: '20px',
     margin: '0 0 16px',
   },
@@ -39,12 +39,12 @@ const styles = {
     padding: '10px 12px',
     borderRadius: '8px',
     marginBottom: '8px',
-    background: '#f0f7ef',
+    background: 'var(--clr-bg)',
     borderLeft: '3px solid #6b8f5e',
   },
   user: {
     fontWeight: '700',
-    color: '#2d5016',
+    color: 'var(--clr-primary)',
     fontSize: '14px',
   },
   action: {

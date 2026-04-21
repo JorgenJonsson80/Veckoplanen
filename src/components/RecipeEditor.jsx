@@ -23,13 +23,13 @@ const styles = {
   handle: {
     width: '40px',
     height: '4px',
-    background: '#c8e6c9',
+    background: 'var(--clr-border)',
     borderRadius: '2px',
     margin: '0 auto 16px',
   },
   title: {
     fontFamily: 'Georgia, serif',
-    color: '#2d5016',
+    color: 'var(--clr-primary)',
     fontSize: '20px',
     margin: '0 0 16px',
   },
@@ -61,16 +61,16 @@ const styles = {
   deleteBtn: {
     background: 'none',
     border: 'none',
-    color: '#c62828',
+    color: 'var(--clr-error)',
     fontSize: '18px',
     cursor: 'pointer',
     padding: '0',
     lineHeight: '1',
   },
   addBtn: {
-    background: '#f0f7ef',
+    background: 'var(--clr-bg)',
     border: '1.5px dashed #6b8f5e',
-    color: '#2d5016',
+    color: 'var(--clr-primary)',
     borderRadius: '8px',
     padding: '8px',
     width: '100%',
@@ -87,7 +87,7 @@ const styles = {
   saveBtn: {
     flex: 1,
     padding: '12px',
-    background: '#2d5016',
+    background: 'var(--clr-primary)',
     color: '#fff',
     border: 'none',
     borderRadius: '10px',
@@ -98,8 +98,8 @@ const styles = {
   cancelBtn: {
     flex: 1,
     padding: '12px',
-    background: '#f0f7ef',
-    color: '#2d5016',
+    background: 'var(--clr-bg)',
+    color: 'var(--clr-primary)',
     border: '1.5px solid #c8e6c9',
     borderRadius: '10px',
     fontSize: '16px',
@@ -161,12 +161,12 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
           Rättens namn
         </label>
         <input
-          style={{ ...styles.input, marginBottom: nameErr ? '4px' : '16px', fontSize: '16px', borderColor: nameErr ? '#c62828' : undefined }}
+          style={{ ...styles.input, marginBottom: nameErr ? '4px' : '16px', fontSize: '16px', borderColor: nameErr ? 'var(--clr-error)' : undefined }}
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="t.ex. Tacos"
         />
-        {nameErr && <p style={{ color: '#c62828', fontSize: '13px', margin: '0 0 12px' }}>{nameErr}</p>}
+        {nameErr && <p style={{ color: 'var(--clr-error)', fontSize: '13px', margin: '0 0 12px' }}>{nameErr}</p>}
 
         {/* Kolumnrubriker */}
         <div style={{ ...styles.row, marginBottom: '4px' }}>

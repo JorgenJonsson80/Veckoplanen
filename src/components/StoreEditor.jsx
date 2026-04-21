@@ -70,15 +70,15 @@ const s = {
     padding: '20px 16px 32px', maxHeight: '90vh', overflowY: 'auto',
   },
   handle: {
-    width: '40px', height: '4px', background: '#c8e6c9',
+    width: '40px', height: '4px', background: 'var(--clr-border)',
     borderRadius: '2px', margin: '0 auto 16px',
   },
   title: {
-    fontFamily: 'Georgia, serif', color: '#2d5016',
+    fontFamily: 'Georgia, serif', color: 'var(--clr-primary)',
     fontSize: '20px', margin: '0 0 16px',
   },
   label: {
-    display: 'block', fontWeight: '600', color: '#2d5016',
+    display: 'block', fontWeight: '600', color: 'var(--clr-primary)',
     marginBottom: '6px', fontSize: '13px',
   },
   input: {
@@ -93,9 +93,9 @@ const s = {
   emojiBtn: {
     width: '38px', height: '38px', border: '2px solid transparent',
     borderRadius: '8px', fontSize: '20px', cursor: 'pointer',
-    background: '#f0f7ef', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'var(--clr-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  emojiBtnSel: { borderColor: '#2d5016', background: '#e8f5e9' },
+  emojiBtnSel: { borderColor: 'var(--clr-primary)', background: 'var(--clr-bg-subtle)' },
   catRow: {
     display: 'flex', alignItems: 'center',
     background: '#fff', borderRadius: '10px',
@@ -107,17 +107,17 @@ const s = {
   catRowOver: { border: '2px solid #2d5016' },
   footer: { display: 'flex', gap: '10px', marginTop: '16px' },
   saveBtn: {
-    flex: 1, padding: '12px', background: '#2d5016', color: '#fff',
+    flex: 1, padding: '12px', background: 'var(--clr-primary)', color: '#fff',
     border: 'none', borderRadius: '10px', fontSize: '16px',
     cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
   cancelBtn: {
-    flex: 1, padding: '12px', background: '#f0f7ef', color: '#2d5016',
+    flex: 1, padding: '12px', background: 'var(--clr-bg)', color: 'var(--clr-primary)',
     border: '1.5px solid #c8e6c9', borderRadius: '10px',
     fontSize: '16px', cursor: 'pointer',
   },
   deleteBtn: {
-    padding: '12px 16px', background: '#ffebee', color: '#c62828',
+    padding: '12px 16px', background: '#ffebee', color: 'var(--clr-error)',
     border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer',
   },
 };

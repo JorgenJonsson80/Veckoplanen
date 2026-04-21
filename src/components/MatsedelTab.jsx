@@ -37,7 +37,7 @@ export default function MatsedelTab({
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', margin: '0 0 16px', fontSize: '22px' }}>
+      <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 16px', fontSize: '22px' }}>
         Veckans matsedel
       </h2>
 
@@ -50,7 +50,7 @@ export default function MatsedelTab({
         return (
           <div key={day} style={{ background: '#fff', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ minWidth: '80px', fontWeight: '700', color: '#2d5016', fontSize: '14px' }}>{dayLabel}</span>
+              <span style={{ minWidth: '80px', fontWeight: '700', color: 'var(--clr-primary)', fontSize: '14px' }}>{dayLabel}</span>
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
                   style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
@@ -73,7 +73,7 @@ export default function MatsedelTab({
               </div>
               {mealValue && (
                 <button
-                  style={{ background: '#f0f7ef', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: '#2d5016', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                  style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
                   onClick={() => onEditRecipe(recipe || { id: null, name: mealValue, ingredients: [] })}
                   title="Öppna recepteditor"
                 >
@@ -86,7 +86,7 @@ export default function MatsedelTab({
               <div style={{ marginTop: '8px', paddingLeft: '90px' }}>
                 <div style={{ fontSize: '12px', color: '#888', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                   {(recipe.ingredients || []).slice(0, 5).map((ing, i) => (
-                    <span key={i} style={{ background: '#f0f7ef', borderRadius: '4px', padding: '1px 6px' }}>{ing.name}</span>
+                    <span key={i} style={{ background: 'var(--clr-bg)', borderRadius: '4px', padding: '1px 6px' }}>{ing.name}</span>
                   ))}
                   {(recipe.ingredients || []).length > 5 && (
                     <span style={{ color: '#aaa' }}>+{recipe.ingredients.length - 5} till</span>
@@ -99,7 +99,7 @@ export default function MatsedelTab({
       })}
 
       <button
-        style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: '#f0f7ef', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: '#2d5016', fontSize: '15px', cursor: 'pointer' }}
+        style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }}
         onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}
       >
         + Skapa nytt recept
@@ -110,7 +110,7 @@ export default function MatsedelTab({
         disabled={!hasMeal}
         style={{
           display: 'block', width: '100%', padding: '12px', marginTop: '8px',
-          background: hasMeal ? '#2d5016' : '#e0e0e0',
+          background: hasMeal ? 'var(--clr-primary)' : '#e0e0e0',
           border: 'none', borderRadius: '10px', color: '#fff',
           fontSize: '15px', cursor: hasMeal ? 'pointer' : 'default',
           fontFamily: 'Georgia, serif',
@@ -133,9 +133,9 @@ export default function MatsedelTab({
           style={{
             display: 'block', width: '100%', padding: '10px', marginTop: '6px',
             background: confirmClear ? '#fff3e0' : 'none',
-            border: `1.5px solid ${confirmClear ? '#e65100' : '#c8e6c9'}`,
+            border: `1.5px solid ${confirmClear ? 'var(--clr-warning)' : 'var(--clr-border)'}`,
             borderRadius: '10px',
-            color: confirmClear ? '#e65100' : '#6b8f5e',
+            color: confirmClear ? 'var(--clr-warning)' : 'var(--clr-secondary)',
             fontSize: '14px', cursor: 'pointer',
           }}
         >
@@ -145,7 +145,7 @@ export default function MatsedelTab({
 
       {Object.keys(savedMeals).length > 0 && (
         <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
-          <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: '0 0 12px' }}>
+          <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: '0 0 12px' }}>
             📅 Sparade matsedlar
           </h3>
           {Object.entries(savedMeals)
@@ -157,16 +157,16 @@ export default function MatsedelTab({
                 <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
                   <button
                     onClick={() => setOpenMealKey(isOpen ? null : week)}
-                    style={{ width: '100%', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}
+                    style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}
                   >
-                    <span style={{ fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{week}</span>
+                    <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{week}</span>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', color: '#6b8f5e' }}>{count} rätter</span>
-                      <span style={{ color: '#6b8f5e' }}>{isOpen ? '▲' : '▼'}</span>
+                      <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>{count} rätter</span>
+                      <span style={{ color: 'var(--clr-secondary)' }}>{isOpen ? '▲' : '▼'}</span>
                     </div>
                   </button>
                   {isOpen && (
-                    <div style={{ padding: '4px 14px 14px', background: '#fafff9' }}>
+                    <div style={{ padding: '4px 14px 14px', background: 'var(--clr-bg-card)' }}>
                       {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
                         <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid #f0f7ef', fontSize: '14px' }}>
                           <span style={{ minWidth: '72px', color: '#888', textTransform: 'capitalize' }}>{d}</span>
@@ -175,7 +175,7 @@ export default function MatsedelTab({
                       ))}
                       <button
                         onClick={() => handleLoadMealPlan(week)}
-                        style={{ marginTop: '12px', padding: '8px 16px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+                        style={{ marginTop: '12px', padding: '8px 16px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
                       >
                         ↩ Ladda den här matsedeln
                       </button>
@@ -193,10 +193,10 @@ export default function MatsedelTab({
           onClick={() => setShowRecipes(v => !v)}
           style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 12px' }}
         >
-          <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: 0 }}>
-            📖 Alla recept <span style={{ fontSize: '14px', color: '#6b8f5e', fontFamily: 'system-ui' }}>({allRecipes.length})</span>
+          <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: 0 }}>
+            📖 Alla recept <span style={{ fontSize: '14px', color: 'var(--clr-secondary)', fontFamily: 'system-ui' }}>({allRecipes.length})</span>
           </h3>
-          <span style={{ color: '#6b8f5e' }}>{showRecipes ? '▲' : '▼'}</span>
+          <span style={{ color: 'var(--clr-secondary)' }}>{showRecipes ? '▲' : '▼'}</span>
         </button>
 
         {showRecipes && allRecipes.map(recipe => {
@@ -204,19 +204,19 @@ export default function MatsedelTab({
           return (
             <div key={recipe.id || recipe.name} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
               <div
-                style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', gap: '10px', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', gap: '10px', cursor: 'pointer' }}
                 onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}
               >
-                <span style={{ flex: 1, fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{recipe.name}</span>
+                <span style={{ flex: 1, fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{recipe.name}</span>
                 <span style={{ fontSize: '12px', color: '#aaa' }}>{recipe.ingredients?.length || 0} ingredienser</span>
                 <button
                   onClick={e => { e.stopPropagation(); onEditRecipe(recipe); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: '#6b8f5e' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: 'var(--clr-secondary)' }}
                 >✏️</button>
-                <span style={{ color: '#6b8f5e', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
+                <span style={{ color: 'var(--clr-secondary)', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
               </div>
               {isOpen && (
-                <div style={{ padding: '8px 14px 14px', background: '#fafff9' }}>
+                <div style={{ padding: '8px 14px 14px', background: 'var(--clr-bg-card)' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {(recipe.ingredients || []).map((ing, i) => (
                       <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>

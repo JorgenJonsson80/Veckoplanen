@@ -14,14 +14,14 @@ const EMOJI_OPTIONS = [
 
 const styles = {
   container: {
-    background: '#f0f7ef',
+    background: 'var(--clr-bg)',
     borderRadius: '10px',
     padding: '14px',
     marginTop: '12px',
   },
   title: {
     fontWeight: '700',
-    color: '#2d5016',
+    color: 'var(--clr-primary)',
     fontSize: '15px',
     marginBottom: '10px',
   },
@@ -45,8 +45,8 @@ const styles = {
     transition: 'border-color 0.1s',
   },
   emojiBtnSelected: {
-    borderColor: '#2d5016',
-    background: '#e8f5e9',
+    borderColor: 'var(--clr-primary)',
+    background: 'var(--clr-bg-subtle)',
   },
   row: {
     display: 'flex',
@@ -62,7 +62,7 @@ const styles = {
   },
   addBtn: {
     padding: '9px 16px',
-    background: '#2d5016',
+    background: 'var(--clr-primary)',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',

@@ -24,7 +24,7 @@ async function findUniqueCode() {
 
 const styles = {
   container: {
-    minHeight: '100vh', background: '#f0f7ef',
+    minHeight: '100vh', background: 'var(--clr-bg)',
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', padding: '24px',
   },
@@ -33,36 +33,36 @@ const styles = {
     width: '100%', maxWidth: '380px',
     boxShadow: '0 4px 20px rgba(45,80,22,0.12)',
   },
-  title: { fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '28px', margin: '0 0 8px', textAlign: 'center' },
-  subtitle: { color: '#6b8f5e', textAlign: 'center', margin: '0 0 28px', fontSize: '15px' },
+  title: { fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '28px', margin: '0 0 8px', textAlign: 'center' },
+  subtitle: { color: 'var(--clr-secondary)', textAlign: 'center', margin: '0 0 28px', fontSize: '15px' },
   modeBtn: {
     display: 'block', width: '100%', padding: '14px', marginBottom: '10px',
     border: '2px solid #2d5016', borderRadius: '10px', background: '#fff',
-    color: '#2d5016', fontSize: '16px', cursor: 'pointer', textAlign: 'left',
+    color: 'var(--clr-primary)', fontSize: '16px', cursor: 'pointer', textAlign: 'left',
   },
-  modeBtnActive: { background: '#2d5016', color: '#fff' },
-  label: { display: 'block', fontWeight: '600', color: '#2d5016', marginBottom: '6px', fontSize: '14px' },
+  modeBtnActive: { background: 'var(--clr-primary)', color: '#fff' },
+  label: { display: 'block', fontWeight: '600', color: 'var(--clr-primary)', marginBottom: '6px', fontSize: '14px' },
   input: {
     width: '100%', padding: '10px 12px', border: '2px solid #c8e6c9',
     borderRadius: '8px', fontSize: '16px', marginBottom: '16px',
     boxSizing: 'border-box', fontFamily: 'inherit',
   },
   codeBox: {
-    background: '#f0f7ef', border: '2px dashed #6b8f5e',
+    background: 'var(--clr-bg)', border: '2px dashed #6b8f5e',
     borderRadius: '10px', padding: '14px', textAlign: 'center', marginBottom: '16px',
   },
-  codeText: { fontFamily: 'monospace', fontSize: '28px', fontWeight: 'bold', color: '#2d5016', letterSpacing: '4px' },
+  codeText: { fontFamily: 'monospace', fontSize: '28px', fontWeight: 'bold', color: 'var(--clr-primary)', letterSpacing: '4px' },
   primaryBtn: {
-    width: '100%', padding: '14px', background: '#2d5016', color: '#fff',
+    width: '100%', padding: '14px', background: 'var(--clr-primary)', color: '#fff',
     border: 'none', borderRadius: '10px', fontSize: '17px', fontWeight: '600',
     cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
   copyBtn: {
-    background: 'none', border: 'none', color: '#6b8f5e',
+    background: 'none', border: 'none', color: 'var(--clr-secondary)',
     fontSize: '13px', cursor: 'pointer', marginTop: '6px', textDecoration: 'underline',
   },
-  error: { color: '#c62828', fontSize: '13px', marginBottom: '8px' },
-  checking: { color: '#6b8f5e', fontSize: '13px', marginBottom: '8px' },
+  error: { color: 'var(--clr-error)', fontSize: '13px', marginBottom: '8px' },
+  checking: { color: 'var(--clr-secondary)', fontSize: '13px', marginBottom: '8px' },
 };
 
 export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], recentRoomsKey = null }) {
@@ -123,16 +123,16 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
         {/* Senaste rum */}
         {recent.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <p style={{ color: '#6b8f5e', fontSize: '12px', fontWeight: '700', margin: '0 0 8px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Senast använda</p>
+            <p style={{ color: 'var(--clr-secondary)', fontSize: '12px', fontWeight: '700', margin: '0 0 8px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Senast använda</p>
             {recent.map((r, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px' }}>
                 <button
-                  style={{ display: 'flex', alignItems: 'center', flex: 1, padding: '11px 14px', background: '#f0f7ef', border: '1.5px solid #c8e6c9', borderRadius: '10px', cursor: 'pointer', gap: '10px', textAlign: 'left' }}
+                  style={{ display: 'flex', alignItems: 'center', flex: 1, padding: '11px 14px', background: 'var(--clr-bg)', border: '1.5px solid #c8e6c9', borderRadius: '10px', cursor: 'pointer', gap: '10px', textAlign: 'left' }}
                   onClick={() => onStart(r)}
                 >
                   <span style={{ fontSize: '20px' }}>{r.mode === 'solo' ? '👤' : '🏠'}</span>
-                  <span style={{ flex: 1, color: '#2d5016', fontWeight: '600', fontSize: '15px' }}>{r.name}</span>
-                  {r.roomCode && <span style={{ fontFamily: 'monospace', fontSize: '13px', color: '#6b8f5e', letterSpacing: '1px' }}>{r.roomCode}</span>}
+                  <span style={{ flex: 1, color: 'var(--clr-primary)', fontWeight: '600', fontSize: '15px' }}>{r.name}</span>
+                  {r.roomCode && <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--clr-secondary)', letterSpacing: '1px' }}>{r.roomCode}</span>}
                   <span style={{ fontSize: '12px', color: '#aaa' }}>{r.mode === 'solo' ? 'Eget' : 'Familjerum'}</span>
                 </button>
                 <button

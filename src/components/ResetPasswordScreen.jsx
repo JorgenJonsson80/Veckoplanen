@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const s = {
   container: {
-    minHeight: '100vh', background: '#f0f7ef',
+    minHeight: '100vh', background: 'var(--clr-bg)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
   },
   card: {
@@ -11,20 +11,20 @@ const s = {
     width: '100%', maxWidth: '380px',
     boxShadow: '0 4px 20px rgba(45,80,22,0.12)',
   },
-  title: { fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '26px', margin: '0 0 8px', textAlign: 'center' },
-  sub: { color: '#6b8f5e', textAlign: 'center', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' },
-  label: { display: 'block', fontWeight: '600', color: '#2d5016', marginBottom: '6px', fontSize: '14px' },
+  title: { fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '26px', margin: '0 0 8px', textAlign: 'center' },
+  sub: { color: 'var(--clr-secondary)', textAlign: 'center', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' },
+  label: { display: 'block', fontWeight: '600', color: 'var(--clr-primary)', marginBottom: '6px', fontSize: '14px' },
   input: {
     width: '100%', padding: '11px 12px', border: '2px solid #c8e6c9',
     borderRadius: '8px', fontSize: '16px', marginBottom: '14px',
     boxSizing: 'border-box', fontFamily: 'inherit',
   },
   btn: {
-    width: '100%', padding: '13px', background: '#2d5016', color: '#fff',
+    width: '100%', padding: '13px', background: 'var(--clr-primary)', color: '#fff',
     border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '600',
     cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
-  err: { color: '#c62828', fontSize: '13px', marginBottom: '10px' },
+  err: { color: 'var(--clr-error)', fontSize: '13px', marginBottom: '10px' },
 };
 
 export default function ResetPasswordScreen({ onUpdatePassword }) {
@@ -49,7 +49,7 @@ export default function ResetPasswordScreen({ onUpdatePassword }) {
     <div style={s.container}><div style={s.card}>
       <h1 style={s.title}>Veckoplanen</h1>
       <div style={{ fontSize: '44px', textAlign: 'center', margin: '0 0 16px' }}>✅</div>
-      <p style={{ ...s.sub, color: '#2d5016', fontWeight: '600' }}>Lösenordet är uppdaterat!</p>
+      <p style={{ ...s.sub, color: 'var(--clr-primary)', fontWeight: '600' }}>Lösenordet är uppdaterat!</p>
       <p style={s.sub}>Du är inloggad och kan börja använda appen.</p>
     </div></div>
   );

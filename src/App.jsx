@@ -39,12 +39,12 @@ function saveRecentRoom(userId, { name, roomCode, mode }) {
 // ---------- Stilar ----------
 const s = {
   app: {
-    minHeight: '100vh', background: '#f0f7ef',
+    minHeight: '100vh', background: 'var(--clr-bg)',
     fontFamily: 'system-ui, sans-serif', maxWidth: '600px',
     margin: '0 auto', position: 'relative',
   },
   header: {
-    background: '#2d5016', color: '#fff', padding: '0 16px',
+    background: 'var(--clr-primary)', color: '#fff', padding: '0 16px',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     height: '56px', position: 'sticky', top: 0, zIndex: 10,
   },
@@ -57,10 +57,10 @@ const s = {
   },
   tab: {
     flex: 1, padding: '12px 4px', border: 'none', background: 'none',
-    fontSize: '13px', cursor: 'pointer', color: '#6b8f5e', fontWeight: '600',
+    fontSize: '13px', cursor: 'pointer', color: 'var(--clr-secondary)', fontWeight: '600',
     borderBottom: '2px solid transparent', marginBottom: '-2px', transition: 'color 0.15s',
   },
-  tabActive: { color: '#2d5016', borderBottom: '2px solid #2d5016' },
+  tabActive: { color: 'var(--clr-primary)', borderBottom: '2px solid #2d5016' },
   content: { padding: '16px', paddingBottom: '80px' },
 };
 
@@ -184,7 +184,7 @@ export default function App() {
   // ---------- Tidiga returer ----------
   if (authLoading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <p style={{ color: '#2d5016', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
+      <p style={{ color: 'var(--clr-primary)', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
     </div>
   );
 
@@ -205,12 +205,12 @@ export default function App() {
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <div style={{ textAlign: 'center', padding: '32px 24px', maxWidth: '340px' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚪</div>
-        <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', margin: '0 0 8px' }}>Rummet hittades inte</h2>
-        <p style={{ color: '#6b8f5e', marginBottom: '24px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 8px' }}>Rummet hittades inte</h2>
+        <p style={{ color: 'var(--clr-secondary)', marginBottom: '24px' }}>
           Rummet <strong>{session.roomCode}</strong> verkar inte längre finnas. Det kan ha raderats av den som skapade det.
         </p>
         <button
-          style={{ padding: '12px 24px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+          style={{ padding: '12px 24px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
           onClick={() => {
             localStorage.removeItem(SESSION_KEY);
             const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode);
@@ -226,7 +226,7 @@ export default function App() {
 
   if (loading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <p style={{ color: '#2d5016', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
+      <p style={{ color: 'var(--clr-primary)', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
     </div>
   );
 
@@ -305,12 +305,12 @@ export default function App() {
       </header>
 
       {(error || syncError) && (
-        <div style={{ background: '#fff3e0', borderBottom: '1px solid #ffcc02', padding: '8px 16px', fontSize: '13px', color: '#e65100', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ background: '#fff3e0', borderBottom: '1px solid #ffcc02', padding: '8px 16px', fontSize: '13px', color: 'var(--clr-warning)', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ flex: 1 }}>⚠️ Kunde inte synka med servern – ändringar sparas lokalt.</span>
           {syncError && (
             <button
               onClick={clearSyncError}
-              style={{ background: 'none', border: 'none', color: '#e65100', cursor: 'pointer', fontSize: '16px', padding: '0 4px', lineHeight: 1 }}
+              style={{ background: 'none', border: 'none', color: 'var(--clr-warning)', cursor: 'pointer', fontSize: '16px', padding: '0 4px', lineHeight: 1 }}
               title="Stäng"
             >×</button>
           )}
@@ -332,7 +332,7 @@ export default function App() {
       </nav>
 
       <main style={s.content}>
-        <Suspense fallback={<p style={{ color: '#6b8f5e', padding: '24px', textAlign: 'center' }}>Laddar...</p>}>
+        <Suspense fallback={<p style={{ color: 'var(--clr-secondary)', padding: '24px', textAlign: 'center' }}>Laddar...</p>}>
         {activeTab === 'matsedel' && (
           <MatsedelTab
             meals={meals}
@@ -416,19 +416,19 @@ export default function App() {
       {showWelcome && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', maxWidth: '360px', width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '22px', margin: '0 0 20px', textAlign: 'center' }}>Välkommen! 🌿</h2>
+            <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '22px', margin: '0 0 20px', textAlign: 'center' }}>Välkommen! 🌿</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '26px', lineHeight: 1 }}>🍽</span>
                 <div>
-                  <strong style={{ color: '#2d5016', fontSize: '15px' }}>Planera veckan</strong>
+                  <strong style={{ color: 'var(--clr-primary)', fontSize: '15px' }}>Planera veckan</strong>
                   <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Välj middagar för varje dag under Matsedel-fliken.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '26px', lineHeight: 1 }}>🛒</span>
                 <div>
-                  <strong style={{ color: '#2d5016', fontSize: '15px' }}>Handla smidigt</strong>
+                  <strong style={{ color: 'var(--clr-primary)', fontSize: '15px' }}>Handla smidigt</strong>
                   <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Ingredienserna samlas automatiskt i Handlingslistan.</p>
                 </div>
               </div>
@@ -436,14 +436,14 @@ export default function App() {
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                   <span style={{ fontSize: '26px', lineHeight: 1 }}>👨‍👩‍👧</span>
                   <div>
-                    <strong style={{ color: '#2d5016', fontSize: '15px' }}>Dela med familjen</strong>
+                    <strong style={{ color: 'var(--clr-primary)', fontSize: '15px' }}>Dela med familjen</strong>
                     <p style={{ margin: '3px 0 0', color: '#666', fontSize: '13px', lineHeight: 1.4 }}>Tryck på <strong>Bjud in</strong>-knappen i toppen för att bjuda in din partner med en länk.</p>
                   </div>
                 </div>
               )}
             </div>
             <button
-              style={{ width: '100%', padding: '13px', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
+              style={{ width: '100%', padding: '13px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
               onClick={() => { localStorage.setItem('veckoplanen_onboarded', '1'); setShowWelcome(false); }}
             >Kom igång!</button>
           </div>

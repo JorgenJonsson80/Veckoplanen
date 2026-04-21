@@ -1,4 +1,16 @@
-/* Grundläggande reset för Veckoplanen */
+/* Design tokens — ändra här för att byta tema */
+:root {
+  --clr-primary:    #2d5016;
+  --clr-secondary:  #6b8f5e;
+  --clr-border:     #c8e6c9;
+  --clr-bg:         #f0f7ef;
+  --clr-bg-subtle:  #e8f5e9;
+  --clr-bg-card:    #fafff9;
+  --clr-error:      #c62828;
+  --clr-warning:    #e65100;
+  --font-serif:     Georgia, serif;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -6,7 +18,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #f0f7ef;
+  background: var(--clr-bg);
 }
 
 #root {
