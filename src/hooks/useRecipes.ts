@@ -9,7 +9,15 @@ export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) 
     const hidden = state?.hiddenBuiltin ?? []
     const base = DEFAULT_RECIPES
       .filter(r => !hidden.includes(r.id))
-      .map(r => overrides[r.id] ? { ...r, ...overrides[r.id] } as Recipe : r)
+      .map(r => {
+        const ov = overrides[r.id]
+        if (!ov) return r
+        return {
+          ...r,
+          ...ov,
+          ingredients: ov.ingredients?.length ? ov.ingredients : r.ingredients,
+        }
+      })
     return [...base, ...custom]
   }, [state?.customRecipes, state?.recipeOverrides, state?.hiddenBuiltin])
 

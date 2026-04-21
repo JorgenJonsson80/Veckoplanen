@@ -45,6 +45,21 @@ describe('useRecipes — allRecipes', () => {
     expect(tacos?.name).toBe('Super Tacos')
   })
 
+  it('override with empty ingredients falls back to builtin ingredients', () => {
+    const state = makeState({ recipeOverrides: { tacos: { name: 'Ny Tacos', ingredients: [] } } })
+    const { result } = renderHook(() => useRecipes(state, vi.fn() as unknown as UpdateStateFn))
+    const tacos = result.current.allRecipes.find(r => r.id === 'tacos')
+    expect(tacos?.name).toBe('Ny Tacos')
+    expect(tacos?.ingredients.length).toBeGreaterThan(0)
+  })
+
+  it('override with null ingredients falls back to builtin ingredients', () => {
+    const state = makeState({ recipeOverrides: { tacos: { name: 'Ny Tacos', ingredients: null as unknown as [] } } })
+    const { result } = renderHook(() => useRecipes(state, vi.fn() as unknown as UpdateStateFn))
+    const tacos = result.current.allRecipes.find(r => r.id === 'tacos')
+    expect(tacos?.ingredients.length).toBeGreaterThan(0)
+  })
+
   it('appends custom recipes after defaults', () => {
     const custom = { id: 'custom_1', name: 'Morotssoppa', ingredients: [] }
     const state = makeState({ customRecipes: [custom] })
