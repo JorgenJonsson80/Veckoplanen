@@ -51,7 +51,7 @@ export function useShoppingList(
       } else {
         const existing = hist[itemName]
         if (existing) {
-          next.purchaseHistory = { ...hist, [itemName]: { ...existing, count: Math.max(0, existing.count - 1), lastBought: existing.count <= 1 ? null : existing.lastBought } }
+          next.purchaseHistory = { ...hist, [itemName]: { ...existing, count: Math.max(0, existing.count - 1) } }
         }
       }
       return next

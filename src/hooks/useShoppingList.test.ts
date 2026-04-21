@@ -50,9 +50,10 @@ describe('useShoppingList', () => {
   })
 
   it('toggleItem unchecks a checked item and decrements count', () => {
+    const lastBought = new Date().toISOString()
     const state = makeState({
       checkedItems: { Köttfärs: true },
-      purchaseHistory: { Köttfärs: { lastBought: new Date().toISOString(), count: 2 } },
+      purchaseHistory: { Köttfärs: { lastBought, count: 2 } },
     })
     const updateState = vi.fn() as unknown as UpdateStateFn
     const { result } = renderHook(() => useShoppingList(state, updateState, ingredientMap, categories))
@@ -61,6 +62,22 @@ describe('useShoppingList', () => {
     const next = updater(state)
     expect(next.checkedItems['Köttfärs']).toBe(false)
     expect(next.purchaseHistory['Köttfärs'].count).toBe(1)
+    expect(next.purchaseHistory['Köttfärs'].lastBought).toBe(lastBought)
+  })
+
+  it('toggleItem preserves lastBought when count reaches zero', () => {
+    const lastBought = new Date().toISOString()
+    const state = makeState({
+      checkedItems: { Köttfärs: true },
+      purchaseHistory: { Köttfärs: { lastBought, count: 1 } },
+    })
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useShoppingList(state, updateState, ingredientMap, categories))
+    act(() => { result.current.toggleItem('Köttfärs', 'kott') })
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    expect(next.purchaseHistory['Köttfärs'].count).toBe(0)
+    expect(next.purchaseHistory['Köttfärs'].lastBought).toBe(lastBought)
   })
 
   it('addExtraItem appends to extraItems', () => {
