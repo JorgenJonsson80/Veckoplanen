@@ -73,6 +73,7 @@ export function useSharedState(
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
   const roomIdRef = useRef<string | null>(null)
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestStateRef = useRef<RoomState | null>(null)
   const userNameRef = useRef(userName)
   const defaultCategoriesRef = useRef(defaultCategories)
   const userIdRef = useRef(userId)
@@ -84,6 +85,7 @@ export function useSharedState(
 
   function applyState(newState: RoomState, code = roomCode): void {
     if (code) writeCache(code, newState)
+    latestStateRef.current = newState
     setState(newState)
   }
 
@@ -211,13 +213,21 @@ export function useSharedState(
 
       if (supabase && roomIdRef.current) {
         const roomId = roomIdRef.current
-        const payload = { state: next, updated_at: new Date().toISOString() }
+        latestStateRef.current = next
 
-        const attemptWrite = (isRetry: boolean) =>
-          supabase!.from('rooms').update(payload).eq('id', roomId)
+        const attemptWrite = (isRetry: boolean) => {
+          const current = latestStateRef.current
+          if (!current) return
+          supabase!.from('rooms')
+            .update({ state: current, updated_at: new Date().toISOString() })
+            .eq('id', roomId)
             .then(({ error: writeError }) => {
               if (!writeError) {
-                if (isRetry) setSyncError(null)
+                if (retryTimeoutRef.current) {
+                  clearTimeout(retryTimeoutRef.current)
+                  retryTimeoutRef.current = null
+                }
+                setSyncError(null)
                 return
               }
               console.error('Supabase-uppdateringsfel:', writeError)
@@ -229,6 +239,7 @@ export function useSharedState(
                 retryTimeoutRef.current = setTimeout(() => attemptWrite(true), 4000)
               }
             })
+        }
 
         attemptWrite(false)
       }
