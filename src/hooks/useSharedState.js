@@ -22,9 +22,19 @@ function writeCache(roomCode, state) {
   } catch { /* fullt localStorage – ignorera */ }
 }
 
+const STARTER_MEALS = {
+  måndag: 'Tacos',
+  tisdag: 'Spagetti Bolognese',
+  onsdag: 'Kycklinggryta',
+  torsdag: 'Pannkakor',
+  fredag: 'Laxpasta',
+  lördag: '',
+  söndag: '',
+};
+
 function defaultState(categories) {
   return {
-    meals: Object.fromEntries(WEEKDAYS.map(d => [d, ''])),
+    meals: { ...STARTER_MEALS },
     checkedItems: {},
     extraItems: [],
     categories,

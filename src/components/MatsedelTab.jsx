@@ -7,6 +7,8 @@ export default function MatsedelTab({
 }) {
   const [autocomplete, setAutocomplete] = useState({ day: null, results: [] });
   const [openMealKey, setOpenMealKey] = useState(null);
+  const [showRecipes, setShowRecipes] = useState(false);
+  const [openRecipeId, setOpenRecipeId] = useState(null);
   const hasMeal = WEEKDAYS.some(d => meals[d]);
 
   function handleMealInput(day, value) {
@@ -156,6 +158,50 @@ export default function MatsedelTab({
             })}
         </div>
       )}
+
+      {/* Receptbibliotek */}
+      <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+        <button
+          onClick={() => setShowRecipes(v => !v)}
+          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 12px' }}
+        >
+          <h3 style={{ fontFamily: 'Georgia, serif', color: '#2d5016', fontSize: '18px', margin: 0 }}>
+            📖 Alla recept <span style={{ fontSize: '14px', color: '#6b8f5e', fontFamily: 'system-ui' }}>({allRecipes.length})</span>
+          </h3>
+          <span style={{ color: '#6b8f5e' }}>{showRecipes ? '▲' : '▼'}</span>
+        </button>
+
+        {showRecipes && allRecipes.map(recipe => {
+          const isOpen = openRecipeId === recipe.id || openRecipeId === recipe.name;
+          return (
+            <div key={recipe.id || recipe.name} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', background: isOpen ? '#e8f5e9' : '#fff', gap: '10px', cursor: 'pointer' }}
+                onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}
+              >
+                <span style={{ flex: 1, fontWeight: '700', color: '#2d5016', fontSize: '15px' }}>{recipe.name}</span>
+                <span style={{ fontSize: '12px', color: '#aaa' }}>{recipe.ingredients?.length || 0} ingredienser</span>
+                <button
+                  onClick={e => { e.stopPropagation(); onEditRecipe(recipe); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: '#6b8f5e' }}
+                >✏️</button>
+                <span style={{ color: '#6b8f5e', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
+              </div>
+              {isOpen && (
+                <div style={{ padding: '8px 14px 14px', background: '#fafff9' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {(recipe.ingredients || []).map((ing, i) => (
+                      <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>
+                        {ing.amount ? `${ing.amount} ` : ''}{ing.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
