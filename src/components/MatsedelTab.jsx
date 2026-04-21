@@ -3,12 +3,13 @@ import { WEEKDAYS } from '../hooks/useSharedState';
 
 export default function MatsedelTab({
   meals, allRecipes, savedMeals, currentWeek,
-  onSetMeal, onSaveMealPlan, onLoadMealPlan, onEditRecipe,
+  onSetMeal, onSaveMealPlan, onLoadMealPlan, onEditRecipe, onClearMeals,
 }) {
   const [autocomplete, setAutocomplete] = useState({ day: null, results: [] });
   const [openMealKey, setOpenMealKey] = useState(null);
   const [showRecipes, setShowRecipes] = useState(false);
   const [openRecipeId, setOpenRecipeId] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const hasMeal = WEEKDAYS.some(d => meals[d]);
 
   function handleMealInput(day, value) {
@@ -117,6 +118,30 @@ export default function MatsedelTab({
       >
         💾 Spara matsedeln ({currentWeek})
       </button>
+
+      {hasMeal && (
+        <button
+          onClick={() => {
+            if (confirmClear) {
+              onClearMeals();
+              setConfirmClear(false);
+            } else {
+              setConfirmClear(true);
+              setTimeout(() => setConfirmClear(false), 3000);
+            }
+          }}
+          style={{
+            display: 'block', width: '100%', padding: '10px', marginTop: '6px',
+            background: confirmClear ? '#fff3e0' : 'none',
+            border: `1.5px solid ${confirmClear ? '#e65100' : '#c8e6c9'}`,
+            borderRadius: '10px',
+            color: confirmClear ? '#e65100' : '#6b8f5e',
+            fontSize: '14px', cursor: 'pointer',
+          }}
+        >
+          {confirmClear ? '⚠️ Tryck igen för att rensa hela veckan' : '🗑 Rensa matsedeln'}
+        </button>
+      )}
 
       {Object.keys(savedMeals).length > 0 && (
         <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>

@@ -245,6 +245,11 @@ export default function App() {
     updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan');
   }
 
+  function clearMeals() {
+    const empty = Object.fromEntries(WEEKDAYS.map(d => [d, '']));
+    updateState(prev => ({ ...prev, meals: empty }), 'rensade matsedeln');
+  }
+
   function setBudget(value) {
     updateState(prev => ({ ...prev, budget: value }));
   }
@@ -465,6 +470,7 @@ export default function App() {
             onSaveMealPlan={saveMealPlan}
             onLoadMealPlan={loadMealPlan}
             onEditRecipe={setEditingRecipe}
+            onClearMeals={clearMeals}
           />
         )}
         {activeTab === 'handlingslista' && (
