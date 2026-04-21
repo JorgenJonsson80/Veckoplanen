@@ -3,6 +3,13 @@ import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import RoomSetup from './components/RoomSetup';
 import AuthScreen from './components/AuthScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
+import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
+import { useAuth } from './hooks/useAuth';
+import { useRecipes } from './hooks/useRecipes';
+import { useMealPlan } from './hooks/useMealPlan';
+import { useShoppingList } from './hooks/useShoppingList';
+import { DEFAULT_CATEGORIES } from './constants/categories';
+import { getISOWeek } from './utils/date';
 
 const RecipeEditor = lazy(() => import('./components/RecipeEditor'));
 const ActivityDrawer = lazy(() => import('./components/ActivityDrawer'));
@@ -10,39 +17,7 @@ const StoreEditor = lazy(() => import('./components/StoreEditor'));
 const MatsedelTab = lazy(() => import('./components/MatsedelTab'));
 const HandlingslistaTab = lazy(() => import('./components/HandlingslistaTab'));
 const KategorierTab = lazy(() => import('./components/KategorierTab'));
-import { useSharedState, WEEKDAYS } from './hooks/useSharedState';
-import { useAuth } from './hooks/useAuth';
-import { DEFAULT_CATEGORIES } from './constants/categories';
-import { DEFAULT_RECIPES } from './constants/recipes';
 
-// ---------- Hjälpfunktioner (modul-nivå) ----------
-
-function collectIngredients(meals, allRecipes) {
-  const map = {};
-  Object.values(meals || {}).forEach(mealName => {
-    if (!mealName) return;
-    const recipe = allRecipes.find(r => r.name.toLowerCase() === mealName.toLowerCase());
-    if (!recipe) return;
-    (recipe.ingredients || []).forEach(ing => {
-      if (!ing.name.trim()) return;
-      if (!map[ing.name]) {
-        map[ing.name] = { amount: ing.amount, category: ing.category, sources: [mealName] };
-      } else if (!map[ing.name].sources.includes(mealName)) {
-        map[ing.name].sources.push(mealName);
-      }
-    });
-  });
-  return map;
-}
-
-function getISOWeek(date = new Date()) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-  const week1 = new Date(d.getFullYear(), 0, 4);
-  const weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-  return `${d.getFullYear()}-v${weekNum}`;
-}
 
 const SESSION_KEY = 'veckoplanen_session';
 function recentRoomsKey(userId) {
@@ -143,133 +118,31 @@ export default function App() {
   }
 
   // ---------- Derived data ----------
-  const allRecipes = useMemo(() => {
-    if (!state) return DEFAULT_RECIPES;
-    const custom = state.customRecipes || [];
-    const overrides = state.recipeOverrides || {};
-    const hidden = state.hiddenBuiltin || [];
-    const base = DEFAULT_RECIPES
-      .filter(r => !hidden.includes(r.id))
-      .map(r => overrides[r.id] ? { ...r, ...overrides[r.id] } : r);
-    return [...base, ...custom];
-  }, [state]);
-
+  const { allRecipes, saveRecipe: saveRecipeData } = useRecipes(state, updateState);
   const categories = useMemo(() => state?.categories || DEFAULT_CATEGORIES, [state]);
-  const ingredientMap = useMemo(() => collectIngredients(state?.meals, allRecipes), [state?.meals, allRecipes]);
-
-  // Computed in useEffect so Date.now() never runs during render
-  const [likelyEmptyItems, setLikelyEmptyItems] = useState([]);
-  useEffect(() => {
-    const now = Date.now();
-    const history = state?.purchaseHistory || {};
-    const items = [];
-    Object.entries(ingredientMap).forEach(([name, info]) => {
-      const cat = categories.find(c => c.id === (info.category || 'ovrigt'));
-      if (!cat) return;
-      const record = history[name];
-      if (!record?.lastBought) return;
-      if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
-        items.push({ name, amount: info.amount, isExtra: false });
-      }
-    });
-    (state?.extraItems || []).forEach(item => {
-      const cat = categories.find(c => c.id === (item.category || 'ovrigt'));
-      if (!cat) return;
-      const record = history[item.name];
-      if (!record?.lastBought) return;
-      if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
-        items.push({ name: item.name, amount: '', isExtra: true, id: item.id });
-      }
-    });
-    setLikelyEmptyItems(items);
-  }, [ingredientMap, categories, state?.purchaseHistory, state?.extraItems]);
-
-  // ---------- Matsedel ----------
-  function setMeal(day, value) {
-    updateState(prev => ({ ...prev, meals: { ...prev.meals, [day]: value } }), `valde "${value || 'ingen rätt'}" till ${day}`);
-  }
-
-  function saveMealPlan() {
-    if (!WEEKDAYS.some(d => meals[d])) return;
-    const weekKey = getISOWeek();
-    updateState(
-      prev => ({ ...prev, savedMeals: { ...(prev.savedMeals || {}), [weekKey]: { meals: { ...meals }, savedAt: new Date().toISOString() } } }),
-      `sparade matsedeln för ${weekKey}`
-    );
-  }
-
-  function loadMealPlan(weekKey) {
-    const saved = (state?.savedMeals || {})[weekKey];
-    if (!saved) return;
-    updateState(prev => ({ ...prev, meals: { ...saved.meals } }));
-  }
-
-  // ---------- Handlingslista ----------
-  function toggleItem(itemName, category) {
-    const isChecked = !!(state?.checkedItems?.[itemName]);
-    updateState(prev => {
-      const next = { ...prev, checkedItems: { ...prev.checkedItems, [itemName]: !isChecked } };
-      const hist = prev.purchaseHistory || {};
-      if (!isChecked) {
-        const existing = hist[itemName] || { count: 0 };
-        next.purchaseHistory = { ...hist, [itemName]: { lastBought: new Date().toISOString(), count: existing.count + 1, cat: category } };
-      } else {
-        const existing = hist[itemName];
-        if (existing) {
-          next.purchaseHistory = { ...hist, [itemName]: { ...existing, count: Math.max(0, existing.count - 1), lastBought: existing.count <= 1 ? null : existing.lastBought } };
+  const ingredientMap = useMemo(() => {
+    const map = {};
+    Object.values(state?.meals || {}).forEach(mealName => {
+      if (!mealName) return;
+      const recipe = allRecipes.find(r => r.name.toLowerCase() === mealName.toLowerCase());
+      if (!recipe) return;
+      (recipe.ingredients || []).forEach(ing => {
+        if (!ing.name.trim()) return;
+        if (!map[ing.name]) {
+          map[ing.name] = { amount: ing.amount, category: ing.category, sources: [mealName] };
+        } else if (!map[ing.name].sources.includes(mealName)) {
+          map[ing.name].sources.push(mealName);
         }
-      }
-      return next;
-    }, isChecked ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`);
-  }
+      });
+    });
+    return map;
+  }, [state?.meals, allRecipes]);
 
-  function saveWeeklyList() {
-    const weekKey = getISOWeek();
-    const allItems = Object.values(allItemsGrouped).flat().map(i => ({ name: i.name, amount: i.amount || '' }));
-    updateState(
-      prev => ({ ...prev, savedLists: { ...(prev.savedLists || {}), [weekKey]: { items: allItems, meals: { ...meals }, savedAt: new Date().toISOString() } } }),
-      `sparade handlingslistan för ${weekKey}`
-    );
+  const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals } = useMealPlan(state, updateState);
+  const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories);
 
-  }
-
-  function addExtraItem(name, catId) {
-    const item = { name, category: catId, id: Date.now() };
-    updateState(prev => ({ ...prev, extraItems: [...(prev.extraItems || []), item] }), `lade till extra vara "${name}"`);
-  }
-
-  function removeExtraItem(id) {
-    updateState(prev => ({ ...prev, extraItems: (prev.extraItems || []).filter(i => i.id !== id) }));
-  }
-
-  function clearChecked() {
-    updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan');
-  }
-
-  function clearMeals() {
-    const empty = Object.fromEntries(WEEKDAYS.map(d => [d, '']));
-    updateState(prev => ({ ...prev, meals: empty }), 'rensade matsedeln');
-  }
-
-  function setBudget(value) {
-    updateState(prev => ({ ...prev, budget: value }));
-  }
-
-  function setWeeklySpend(value) {
-    updateState(prev => ({ ...prev, weeklySpend: value }));
-  }
-
-  // ---------- Recept ----------
   function saveRecipe(updatedRecipe) {
-    const isBuiltin = DEFAULT_RECIPES.some(r => r.id === updatedRecipe.id);
-    if (isBuiltin) {
-      updateState(prev => ({ ...prev, recipeOverrides: { ...prev.recipeOverrides, [updatedRecipe.id]: updatedRecipe } }), `redigerade receptet "${updatedRecipe.name}"`);
-    } else if (updatedRecipe.id) {
-      updateState(prev => ({ ...prev, customRecipes: (prev.customRecipes || []).map(r => r.id === updatedRecipe.id ? updatedRecipe : r) }), `uppdaterade receptet "${updatedRecipe.name}"`);
-    } else {
-      const newRecipe = { ...updatedRecipe, id: 'custom_' + Date.now() };
-      updateState(prev => ({ ...prev, customRecipes: [...(prev.customRecipes || []), newRecipe] }), `skapade receptet "${newRecipe.name}"`);
-    }
+    saveRecipeData(updatedRecipe);
     setEditingRecipe(null);
   }
 
@@ -358,12 +231,10 @@ export default function App() {
   );
 
   // ---------- Data ----------
-  const meals = state?.meals || {};
   const checkedItems = state?.checkedItems || {};
   const extraItems = state?.extraItems || [];
   const stores = state?.stores || [];
   const savedLists = state?.savedLists || {};
-  const savedMeals = state?.savedMeals || {};
   const activeStoreId = state?.activeStoreId || null;
   const activeStore = stores.find(s => s.id === activeStoreId) || null;
   const currentWeek = getISOWeek();
