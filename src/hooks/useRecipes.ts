@@ -4,15 +4,14 @@ import type { RoomState, Recipe, RecipeDraft, UpdateStateFn } from '../types'
 
 export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) {
   const allRecipes = useMemo((): Recipe[] => {
-    if (!state) return DEFAULT_RECIPES
-    const custom = state.customRecipes || []
-    const overrides = state.recipeOverrides || {}
-    const hidden = state.hiddenBuiltin || []
+    const custom = state?.customRecipes ?? []
+    const overrides = state?.recipeOverrides ?? {}
+    const hidden = state?.hiddenBuiltin ?? []
     const base = DEFAULT_RECIPES
       .filter(r => !hidden.includes(r.id))
       .map(r => overrides[r.id] ? { ...r, ...overrides[r.id] } as Recipe : r)
     return [...base, ...custom]
-  }, [state])
+  }, [state?.customRecipes, state?.recipeOverrides, state?.hiddenBuiltin])
 
   const saveRecipe = useCallback((updatedRecipe: RecipeDraft) => {
     const isBuiltin = DEFAULT_RECIPES.some(r => r.id === updatedRecipe.id)
