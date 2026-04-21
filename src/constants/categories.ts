@@ -1,5 +1,6 @@
-// Standardkategorier med ordning och hållbarhetstider (dagar)
-export const DEFAULT_CATEGORIES = [
+import type { Category } from '../types'
+
+export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'gronsaker', name: 'Grönsaker & frukt', emoji: '🥦', shelfLife: 7 },
   { id: 'mejeri', name: 'Mejeri', emoji: '🥛', shelfLife: 10 },
   { id: 'kott', name: 'Kött & fisk', emoji: '🥩', shelfLife: 4 },
@@ -12,4 +13,4 @@ export const DEFAULT_CATEGORIES = [
   { id: 'snacks', name: 'Snacks & godis', emoji: '🍫', shelfLife: 60 },
   { id: 'hygien', name: 'Hygien & hushåll', emoji: '🧴', shelfLife: 365 },
   { id: 'ovrigt', name: 'Övrigt', emoji: '🛒', shelfLife: 30 },
-];
+]

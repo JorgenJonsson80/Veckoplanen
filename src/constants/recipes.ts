@@ -1,5 +1,6 @@
-// Inbyggda go-to-rätter med ingredienser
-export const DEFAULT_RECIPES = [
+import type { Recipe } from '../types'
+
+export const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'tacos',
     name: 'Tacos',
@@ -84,4 +85,4 @@ export const DEFAULT_RECIPES = [
       { name: 'Champinjoner', amount: '150 g', category: 'gronsaker' },
     ],
   },
-];
+]
