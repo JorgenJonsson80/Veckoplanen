@@ -9,6 +9,7 @@ interface Props {
   recentRoomsKey?: string | null
 }
 
+// I, O, 1, 0 excluded to avoid visual confusion when sharing codes verbally
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const CODE_LENGTH = 8
 
@@ -20,12 +21,9 @@ function generateRoomCode(): string {
 
 async function findUniqueCode(): Promise<string> {
   if (!supabase) return generateRoomCode()
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const code = generateRoomCode()
-    const { data } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
-    if (!data) return code
-  }
-  return generateRoomCode()
+  const code = generateRoomCode()
+  const { data } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
+  return data ? generateRoomCode() : code
 }
 
 const styles = {
