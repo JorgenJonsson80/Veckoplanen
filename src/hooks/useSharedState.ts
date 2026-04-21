@@ -72,6 +72,7 @@ export function useSharedState(
   const [roomNotFound, setRoomNotFound] = useState(false)
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
   const roomIdRef = useRef<string | null>(null)
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userNameRef = useRef(userName)
   const defaultCategoriesRef = useRef(defaultCategories)
   const userIdRef = useRef(userId)
@@ -151,6 +152,7 @@ export function useSharedState(
     return () => {
       cancelled = true
       if (channelRef.current) supabase!.removeChannel(channelRef.current)
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
     }
   }, [roomCode])
 
@@ -208,16 +210,27 @@ export function useSharedState(
       if (roomCode) writeCache(roomCode, next)
 
       if (supabase && roomIdRef.current) {
-        supabase
-          .from('rooms')
-          .update({ state: next, updated_at: new Date().toISOString() })
-          .eq('id', roomIdRef.current)
-          .then(({ error: writeError }) => {
-            if (writeError) {
+        const roomId = roomIdRef.current
+        const payload = { state: next, updated_at: new Date().toISOString() }
+
+        const attemptWrite = (isRetry: boolean) =>
+          supabase!.from('rooms').update(payload).eq('id', roomId)
+            .then(({ error: writeError }) => {
+              if (!writeError) {
+                if (isRetry) setSyncError(null)
+                return
+              }
               console.error('Supabase-uppdateringsfel:', writeError)
-              setSyncError(writeError.message || 'Okänt fel')
-            }
-          })
+              if (isRetry) {
+                setSyncError(writeError.message || 'Okänt synkfel')
+              } else {
+                setSyncError('Synkfel – försöker igen…')
+                if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
+                retryTimeoutRef.current = setTimeout(() => attemptWrite(true), 4000)
+              }
+            })
+
+        attemptWrite(false)
       }
 
       return next
