@@ -1,14 +1,15 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import RoomSetup from './components/RoomSetup'
 import AuthScreen from './components/AuthScreen'
 import ResetPasswordScreen from './components/ResetPasswordScreen'
-import { useSharedState, WEEKDAYS } from './hooks/useSharedState'
+import { useSharedState } from './hooks/useSharedState'
 import { useAuth } from './hooks/useAuth'
 import { useRecipes } from './hooks/useRecipes'
 import { useMealPlan } from './hooks/useMealPlan'
 import { useShoppingList } from './hooks/useShoppingList'
 import { DEFAULT_CATEGORIES } from './constants/categories'
 import { getISOWeek } from './utils/date'
+import { buildIngredientMap } from './utils/ingredients'
 import type { Session, Category, Store, ShoppingListItem, RecipeDraft } from './types'
 
 const RecipeEditor = lazy(() => import('./components/RecipeEditor'))
@@ -107,20 +108,10 @@ export default function App() {
   const { allRecipes, saveRecipe: saveRecipeData } = useRecipes(state, updateState)
   const categories = useMemo((): Category[] => state?.categories ?? DEFAULT_CATEGORIES, [state])
 
-  const ingredientMap = useMemo(() => {
-    const map: Record<string, { amount: string; category: string; sources: string[] }> = {}
-    Object.values(state?.meals ?? {}).forEach(mealName => {
-      if (!mealName) return
-      const recipe = allRecipes.find(r => r.name.toLowerCase() === mealName.toLowerCase())
-      if (!recipe) return
-      recipe.ingredients.forEach(ing => {
-        if (!ing.name.trim()) return
-        if (!map[ing.name]) map[ing.name] = { amount: ing.amount, category: ing.category, sources: [mealName] }
-        else if (!map[ing.name].sources.includes(mealName)) map[ing.name].sources.push(mealName)
-      })
-    })
-    return map
-  }, [state?.meals, allRecipes])
+  const ingredientMap = useMemo(
+    () => buildIngredientMap(state?.meals ?? {}, allRecipes),
+    [state?.meals, allRecipes]
+  )
 
   const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals } = useMealPlan(state, updateState)
   const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
