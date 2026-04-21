@@ -97,8 +97,12 @@ export function useSharedState(
       return
     }
 
+    const cached = readCache(roomCode)
+    latestStateRef.current = cached
+    setState(cached ?? null)
+    setLoading(!cached)
+
     if (!supabase) {
-      const cached = readCache(roomCode)
       setState(cached ?? defaultState(defaultCategoriesRef.current))
       setLoading(false)
       return
