@@ -1,65 +1,65 @@
 import { z } from 'zod'
 
 const CategorySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  emoji: z.string(),
-  shelfLife: z.number(),
+  id: z.string().max(64),
+  name: z.string().min(1).max(50),
+  emoji: z.string().max(10),
+  shelfLife: z.number().min(0).max(3650),
 })
 
 const IngredientSchema = z.object({
-  name: z.string(),
-  amount: z.string(),
-  category: z.string(),
+  name: z.string().min(1).max(100),
+  amount: z.string().max(50),
+  category: z.string().max(64),
 })
 
 const RecipeSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  ingredients: z.array(IngredientSchema),
+  id: z.string().max(64),
+  name: z.string().min(1).max(100),
+  ingredients: z.array(IngredientSchema).max(100),
 })
 
 const ActivityLogEntrySchema = z.object({
-  user: z.string(),
-  action: z.string(),
-  time: z.string(),
+  user: z.string().max(100),
+  action: z.string().max(200),
+  time: z.string().max(30),
 })
 
 const PurchaseRecordSchema = z.object({
-  lastBought: z.string().nullable(),
-  count: z.number(),
-  cat: z.string().optional(),
+  lastBought: z.string().max(30).nullable(),
+  count: z.number().min(0).max(10_000),
+  cat: z.string().max(64).optional(),
 })
 
 const ExtraItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  category: z.string(),
+  id: z.string().max(64),
+  name: z.string().min(1).max(100),
+  category: z.string().max(64),
 })
 
 const SavedWeekPlanSchema = z.object({
-  meals: z.record(z.string(), z.string()),
-  savedAt: z.string(),
+  meals: z.record(z.string().max(20), z.string().max(100)),
+  savedAt: z.string().max(30),
 })
 
 const ShoppingListItemSchema = z.object({
-  name: z.string(),
-  amount: z.string(),
+  name: z.string().min(1).max(100),
+  amount: z.string().max(50),
   isExtra: z.boolean(),
-  id: z.string().optional(),
+  id: z.string().max(64).optional(),
 })
 
 const SavedShoppingListSchema = z.object({
-  items: z.array(ShoppingListItemSchema),
-  meals: z.record(z.string(), z.string()),
-  savedAt: z.string(),
+  items: z.array(ShoppingListItemSchema).max(500),
+  meals: z.record(z.string().max(20), z.string().max(100)),
+  savedAt: z.string().max(30),
 })
 
 const StoreSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  emoji: z.string(),
-  categoryOrder: z.array(z.string()),
+  id: z.string().max(64),
+  name: z.string().min(1).max(50),
+  emoji: z.string().max(10),
+  categoryOrder: z.array(z.string().max(64)).max(100),
 })
 
 export const RoomStateSchema = z.object({

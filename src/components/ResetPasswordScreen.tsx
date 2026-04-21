@@ -25,7 +25,7 @@ export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
 
   async function handleSubmit() {
     setErr('')
-    if (password.length < 6) { setErr('Lösenordet måste vara minst 6 tecken.'); return }
+    if (password.length < 8) { setErr('Lösenordet måste vara minst 8 tecken.'); return }
     if (password !== confirm) { setErr('Lösenorden matchar inte.'); return }
     setLoading(true)
     const { error } = await onUpdatePassword(password)
@@ -49,7 +49,7 @@ export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
         <h1 style={s.title}>Veckoplanen</h1>
         <p style={s.sub}>Välj ett nytt lösenord för ditt konto.</p>
         <label style={s.label}>Nytt lösenord</label>
-        <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minst 6 tecken" autoFocus />
+        <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minst 8 tecken" autoFocus />
         <label style={s.label}>Bekräfta lösenord</label>
         <input style={s.input} type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Samma lösenord igen" onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
         {err && <p style={s.err}>{err}</p>}
