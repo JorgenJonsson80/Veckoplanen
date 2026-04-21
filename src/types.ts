@@ -30,7 +30,7 @@ export interface PurchaseRecord {
 }
 
 export interface ExtraItem {
-  id: number
+  id: string
   name: string
   category: string
 }
@@ -44,7 +44,7 @@ export interface ShoppingListItem {
   name: string
   amount: string
   isExtra: boolean
-  id?: number
+  id?: string
 }
 
 export interface SavedShoppingList {

@@ -94,7 +94,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
 
   function handleSave() {
     if (!name.trim()) return
-    onSave({ id: store?.id || ('store_' + Date.now()), name: name.trim(), emoji, categoryOrder: catOrder })
+    onSave({ id: store?.id || crypto.randomUUID(), name: name.trim(), emoji, categoryOrder: catOrder })
   }
 
   const sortedCats = catOrder.map(id => allCategories.find(c => c.id === id)).filter((c): c is Category => c !== undefined)

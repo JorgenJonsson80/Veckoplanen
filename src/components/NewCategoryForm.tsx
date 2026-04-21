@@ -32,7 +32,7 @@ export default function NewCategoryForm({ onAdd }: Props) {
 
   function handleAdd() {
     if (!catName.trim()) return
-    const id = 'custom_' + Date.now()
+    const id = crypto.randomUUID()
     onAdd({ id, name: catName.trim(), emoji: selectedEmoji, shelfLife: 30 })
     setCatName('')
   }

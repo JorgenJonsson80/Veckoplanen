@@ -17,7 +17,7 @@ interface Props {
   budget: number | null
   weeklySpend: number | null
   onToggleItem: (name: string, catId: string) => void
-  onRemoveExtraItem: (id: number) => void
+  onRemoveExtraItem: (id: string) => void
   onAddExtraItem: (name: string, catId: string) => void
   onSetActiveStore: (id: string | null) => void
   onEditStore: (store: Store) => void

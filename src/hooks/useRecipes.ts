@@ -27,7 +27,7 @@ export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) 
         `uppdaterade receptet "${updatedRecipe.name}"`
       )
     } else {
-      const newRecipe: Recipe = { ...updatedRecipe, id: 'custom_' + Date.now() }
+      const newRecipe: Recipe = { ...updatedRecipe, id: crypto.randomUUID() }
       updateState(
         prev => ({ ...prev, customRecipes: [...(prev.customRecipes || []), newRecipe] }),
         `skapade receptet "${newRecipe.name}"`

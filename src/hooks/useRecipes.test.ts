@@ -85,6 +85,6 @@ describe('useRecipes — saveRecipe', () => {
     const next = updater(state)
     expect(next.customRecipes).toHaveLength(1)
     expect(next.customRecipes[0].name).toBe('Färsk pasta')
-    expect(next.customRecipes[0].id).toMatch(/^custom_/)
+    expect(next.customRecipes[0].id).toMatch(/^[0-9a-f-]{36}$/)
   })
 })

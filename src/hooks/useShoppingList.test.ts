@@ -76,10 +76,10 @@ describe('useShoppingList', () => {
   })
 
   it('removeExtraItem removes the item by id', () => {
-    const state = makeState({ extraItems: [{ id: 42, name: 'Ägg', category: 'torrvara' }] })
+    const state = makeState({ extraItems: [{ id: 'item-1', name: 'Ägg', category: 'torrvara' }] })
     const updateState = vi.fn() as unknown as UpdateStateFn
     const { result } = renderHook(() => useShoppingList(state, updateState, ingredientMap, categories))
-    act(() => { result.current.removeExtraItem(42) })
+    act(() => { result.current.removeExtraItem('item-1') })
     const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
     const next = updater(state)
     expect(next.extraItems).toHaveLength(0)

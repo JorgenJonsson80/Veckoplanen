@@ -32,7 +32,7 @@ const PurchaseRecordSchema = z.object({
 })
 
 const ExtraItemSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   name: z.string(),
   category: z.string(),
 })
@@ -46,7 +46,7 @@ const ShoppingListItemSchema = z.object({
   name: z.string(),
   amount: z.string(),
   isExtra: z.boolean(),
-  id: z.number().optional(),
+  id: z.string().optional(),
 })
 
 const SavedShoppingListSchema = z.object({

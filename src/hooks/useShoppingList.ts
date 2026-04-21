@@ -67,11 +67,11 @@ export function useShoppingList(
   }, [updateState])
 
   const addExtraItem = useCallback((name: string, catId: string) => {
-    const item = { name, category: catId, id: Date.now() }
+    const item = { name, category: catId, id: crypto.randomUUID() }
     updateState(prev => ({ ...prev, extraItems: [...(prev.extraItems ?? []), item] }), `lade till extra vara "${name}"`)
   }, [updateState])
 
-  const removeExtraItem = useCallback((id: number) => {
+  const removeExtraItem = useCallback((id: string) => {
     updateState(prev => ({ ...prev, extraItems: (prev.extraItems ?? []).filter(i => i.id !== id) }))
   }, [updateState])
 

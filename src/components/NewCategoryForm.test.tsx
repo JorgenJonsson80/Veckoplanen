@@ -25,7 +25,7 @@ describe('NewCategoryForm', () => {
     expect(onAdd).toHaveBeenCalledOnce()
     const arg = onAdd.mock.calls[0][0]
     expect(arg.name).toBe('Frukt')
-    expect(arg.id).toMatch(/^custom_/)
+    expect(arg.id).toMatch(/^[0-9a-f-]{36}$/)
     expect(arg.emoji).toBeTruthy()
     expect(arg.shelfLife).toBe(30)
   })
