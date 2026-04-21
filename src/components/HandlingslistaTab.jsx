@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 export default function HandlingslistaTab({
   stores, activeStoreId, orderedCategories, allItemsGrouped,
@@ -17,6 +17,17 @@ export default function HandlingslistaTab({
   const [showBudgetEdit, setShowBudgetEdit] = useState(false);
   const [budgetInput, setBudgetInput] = useState('');
   const [spendInput, setSpendInput] = useState('');
+  const [confirmClear, setConfirmClear] = useState(false);
+
+  function handleClearChecked() {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      setTimeout(() => setConfirmClear(false), 3000);
+      return;
+    }
+    setConfirmClear(false);
+    onClearChecked();
+  }
 
   const handleShare = useCallback(() => {
     const lines = [`🛒 Handlingslista ${currentWeek}\n`];
@@ -38,7 +49,10 @@ export default function HandlingslistaTab({
     }
   }, [currentWeek, orderedCategories, allItemsGrouped, checkedItems]);
 
-  const allItemNames = Object.values(allItemsGrouped).flat().map(i => i.name.toLowerCase());
+  const allItemNames = useMemo(
+    () => Object.values(allItemsGrouped).flat().map(i => i.name.toLowerCase()),
+    [allItemsGrouped]
+  );
 
   function handleExtraItemInput(value) {
     setNewExtraItem(value);
@@ -142,10 +156,10 @@ export default function HandlingslistaTab({
           </div>
           {checkedCount > 0 && (
             <button
-              onClick={onClearChecked}
-              style={{ marginTop: '10px', width: '100%', padding: '10px', background: checkedCount === totalItems ? '#2d5016' : '#f5f5f5', color: checkedCount === totalItems ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}
+              onClick={handleClearChecked}
+              style={{ marginTop: '10px', width: '100%', padding: '10px', background: confirmClear ? '#c62828' : checkedCount === totalItems ? '#2d5016' : '#f5f5f5', color: confirmClear || checkedCount === totalItems ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s' }}
             >
-              {checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
+              {confirmClear ? '⚠️ Tryck igen för att bekräfta' : checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
             </button>
           )}
         </div>

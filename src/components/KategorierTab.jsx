@@ -68,6 +68,17 @@ function CatDragGhost({ cat }) {
 export default function KategorierTab({ categories, session, onReorder, onAddCategory, onRemoveCategory, onDeleteRoom }) {
   const [activeCatId, setActiveCatId] = useState(null);
   const [showNewCat, setShowNewCat] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  function handleDeleteRoom() {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      setTimeout(() => setConfirmDelete(false), 3000);
+      return;
+    }
+    setConfirmDelete(false);
+    onDeleteRoom();
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -125,10 +136,10 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
         <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid #ffcdd2' }}>
           <p style={{ color: '#aaa', fontSize: '12px', margin: '0 0 8px' }}>Farozon</p>
           <button
-            onClick={onDeleteRoom}
-            style={{ width: '100%', padding: '12px', background: '#fff', border: '1.5px solid #ef9a9a', borderRadius: '10px', color: '#c62828', fontSize: '15px', cursor: 'pointer' }}
+            onClick={handleDeleteRoom}
+            style={{ width: '100%', padding: '12px', background: confirmDelete ? '#c62828' : '#fff', border: '1.5px solid #ef9a9a', borderRadius: '10px', color: confirmDelete ? '#fff' : '#c62828', fontSize: '15px', cursor: 'pointer', transition: 'background 0.2s' }}
           >
-            🗑 Radera rummet {session.roomCode}
+            {confirmDelete ? '⚠️ Tryck igen — detta går inte att ångra' : `🗑 Radera rummet ${session.roomCode}`}
           </button>
         </div>
       )}

@@ -114,15 +114,19 @@ const styles = {
 };
 
 export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
+  function withIds(ings) {
+    return (ings || []).map(i => ({ ...i, _id: i._id || crypto.randomUUID() }));
+  }
+
   const [name, setName] = useState(recipe?.name || '');
   const [ingredients, setIngredients] = useState(
-    recipe?.ingredients?.map(i => ({ ...i })) || [{ name: '', amount: '', category: categories[0]?.id || '' }]
+    recipe?.ingredients?.length ? withIds(recipe.ingredients) : [{ name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]
   );
 
   useEffect(() => {
     setName(recipe?.name || '');
     setIngredients(
-      recipe?.ingredients?.map(i => ({ ...i })) || [{ name: '', amount: '', category: categories[0]?.id || '' }]
+      recipe?.ingredients?.length ? withIds(recipe.ingredients) : [{ name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]
     );
   }, [recipe]);
 
@@ -131,7 +135,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
   }
 
   function addIngredient() {
-    setIngredients(prev => [...prev, { name: '', amount: '', category: categories[0]?.id || '' }]);
+    setIngredients(prev => [...prev, { name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]);
   }
 
   function removeIngredient(idx) {
@@ -157,11 +161,10 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
           Rättens namn
         </label>
         <input
-          style={{ ...styles.input, marginBottom: '16px', fontSize: '16px' }}
+          style={{ ...styles.input, marginBottom: nameErr ? '4px' : '16px', fontSize: '16px', borderColor: nameErr ? '#c62828' : undefined }}
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="t.ex. Tacos"
-          style={{ ...styles.input, marginBottom: nameErr ? '4px' : '16px', fontSize: '16px', borderColor: nameErr ? '#c62828' : undefined }}
         />
         {nameErr && <p style={{ color: '#c62828', fontSize: '13px', margin: '0 0 12px' }}>{nameErr}</p>}
 
@@ -174,7 +177,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }) {
         </div>
 
         {ingredients.map((ing, idx) => (
-          <div key={idx} style={styles.row}>
+          <div key={ing._id} style={styles.row}>
             <input
               style={styles.input}
               value={ing.name}

@@ -145,7 +145,7 @@ export function useSharedState(roomCode, userName, defaultCategories, userId, sh
       channelRef.current = null;
     }
     const channel = supabase
-      .channel(`room_${code}_${Date.now()}`)
+      .channel(`room_${code}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },

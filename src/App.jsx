@@ -132,7 +132,6 @@ export default function App() {
   }
 
   async function handleDeleteRoom() {
-    if (!window.confirm(`Radera rummet ${session.roomCode} och all dess data? Det går inte att ångra.`)) return;
     const { error: delErr } = await deleteRoom();
     if (delErr) { alert('Kunde inte radera rummet: ' + delErr.message); return; }
     const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode);
@@ -208,7 +207,7 @@ export default function App() {
       prev => ({ ...prev, savedLists: { ...(prev.savedLists || {}), [weekKey]: { items: allItems, meals: { ...meals }, savedAt: new Date().toISOString() } } }),
       `sparade handlingslistan för ${weekKey}`
     );
-    alert(`Lista sparad för ${weekKey}!`);
+
   }
 
   function addExtraItem(name, catId) {
@@ -221,7 +220,6 @@ export default function App() {
   }
 
   function clearChecked() {
-    if (!window.confirm('Rensa alla ikryssade varor? Listan är redo för nästa vecka.')) return;
     updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan');
   }
 

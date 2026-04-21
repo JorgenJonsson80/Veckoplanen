@@ -100,7 +100,7 @@ export default function ActivityDrawer({ log, onClose }) {
           <p style={styles.empty}>Ingen aktivitet än.</p>
         ) : (
           log.map((entry, idx) => (
-            <div key={idx} style={styles.entry}>
+            <div key={`${entry.time}_${idx}`} style={styles.entry}>
               <span style={styles.user}>{entry.user}</span>
               <span style={styles.action}>{entry.action}</span>
               <span style={styles.time}>{formatTime(entry.time)}</span>
