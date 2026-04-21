@@ -92,6 +92,8 @@ export function useSharedState(
       return
     }
 
+    let cancelled = false
+
     async function initRoom() {
       try {
         const { data, error: fetchError } = await supabase!
@@ -100,6 +102,7 @@ export function useSharedState(
           .eq('code', roomCode)
           .single()
 
+        if (cancelled) return
         if (fetchError && fetchError.code !== 'PGRST116') throw fetchError
 
         if (data) {
@@ -113,6 +116,7 @@ export function useSharedState(
             .insert({ code: roomCode, state: fresh, created_by: userId ?? null })
             .select()
             .single()
+          if (cancelled) return
           if (createError) throw createError
           roomIdRef.current = (created as { id: string }).id
           applyState(fresh)
@@ -121,19 +125,23 @@ export function useSharedState(
           setRoomNotFound(true)
         }
       } catch (err) {
+        if (cancelled) return
         if (!readCache(roomCode!)) {
           setState(defaultState(defaultCategories))
         }
         setError((err as Error).message)
         console.error('Supabase-fel vid ruminit:', (err as Error).message)
       } finally {
-        setLoading(false)
-        subscribeToRoom(roomCode!)
+        if (!cancelled) {
+          setLoading(false)
+          subscribeToRoom(roomCode!)
+        }
       }
     }
 
     initRoom()
     return () => {
+      cancelled = true
       if (channelRef.current) supabase!.removeChannel(channelRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
