@@ -72,6 +72,14 @@ export function useSharedState(
   const [roomNotFound, setRoomNotFound] = useState(false)
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
   const roomIdRef = useRef<string | null>(null)
+  const userNameRef = useRef(userName)
+  const defaultCategoriesRef = useRef(defaultCategories)
+  const userIdRef = useRef(userId)
+  const shouldCreateRef = useRef(shouldCreate)
+  userNameRef.current = userName
+  defaultCategoriesRef.current = defaultCategories
+  userIdRef.current = userId
+  shouldCreateRef.current = shouldCreate
 
   function applyState(newState: RoomState, code = roomCode): void {
     if (code) writeCache(code, newState)
@@ -80,14 +88,14 @@ export function useSharedState(
 
   useEffect(() => {
     if (!roomCode) {
-      setState(defaultState(defaultCategories))
+      setState(defaultState(defaultCategoriesRef.current))
       setLoading(false)
       return
     }
 
     if (!supabase) {
       const cached = readCache(roomCode)
-      setState(cached ?? defaultState(defaultCategories))
+      setState(cached ?? defaultState(defaultCategoriesRef.current))
       setLoading(false)
       return
     }
@@ -107,13 +115,13 @@ export function useSharedState(
 
         if (data) {
           roomIdRef.current = data.id as string
-          applyState(parseRoomState(data.state) ?? defaultState(defaultCategories))
+          applyState(parseRoomState(data.state) ?? defaultState(defaultCategoriesRef.current))
           ensureMembership(data.id as string)
-        } else if (shouldCreate) {
-          const fresh = readCache(roomCode!) ?? defaultState(defaultCategories)
+        } else if (shouldCreateRef.current) {
+          const fresh = readCache(roomCode!) ?? defaultState(defaultCategoriesRef.current)
           const { data: created, error: createError } = await supabase!
             .from('rooms')
-            .insert({ code: roomCode, state: fresh, created_by: userId ?? null })
+            .insert({ code: roomCode, state: fresh, created_by: userIdRef.current ?? null })
             .select()
             .single()
           if (cancelled) return
@@ -127,7 +135,7 @@ export function useSharedState(
       } catch (err) {
         if (cancelled) return
         if (!readCache(roomCode!)) {
-          setState(defaultState(defaultCategories))
+          setState(defaultState(defaultCategoriesRef.current))
         }
         setError((err as Error).message)
         console.error('Supabase-fel vid ruminit:', (err as Error).message)
@@ -144,7 +152,6 @@ export function useSharedState(
       cancelled = true
       if (channelRef.current) supabase!.removeChannel(channelRef.current)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode])
 
   async function ensureMembership(roomId: string): Promise<void> {
@@ -155,7 +162,7 @@ export function useSharedState(
       await supabase
         .from('room_members')
         .upsert(
-          { room_id: roomId, user_id: user.id, display_name: userName },
+          { room_id: roomId, user_id: user.id, display_name: userNameRef.current },
           { onConflict: 'room_id,user_id', ignoreDuplicates: true }
         )
     } catch { /* room_members kanske inte skapats ännu – ignorera */ }
