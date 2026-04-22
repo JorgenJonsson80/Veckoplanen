@@ -117,6 +117,7 @@ export default function App() {
 
   const checkedItems = state?.checkedItems ?? {}
   const extraItems = state?.extraItems ?? []
+  const hiddenIngredients = state?.hiddenIngredients ?? []
   const stores = state?.stores ?? []
   const savedLists = state?.savedLists ?? {}
   const activeStoreId = state?.activeStoreId ?? null
@@ -135,6 +136,7 @@ export default function App() {
     const grouped: Record<string, ShoppingListItem[]> = {}
     orderedCategories.forEach(cat => { grouped[cat.id] = [] })
     Object.entries(ingredientMap).forEach(([name, info]) => {
+      if (hiddenIngredients.includes(name)) return
       const catId = info.category || 'ovrigt'
       if (!grouped[catId]) grouped[catId] = []
       grouped[catId].push({ name, amount: info.amount, isExtra: false })
@@ -145,7 +147,7 @@ export default function App() {
       grouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
     })
     return grouped
-  }, [orderedCategories, ingredientMap, extraItems])
+  }, [orderedCategories, ingredientMap, extraItems, hiddenIngredients])
 
   const totalItems = useMemo(() => Object.values(allItemsGrouped).flat().length, [allItemsGrouped])
   const checkedCount = useMemo(
@@ -153,7 +155,7 @@ export default function App() {
     [allItemsGrouped, checkedItems]
   )
 
-  const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
+  const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, hideIngredient, restoreIngredients, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
 
   function saveRecipe(updatedRecipe: RecipeDraft) {
     saveRecipeData(updatedRecipe)
@@ -306,6 +308,7 @@ export default function App() {
               checkedItems={checkedItems} totalItems={totalItems} checkedCount={checkedCount} likelyEmptyItems={likelyEmptyItems}
               savedLists={savedLists} history={state?.purchaseHistory ?? {}} categories={categories} currentWeek={currentWeek}
               onToggleItem={toggleItem} onRemoveExtraItem={removeExtraItem} onAddExtraItem={addExtraItem}
+              onHideIngredient={hideIngredient} onRestoreIngredients={restoreIngredients} hiddenCount={hiddenIngredients.length}
               onSetActiveStore={setActiveStore} onEditStore={setEditingStore} onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: categories.map(c => c.id) })}
               budget={state?.budget ?? null} weeklySpend={state?.weeklySpend ?? null}
               onSetBudget={setBudget} onSetWeeklySpend={setWeeklySpend}

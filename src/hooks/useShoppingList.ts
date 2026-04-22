@@ -75,6 +75,14 @@ export function useShoppingList(
     updateState(prev => ({ ...prev, extraItems: (prev.extraItems ?? []).filter(i => i.id !== id) }))
   }, [updateState])
 
+  const hideIngredient = useCallback((name: string) => {
+    updateState(prev => ({ ...prev, hiddenIngredients: [...(prev.hiddenIngredients ?? []), name] }))
+  }, [updateState])
+
+  const restoreIngredients = useCallback(() => {
+    updateState(prev => ({ ...prev, hiddenIngredients: [] }))
+  }, [updateState])
+
   const clearChecked = useCallback(() => {
     updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan')
   }, [updateState])
@@ -93,6 +101,8 @@ export function useShoppingList(
     saveWeeklyList,
     addExtraItem,
     removeExtraItem,
+    hideIngredient,
+    restoreIngredients,
     clearChecked,
     setBudget,
     setWeeklySpend,

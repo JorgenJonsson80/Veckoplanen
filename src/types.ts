@@ -61,6 +61,7 @@ export interface RoomState {
   customRecipes: Recipe[]
   recipeOverrides: Record<string, Partial<Recipe>>
   hiddenBuiltin: string[]
+  hiddenIngredients?: string[]
   activityLog: ActivityLogEntry[]
   purchaseHistory: Record<string, PurchaseRecord>
   savedMeals?: Record<string, SavedWeekPlan>

@@ -20,6 +20,9 @@ interface Props {
   onToggleItem: (name: string, catId: string) => void
   onRemoveExtraItem: (id: string) => void
   onAddExtraItem: (name: string, catId: string) => void
+  onHideIngredient: (name: string) => void
+  onRestoreIngredients: () => void
+  hiddenCount: number
   onSetActiveStore: (id: string | null) => void
   onEditStore: (store: Store) => void
   onNewStore: () => void
@@ -35,6 +38,7 @@ export default function HandlingslistaTab({
   savedLists, history, categories, currentWeek,
   budget, weeklySpend,
   onToggleItem, onRemoveExtraItem, onAddExtraItem,
+  onHideIngredient, onRestoreIngredients, hiddenCount,
   onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
   onSetBudget, onSetWeeklySpend,
 }: Props) {
@@ -189,13 +193,22 @@ export default function HandlingslistaTab({
                   <input type="checkbox" checked={checked} onChange={() => onToggleItem(item.name, cat.id)} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--clr-primary)' }} />
                   <span style={{ flex: 1, textDecoration: checked ? 'line-through' : 'none', color: checked ? '#aaa' : '#222', fontSize: '15px' }}>{item.name}</span>
                   {item.amount && <span style={{ fontSize: '12px', color: '#888' }}>{item.amount}</span>}
-                  {item.isExtra && <button style={{ background: 'none', border: 'none', color: 'var(--clr-error)', cursor: 'pointer', fontSize: '16px', padding: '0' }} onClick={() => onRemoveExtraItem(item.id!)}>×</button>}
+                  {item.isExtra
+                    ? <button style={{ background: 'none', border: 'none', color: 'var(--clr-error)', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} onClick={() => onRemoveExtraItem(item.id!)}>×</button>
+                    : <button style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
+                  }
                 </div>
               )
             })}
           </div>
         )
       })}
+
+      {hiddenCount > 0 && (
+        <button onClick={onRestoreIngredients} style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', color: '#aaa', fontSize: '13px', cursor: 'pointer', padding: '4px 0 12px' }}>
+          + Visa {hiddenCount} dolda {hiddenCount === 1 ? 'vara' : 'varor'} (har hemma)
+        </button>
+      )}
 
       {totalItems === 0 && (
         <div style={{ textAlign: 'center', padding: '28px 0 16px', color: '#888' }}>
