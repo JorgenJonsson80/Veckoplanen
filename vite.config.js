@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { execSync } from 'child_process'
@@ -22,5 +23,5 @@ function injectSwVersion() {
 }
 
 export default defineConfig({
-  plugins: [react(), injectSwVersion()],
+  plugins: [tailwindcss(), react(), injectSwVersion()],
 })

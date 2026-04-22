@@ -1,4 +1,18 @@
-/* Design tokens — ändra här för att byta tema */
+@import "tailwindcss";
+
+@theme {
+  --color-primary:    #2d5016;
+  --color-secondary:  #6b8f5e;
+  --color-border:     #c8e6c9;
+  --color-bg:         #f0f7ef;
+  --color-bg-subtle:  #e8f5e9;
+  --color-bg-card:    #fafff9;
+  --color-error:      #c62828;
+  --color-warning:    #e65100;
+  --font-serif:       Georgia, serif;
+}
+
+/* Keep CSS vars for components not yet migrated to Tailwind */
 :root {
   --clr-primary:    #2d5016;
   --clr-secondary:  #6b8f5e;
