@@ -114,6 +114,45 @@ export default function App() {
   )
 
   const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals } = useMealPlan(state, updateState)
+
+  const checkedItems = state?.checkedItems ?? {}
+  const extraItems = state?.extraItems ?? []
+  const stores = state?.stores ?? []
+  const savedLists = state?.savedLists ?? {}
+  const activeStoreId = state?.activeStoreId ?? null
+  const activeStore = stores.find(s => s.id === activeStoreId) ?? null
+  const currentWeek = getISOWeek()
+
+  const orderedCategories = useMemo((): Category[] => {
+    if (!activeStore) return categories
+    return activeStore.categoryOrder
+      .map(id => categories.find(c => c.id === id))
+      .filter((c): c is Category => c !== undefined)
+      .concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
+  }, [activeStore, categories])
+
+  const allItemsGrouped = useMemo((): Record<string, ShoppingListItem[]> => {
+    const grouped: Record<string, ShoppingListItem[]> = {}
+    orderedCategories.forEach(cat => { grouped[cat.id] = [] })
+    Object.entries(ingredientMap).forEach(([name, info]) => {
+      const catId = info.category || 'ovrigt'
+      if (!grouped[catId]) grouped[catId] = []
+      grouped[catId].push({ name, amount: info.amount, isExtra: false })
+    })
+    extraItems.forEach(item => {
+      const catId = item.category || 'ovrigt'
+      if (!grouped[catId]) grouped[catId] = []
+      grouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
+    })
+    return grouped
+  }, [orderedCategories, ingredientMap, extraItems])
+
+  const totalItems = useMemo(() => Object.values(allItemsGrouped).flat().length, [allItemsGrouped])
+  const checkedCount = useMemo(
+    () => Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length,
+    [allItemsGrouped, checkedItems]
+  )
+
   const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
 
   function saveRecipe(updatedRecipe: RecipeDraft) {
@@ -204,44 +243,6 @@ export default function App() {
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <p style={{ color: 'var(--clr-primary)', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
     </div>
-  )
-
-  const checkedItems = state?.checkedItems ?? {}
-  const extraItems = state?.extraItems ?? []
-  const stores = state?.stores ?? []
-  const savedLists = state?.savedLists ?? {}
-  const activeStoreId = state?.activeStoreId ?? null
-  const activeStore = stores.find(s => s.id === activeStoreId) ?? null
-  const currentWeek = getISOWeek()
-
-  const orderedCategories = useMemo((): Category[] => {
-    if (!activeStore) return categories
-    return activeStore.categoryOrder
-      .map(id => categories.find(c => c.id === id))
-      .filter((c): c is Category => c !== undefined)
-      .concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
-  }, [activeStore, categories])
-
-  const allItemsGrouped = useMemo((): Record<string, ShoppingListItem[]> => {
-    const grouped: Record<string, ShoppingListItem[]> = {}
-    orderedCategories.forEach(cat => { grouped[cat.id] = [] })
-    Object.entries(ingredientMap).forEach(([name, info]) => {
-      const catId = info.category || 'ovrigt'
-      if (!grouped[catId]) grouped[catId] = []
-      grouped[catId].push({ name, amount: info.amount, isExtra: false })
-    })
-    extraItems.forEach(item => {
-      const catId = item.category || 'ovrigt'
-      if (!grouped[catId]) grouped[catId] = []
-      grouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
-    })
-    return grouped
-  }, [orderedCategories, ingredientMap, extraItems])
-
-  const totalItems = useMemo(() => Object.values(allItemsGrouped).flat().length, [allItemsGrouped])
-  const checkedCount = useMemo(
-    () => Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length,
-    [allItemsGrouped, checkedItems]
   )
 
   return (

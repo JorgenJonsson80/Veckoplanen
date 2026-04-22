@@ -30,17 +30,31 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // App-skal: cache-first, sedan nätverk
+  // Hashed assets (immutable) – cache-first
+  if (url.pathname.startsWith('/assets/')) {
+    e.respondWith(
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return fetch(request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then(cache => cache.put(request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // HTML and other app-shell files – network-first so index.html is always fresh
   e.respondWith(
-    caches.match(request).then(cached => {
-      const networkFetch = fetch(request).then(response => {
-        if (response.ok) {
-          const clone = response.clone(); // klona synkront innan body konsumeras
-          caches.open(CACHE).then(cache => cache.put(request, clone));
-        }
-        return response;
-      });
-      return cached || networkFetch;
-    })
+    fetch(request).then(response => {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE).then(cache => cache.put(request, clone));
+      }
+      return response;
+    }).catch(() => caches.match(request))
   );
 });
