@@ -18,13 +18,13 @@ const styles = {
   handle: { width: '40px', height: '4px', background: 'var(--clr-border)', borderRadius: '2px', margin: '0 auto 16px' },
   title: { fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '20px', margin: '0 0 16px' },
   row: { display: 'grid', gridTemplateColumns: '1fr 80px 110px 32px', gap: '6px', marginBottom: '8px', alignItems: 'center' },
-  input: { padding: '7px 8px', border: '1.5px solid #c8e6c9', borderRadius: '7px', fontSize: '14px', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' } as React.CSSProperties,
-  select: { padding: '7px 4px', border: '1.5px solid #c8e6c9', borderRadius: '7px', fontSize: '13px', fontFamily: 'inherit', width: '100%', background: '#fff' } as React.CSSProperties,
+  input: { padding: '7px 8px', border: '1.5px solid var(--clr-border)', borderRadius: '7px', fontSize: '14px', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' } as React.CSSProperties,
+  select: { padding: '7px 4px', border: '1.5px solid var(--clr-border)', borderRadius: '7px', fontSize: '13px', fontFamily: 'inherit', width: '100%', background: '#fff' } as React.CSSProperties,
   deleteBtn: { background: 'none', border: 'none', color: 'var(--clr-error)', fontSize: '18px', cursor: 'pointer', padding: '0', lineHeight: '1' },
-  addBtn: { background: 'var(--clr-bg)', border: '1.5px dashed #6b8f5e', color: 'var(--clr-primary)', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '14px', cursor: 'pointer', marginTop: '4px', marginBottom: '16px' } as React.CSSProperties,
+  addBtn: { background: 'var(--clr-bg)', border: '1.5px dashed var(--clr-secondary)', color: 'var(--clr-primary)', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '14px', cursor: 'pointer', marginTop: '4px', marginBottom: '16px' } as React.CSSProperties,
   footer: { display: 'flex', gap: '10px', marginTop: '8px' },
   saveBtn: { flex: 1, padding: '12px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' } as React.CSSProperties,
-  cancelBtn: { flex: 1, padding: '12px', background: 'var(--clr-bg)', color: 'var(--clr-primary)', border: '1.5px solid #c8e6c9', borderRadius: '10px', fontSize: '16px', cursor: 'pointer' } as React.CSSProperties,
+  cancelBtn: { flex: 1, padding: '12px', background: 'var(--clr-bg)', color: 'var(--clr-primary)', border: '1.5px solid var(--clr-border)', borderRadius: '10px', fontSize: '16px', cursor: 'pointer' } as React.CSSProperties,
   colHeader: { fontSize: '11px', color: '#888', fontWeight: '600', textTransform: 'uppercase' as const },
 }
 
@@ -94,7 +94,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
             <select style={styles.select} value={ing.category} onChange={e => updateIngredient(idx, 'category', e.target.value)}>
               {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>)}
             </select>
-            <button style={styles.deleteBtn} onClick={() => removeIngredient(idx)}>×</button>
+            <button aria-label="Ta bort ingrediens" style={styles.deleteBtn} onClick={() => removeIngredient(idx)}>×</button>
           </div>
         ))}
 

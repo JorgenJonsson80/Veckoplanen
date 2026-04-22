@@ -1,16 +1,11 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import RoomSetup from './components/RoomSetup'
 import AuthScreen from './components/AuthScreen'
 import ResetPasswordScreen from './components/ResetPasswordScreen'
-import { useSharedState } from './hooks/useSharedState'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useAuth } from './hooks/useAuth'
-import { useRecipes } from './hooks/useRecipes'
-import { useMealPlan } from './hooks/useMealPlan'
-import { useShoppingList } from './hooks/useShoppingList'
-import { DEFAULT_CATEGORIES } from './constants/categories'
-import { getISOWeek } from './utils/date'
-import { buildIngredientMap } from './utils/ingredients'
-import type { Session, Category, Store, ShoppingListItem, RecipeDraft } from './types'
+import { useAppState, getRecentRooms } from './hooks/useAppState'
+import type { RecipeDraft, Store } from './types'
 
 const RecipeEditor = lazy(() => import('./components/RecipeEditor'))
 const ActivityDrawer = lazy(() => import('./components/ActivityDrawer'))
@@ -21,178 +16,33 @@ const KategorierTab = lazy(() => import('./components/KategorierTab'))
 
 type StoreDraft = Omit<Store, 'id'> & { id: string | null }
 
-const SESSION_KEY = 'veckoplanen_session'
-
-function recentRoomsKey(userId: string): string {
-  return `veckoplanen_recent_rooms_${userId}`
-}
-
-function getRecentRooms(userId: string): Session[] {
-  try { return JSON.parse(localStorage.getItem(recentRoomsKey(userId)) || '[]') }
-  catch { return [] }
-}
-
-function saveRecentRoom(userId: string, sess: Session) {
-  const key = recentRoomsKey(userId)
-  const rooms = getRecentRooms(userId).filter(r => !(r.roomCode === sess.roomCode && r.mode === sess.mode))
-  rooms.unshift({ ...sess, lastUsed: Date.now() })
-  localStorage.setItem(key, JSON.stringify(rooms.slice(0, 5)))
-}
-
 const s = {
   app: { minHeight: '100vh', background: 'var(--clr-bg)', fontFamily: 'system-ui, sans-serif', maxWidth: '600px', margin: '0 auto', position: 'relative' as const },
   header: { background: 'var(--clr-primary)', color: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', position: 'sticky' as const, top: 0, zIndex: 10 },
   headerTitle: { fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 },
   headerRight: { display: 'flex', alignItems: 'center', gap: '10px' },
   activityBtn: { background: 'none', border: 'none', color: '#fff', fontSize: '22px', cursor: 'pointer', padding: '4px' },
-  tabs: { display: 'flex', background: '#fff', borderBottom: '2px solid #e8f5e9', position: 'sticky' as const, top: '56px', zIndex: 9 },
+  tabs: { display: 'flex', background: '#fff', borderBottom: '2px solid var(--clr-bg-subtle)', position: 'sticky' as const, top: '56px', zIndex: 9 },
   tab: { flex: 1, padding: '12px 4px', border: 'none', background: 'none', fontSize: '13px', cursor: 'pointer', color: 'var(--clr-secondary)', fontWeight: '600', borderBottom: '2px solid transparent', marginBottom: '-2px', transition: 'color 0.15s' } as React.CSSProperties,
-  tabActive: { color: 'var(--clr-primary)', borderBottom: '2px solid #2d5016' },
+  tabActive: { color: 'var(--clr-primary)', borderBottom: '2px solid var(--clr-primary)' },
   content: { padding: '16px', paddingBottom: '80px' },
 }
 
 export default function App() {
   const { user, loading: authLoading, isRecovery, signInWithPassword, signUp, signInWithMagicLink, resetPassword, updatePassword, signInWithGoogle, signOut } = useAuth()
 
+  const app = useAppState(user ?? null)
+
   const pendingJoinCode = (() => {
     const match = window.location.pathname.match(/^\/join\/([A-Z0-9]{8})$/i)
     return match ? match[1].toUpperCase() : null
   })()
 
-  const [session, setSession] = useState<Session | null>(() => {
-    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null') }
-    catch { return null }
-  })
   const [activeTab, setActiveTab] = useState('matsedel')
   const [showActivity, setShowActivity] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState<RecipeDraft | null>(null)
   const [editingStore, setEditingStore] = useState<StoreDraft | null>(null)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('veckoplanen_onboarded'))
-
-  const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
-    session?.roomCode ?? null,
-    session?.name ?? 'Användare',
-    DEFAULT_CATEGORIES,
-    user?.id ?? null,
-    session?.mode !== 'join'
-  )
-
-  function handleStart(sess: Session) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(sess))
-    if (user?.id) saveRecentRoom(user.id, sess)
-    setSession(sess)
-  }
-
-  function handleSignOut() {
-    localStorage.removeItem(SESSION_KEY)
-    setSession(null)
-    signOut()
-  }
-
-  function handleSwitchRoom() {
-    localStorage.removeItem(SESSION_KEY)
-    setSession(null)
-  }
-
-  async function handleDeleteRoom() {
-    const { error: delErr } = await deleteRoom()
-    if (delErr) { alert('Kunde inte radera rummet: ' + (delErr as Error).message); return }
-    if (user?.id && session?.roomCode) {
-      const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode)
-      localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated))
-    }
-    localStorage.removeItem(SESSION_KEY)
-    setSession(null)
-  }
-
-  const { allRecipes, saveRecipe: saveRecipeData } = useRecipes(state, updateState)
-  const categories = useMemo((): Category[] => state?.categories ?? DEFAULT_CATEGORIES, [state])
-
-  const ingredientMap = useMemo(
-    () => buildIngredientMap(state?.meals ?? {}, allRecipes),
-    [state?.meals, allRecipes]
-  )
-
-  const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals } = useMealPlan(state, updateState)
-
-  const checkedItems = state?.checkedItems ?? {}
-  const extraItems = state?.extraItems ?? []
-  const hiddenIngredients = state?.hiddenIngredients ?? []
-  const stores = state?.stores ?? []
-  const savedLists = state?.savedLists ?? {}
-  const activeStoreId = state?.activeStoreId ?? null
-  const activeStore = stores.find(s => s.id === activeStoreId) ?? null
-  const currentWeek = getISOWeek()
-
-  const orderedCategories = useMemo((): Category[] => {
-    if (!activeStore) return categories
-    return activeStore.categoryOrder
-      .map(id => categories.find(c => c.id === id))
-      .filter((c): c is Category => c !== undefined)
-      .concat(categories.filter(c => !activeStore.categoryOrder.includes(c.id)))
-  }, [activeStore, categories])
-
-  const allItemsGrouped = useMemo((): Record<string, ShoppingListItem[]> => {
-    const grouped: Record<string, ShoppingListItem[]> = {}
-    orderedCategories.forEach(cat => { grouped[cat.id] = [] })
-    Object.entries(ingredientMap).forEach(([name, info]) => {
-      if (hiddenIngredients.includes(name)) return
-      const catId = info.category || 'ovrigt'
-      if (!grouped[catId]) grouped[catId] = []
-      grouped[catId].push({ name, amount: info.amount, isExtra: false })
-    })
-    extraItems.forEach(item => {
-      const catId = item.category || 'ovrigt'
-      if (!grouped[catId]) grouped[catId] = []
-      grouped[catId].push({ name: item.name, amount: '', isExtra: true, id: item.id })
-    })
-    return grouped
-  }, [orderedCategories, ingredientMap, extraItems, hiddenIngredients])
-
-  const totalItems = useMemo(() => Object.values(allItemsGrouped).flat().length, [allItemsGrouped])
-  const checkedCount = useMemo(
-    () => Object.values(allItemsGrouped).flat().filter(i => checkedItems[i.name]).length,
-    [allItemsGrouped, checkedItems]
-  )
-
-  const { likelyEmptyItems, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, hideIngredient, restoreIngredients, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
-
-  function saveRecipe(updatedRecipe: RecipeDraft) {
-    saveRecipeData(updatedRecipe)
-    setEditingRecipe(null)
-  }
-
-  function handleCatReorder(newCategories: Category[]) {
-    updateState(prev => ({ ...prev, categories: newCategories }))
-  }
-
-  function addCategory(cat: Category) {
-    updateState(prev => ({ ...prev, categories: [...(prev.categories ?? DEFAULT_CATEGORIES), cat] }))
-  }
-
-  function removeCategory(catId: string) {
-    const hasItems = Object.values(ingredientMap).some(i => i.category === catId) || (state?.extraItems ?? []).some(i => i.category === catId)
-    if (hasItems) { alert('Kategorin används av varor och kan inte tas bort.'); return }
-    updateState(prev => ({ ...prev, categories: (prev.categories ?? DEFAULT_CATEGORIES).filter(c => c.id !== catId) }))
-  }
-
-  function saveStore(store: Store) {
-    updateState(prev => {
-      const stores = prev.stores ?? []
-      const exists = stores.some(s => s.id === store.id)
-      return { ...prev, stores: exists ? stores.map(s => s.id === store.id ? store : s) : [...stores, store], activeStoreId: prev.activeStoreId ?? store.id }
-    }, `sparade butiken "${store.name}"`)
-    setEditingStore(null)
-  }
-
-  function deleteStore(storeId: string) {
-    updateState(prev => ({ ...prev, stores: (prev.stores ?? []).filter(s => s.id !== storeId), activeStoreId: prev.activeStoreId === storeId ? null : prev.activeStoreId }))
-    setEditingStore(null)
-  }
-
-  function setActiveStore(storeId: string | null) {
-    updateState(prev => ({ ...prev, activeStoreId: storeId }))
-  }
 
   if (authLoading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
@@ -212,41 +62,49 @@ export default function App() {
     />
   )
 
-  if (!session) return (
+  if (!app.session) return (
     <RoomSetup
-      onStart={handleStart}
+      onStart={app.handleStart}
       initialJoinCode={pendingJoinCode}
       recentRooms={getRecentRooms(user.id)}
-      recentRoomsKey={recentRoomsKey(user.id)}
+      recentRoomsKey={`veckoplanen_recent_rooms_${user.id}`}
     />
   )
 
-  if (roomNotFound) return (
+  if (app.roomNotFound) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <div style={{ textAlign: 'center', padding: '32px 24px', maxWidth: '340px' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚪</div>
         <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 8px' }}>Rummet hittades inte</h2>
-        <p style={{ color: 'var(--clr-secondary)', marginBottom: '24px' }}>Rummet <strong>{session.roomCode}</strong> verkar inte längre finnas.</p>
+        <p style={{ color: 'var(--clr-secondary)', marginBottom: '24px' }}>Rummet <strong>{app.session.roomCode}</strong> verkar inte längre finnas.</p>
         <button
           style={{ padding: '12px 24px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}
-          onClick={() => {
-            localStorage.removeItem(SESSION_KEY)
-            if (user?.id && session.roomCode) {
-              const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode)
-              localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated))
-            }
-            setSession(null)
-          }}
+          onClick={app.clearRoomNotFound}
         >Välj ett annat rum</button>
       </div>
     </div>
   )
 
-  if (loading) return (
+  if (app.loading) return (
     <div style={{ ...s.app, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <p style={{ color: 'var(--clr-primary)', fontFamily: 'Georgia, serif', fontSize: '18px' }}>Laddar...</p>
     </div>
   )
+
+  function handleSaveStore(store: Store) {
+    app.saveStore(store)
+    setEditingStore(null)
+  }
+
+  function handleDeleteStore(storeId: string) {
+    app.deleteStore(storeId)
+    setEditingStore(null)
+  }
+
+  function handleSaveRecipe(recipe: RecipeDraft) {
+    app.saveRecipe(recipe)
+    setEditingRecipe(null)
+  }
 
   return (
     <div style={s.app}>
@@ -255,15 +113,15 @@ export default function App() {
           <h1 style={s.headerTitle}>Veckoplanen</h1>
           {user?.email && (
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '1px' }}>
-              {session.name} · {user.email.split('@')[0]}
+              {app.session.name} · {user.email.split('@')[0]}
             </div>
           )}
         </div>
         <div style={s.headerRight}>
-          {session.roomCode && (
+          {app.session.roomCode && (
             <button
               onClick={() => {
-                const url = `${window.location.origin}/join/${session.roomCode}`
+                const url = `${window.location.origin}/join/${app.session!.roomCode}`
                 if (navigator.share) navigator.share({ title: 'Gå med i Veckoplanen', url })
                 else navigator.clipboard.writeText(url)
               }}
@@ -271,19 +129,19 @@ export default function App() {
               style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', color: '#fff', padding: '4px 10px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, gap: '1px' }}
             >
               <span style={{ fontSize: '9px', opacity: 0.75, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Bjud in</span>
-              <span style={{ fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px' }}>{session.roomCode}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px' }}>{app.session.roomCode}</span>
             </button>
           )}
-          {session.roomCode && <button style={s.activityBtn} onClick={() => setShowActivity(true)} title="Aktivitetsfeed">📋</button>}
-          <button style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }} onClick={handleSwitchRoom} title="Byt rum eller läge">⇄ Byt rum</button>
-          <button style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }} onClick={handleSignOut}>Logga ut</button>
+          {app.session.roomCode && <button style={s.activityBtn} onClick={() => setShowActivity(true)} aria-label="Visa aktivitetsfeed">📋</button>}
+          <button style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }} onClick={app.handleSwitchRoom} title="Byt rum eller läge">⇄ Byt rum</button>
+          <button style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: '5px 10px', borderRadius: '8px' }} onClick={() => app.handleSignOut(signOut)}>Logga ut</button>
         </div>
       </header>
 
-      {(error || syncError) && (
+      {(app.error || app.syncError) && (
         <div style={{ background: '#fff3e0', borderBottom: '1px solid #ffcc02', padding: '8px 16px', fontSize: '13px', color: 'var(--clr-warning)', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ flex: 1 }}>⚠️ Kunde inte synka med servern – ändringar sparas lokalt.</span>
-          {syncError && <button onClick={clearSyncError} style={{ background: 'none', border: 'none', color: 'var(--clr-warning)', cursor: 'pointer', fontSize: '16px', padding: '0 4px', lineHeight: 1 }} title="Stäng">×</button>}
+          {app.syncError && <button onClick={app.clearSyncError} style={{ background: 'none', border: 'none', color: 'var(--clr-warning)', cursor: 'pointer', fontSize: '16px', padding: '0 4px', lineHeight: 1 }} title="Stäng">×</button>}
         </div>
       )}
 
@@ -298,35 +156,39 @@ export default function App() {
       </nav>
 
       <main style={s.content}>
-        <Suspense fallback={<p style={{ color: 'var(--clr-secondary)', padding: '24px', textAlign: 'center' }}>Laddar...</p>}>
-          {activeTab === 'matsedel' && (
-            <MatsedelTab meals={meals} allRecipes={allRecipes} savedMeals={savedMeals} currentWeek={currentWeek} onSetMeal={setMeal} onSaveMealPlan={saveMealPlan} onLoadMealPlan={loadMealPlan} onEditRecipe={setEditingRecipe} onClearMeals={clearMeals} />
-          )}
-          {activeTab === 'handlingslista' && (
-            <HandlingslistaTab
-              stores={stores} activeStoreId={activeStoreId} orderedCategories={orderedCategories} allItemsGrouped={allItemsGrouped}
-              checkedItems={checkedItems} totalItems={totalItems} checkedCount={checkedCount} likelyEmptyItems={likelyEmptyItems}
-              savedLists={savedLists} history={state?.purchaseHistory ?? {}} categories={categories} currentWeek={currentWeek}
-              onToggleItem={toggleItem} onRemoveExtraItem={removeExtraItem} onAddExtraItem={addExtraItem}
-              onHideIngredient={hideIngredient} onRestoreIngredients={restoreIngredients} hiddenCount={hiddenIngredients.length}
-              onSetActiveStore={setActiveStore} onEditStore={setEditingStore} onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: categories.map(c => c.id) })}
-              budget={state?.budget ?? null} weeklySpend={state?.weeklySpend ?? null}
-              onSetBudget={setBudget} onSetWeeklySpend={setWeeklySpend}
-              onSaveWeeklyList={() => saveWeeklyList(Object.values(allItemsGrouped).flat(), meals)}
-              onClearChecked={clearChecked}
-            />
-          )}
-          {activeTab === 'kategorier' && (
-            <KategorierTab categories={categories} session={session} onReorder={handleCatReorder} onAddCategory={addCategory} onRemoveCategory={removeCategory} onDeleteRoom={handleDeleteRoom} />
-          )}
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<p style={{ color: 'var(--clr-secondary)', padding: '24px', textAlign: 'center' }}>Laddar...</p>}>
+            {activeTab === 'matsedel' && (
+              <MatsedelTab meals={app.meals} allRecipes={app.allRecipes} savedMeals={app.savedMeals} currentWeek={app.currentWeek} onSetMeal={app.setMeal} onSaveMealPlan={app.saveMealPlan} onLoadMealPlan={app.loadMealPlan} onEditRecipe={setEditingRecipe} onClearMeals={app.clearMeals} />
+            )}
+            {activeTab === 'handlingslista' && (
+              <HandlingslistaTab
+                stores={app.stores} activeStoreId={app.activeStoreId} orderedCategories={app.orderedCategories} allItemsGrouped={app.allItemsGrouped}
+                checkedItems={app.checkedItems} totalItems={app.totalItems} checkedCount={app.checkedCount} likelyEmptyItems={app.likelyEmptyItems}
+                savedLists={app.savedLists} history={app.purchaseHistory} categories={app.categories} currentWeek={app.currentWeek}
+                onToggleItem={app.toggleItem} onRemoveExtraItem={app.removeExtraItem} onAddExtraItem={app.addExtraItem}
+                onHideIngredient={app.hideIngredient} onRestoreIngredients={app.restoreIngredients} hiddenCount={app.hiddenIngredients.length}
+                onSetActiveStore={app.setActiveStore} onEditStore={setEditingStore} onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
+                budget={app.budget} weeklySpend={app.weeklySpend}
+                onSetBudget={app.setBudget} onSetWeeklySpend={app.setWeeklySpend}
+                onSaveWeeklyList={() => app.saveWeeklyList(Object.values(app.allItemsGrouped).flat(), app.meals)}
+                onClearChecked={app.clearChecked}
+              />
+            )}
+            {activeTab === 'kategorier' && (
+              <KategorierTab categories={app.categories} session={app.session} onReorder={app.handleCatReorder} onAddCategory={app.addCategory} onRemoveCategory={app.removeCategory} onDeleteRoom={() => app.handleDeleteRoom(signOut)} />
+            )}
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
-      <Suspense fallback={null}>
-        {editingRecipe && <RecipeEditor recipe={editingRecipe} categories={categories} onSave={saveRecipe} onClose={() => setEditingRecipe(null)} />}
-        {showActivity && <ActivityDrawer log={state?.activityLog ?? []} onClose={() => setShowActivity(false)} />}
-        {editingStore && <StoreEditor store={editingStore} allCategories={categories} onSave={saveStore} onDelete={deleteStore} onClose={() => setEditingStore(null)} />}
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          {editingRecipe && <RecipeEditor recipe={editingRecipe} categories={app.categories} onSave={handleSaveRecipe} onClose={() => setEditingRecipe(null)} />}
+          {showActivity && <ActivityDrawer log={app.activityLog} onClose={() => setShowActivity(false)} />}
+          {editingStore && <StoreEditor store={editingStore} allCategories={app.categories} onSave={handleSaveStore} onDelete={handleDeleteStore} onClose={() => setEditingStore(null)} />}
+        </Suspense>
+      </ErrorBoundary>
 
       {showWelcome && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
@@ -336,7 +198,7 @@ export default function App() {
               {[
                 { icon: '🍽', title: 'Planera veckan', desc: 'Välj middagar för varje dag under Matsedel-fliken.' },
                 { icon: '🛒', title: 'Handla smidigt', desc: 'Ingredienserna samlas automatiskt i Handlingslistan.' },
-                ...(session?.roomCode ? [{ icon: '👨‍👩‍👧', title: 'Dela med familjen', desc: 'Tryck på Bjud in-knappen i toppen för att bjuda in din partner med en länk.' }] : []),
+                ...(app.session?.roomCode ? [{ icon: '👨‍👩‍👧', title: 'Dela med familjen', desc: 'Tryck på Bjud in-knappen i toppen för att bjuda in din partner med en länk.' }] : []),
               ].map(({ icon, title, desc }) => (
                 <div key={title} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                   <span style={{ fontSize: '26px', lineHeight: 1 }}>{icon}</span>

@@ -109,7 +109,7 @@ export default function HandlingslistaTab({
             {activeStoreId === store.id && <span onClick={e => { e.stopPropagation(); onEditStore(store) }} style={{ fontSize: '12px', opacity: 0.8 }}>✏️</span>}
           </button>
         ))}
-        <button onClick={onNewStore} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer', border: '1.5px dashed #6b8f5e', background: 'var(--clr-bg)', color: 'var(--clr-primary)', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>+ Butik</button>
+        <button onClick={onNewStore} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer', border: '1.5px dashed var(--clr-secondary)', background: 'var(--clr-bg)', color: 'var(--clr-primary)', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>+ Butik</button>
       </div>
 
       {/* Framstegsbar */}
@@ -119,8 +119,8 @@ export default function HandlingslistaTab({
             <span>{checkedCount} av {totalItems} plockat</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
-              <button onClick={handleShare} style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
-              <button onClick={onSaveWeeklyList} style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>💾 {getWeekLabel(currentWeek)}</button>
+              <button onClick={handleShare} style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
+              <button onClick={onSaveWeeklyList} style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>💾 {getWeekLabel(currentWeek)}</button>
             </div>
           </div>
           <div style={{ height: '8px', background: 'var(--clr-border)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -156,7 +156,7 @@ export default function HandlingslistaTab({
               <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
             )}
           </div>
-          <button onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '14px', padding: '4px' }}>✏️</button>
+          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '14px', padding: '4px' }}>✏️</button>
         </div>
       )}
       {showBudgetEdit && (
@@ -165,11 +165,11 @@ export default function HandlingslistaTab({
           <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Budgetmål (kr)</label>
-              <input type="number" inputMode="numeric" placeholder="t.ex. 800" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
+              <input type="number" inputMode="numeric" placeholder="t.ex. 800" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Vad kostade det? (kr)</label>
-              <input type="number" inputMode="numeric" placeholder="t.ex. 650" value={spendInput} onChange={e => setSpendInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
+              <input type="number" inputMode="numeric" placeholder="t.ex. 650" value={spendInput} onChange={e => setSpendInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -194,8 +194,8 @@ export default function HandlingslistaTab({
                   <span style={{ flex: 1, textDecoration: checked ? 'line-through' : 'none', color: checked ? '#aaa' : '#222', fontSize: '15px' }}>{item.name}</span>
                   {item.amount && <span style={{ fontSize: '12px', color: '#888' }}>{item.amount}</span>}
                   {item.isExtra
-                    ? <button style={{ background: 'none', border: 'none', color: 'var(--clr-error)', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} onClick={() => onRemoveExtraItem(item.id!)}>×</button>
-                    : <button style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
+                    ? <button aria-label="Ta bort vara" style={{ background: 'none', border: 'none', color: 'var(--clr-error)', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} onClick={() => onRemoveExtraItem(item.id!)}>×</button>
+                    : <button aria-label="Dölj — har hemma" style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
                   }
                 </div>
               )
@@ -234,9 +234,9 @@ export default function HandlingslistaTab({
             <input style={{ width: '100%', padding: '9px 10px', border: `1.5px solid ${isDuplicate ? '#ffb300' : 'var(--clr-border)'}`, borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }} value={newExtraItem} onChange={e => handleExtraItemInput(e.target.value)} onBlur={() => setTimeout(() => setExtraSuggestions([]), 150)} placeholder="Varunamn" onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()} />
             {isDuplicate && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#f57f17' }}>⚠️ Finns redan i listan</p>}
             {extraSuggestions.length > 0 && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 {extraSuggestions.map(name => (
-                  <div key={name} style={{ padding: '9px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid #f0f7ef', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onMouseDown={() => { setNewExtraItem(name); setExtraSuggestions([]) }}>
+                  <div key={name} style={{ padding: '9px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid var(--clr-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onMouseDown={() => { setNewExtraItem(name); setExtraSuggestions([]) }}>
                     <span>{name}</span>
                     <span style={{ fontSize: '11px', color: '#aaa' }}>köpt {history[name]?.count || 0}×</span>
                   </div>
@@ -244,7 +244,7 @@ export default function HandlingslistaTab({
               </div>
             )}
           </div>
-          <select style={{ padding: '9px 6px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '14px', background: '#fff', fontFamily: 'inherit' }} value={newExtraCat} onChange={e => setNewExtraCat(e.target.value)}>
+          <select style={{ padding: '9px 6px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '14px', background: '#fff', fontFamily: 'inherit' }} value={newExtraCat} onChange={e => setNewExtraCat(e.target.value)}>
             {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
           </select>
         </div>
@@ -253,12 +253,12 @@ export default function HandlingslistaTab({
 
       {/* Arkiverade handlingslistor */}
       {Object.keys(savedLists).length > 0 && (
-        <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+        <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
           <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: '0 0 12px' }}>📦 Arkiverade listor</h3>
           {Object.entries(savedLists).sort(([a], [b]) => b.localeCompare(a)).map(([week, data]) => {
             const isOpen = openListKey === week
             return (
-              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
                 <button onClick={() => setOpenListKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
                   <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -277,7 +277,7 @@ export default function HandlingslistaTab({
                     )}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                       {(data.items || []).map((item, i) => (
-                        <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>{item.amount ? `${item.amount} ` : ''}{item.name}</span>
+                        <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>{item.amount ? `${item.amount} ` : ''}{item.name}</span>
                       ))}
                     </div>
                   </div>

@@ -70,16 +70,16 @@ export default function MatsedelTab({
               <span style={{ minWidth: '80px', fontWeight: '700', color: 'var(--clr-primary)', fontSize: '14px' }}>{dayLabel}</span>
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
-                  style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
                   value={mealValue}
                   onChange={e => handleMealInput(day, e.target.value)}
                   onBlur={() => setTimeout(() => setAutocomplete({ day: null, results: [] }), 150)}
                   placeholder="Välj rätt..."
                 />
                 {isOpen && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                     {autocomplete.results.map(name => (
-                      <div key={name} style={{ padding: '10px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid #f0f7ef' }} onMouseDown={() => selectAutocomplete(day, name)}>{name}</div>
+                      <div key={name} style={{ padding: '10px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid var(--clr-bg)' }} onMouseDown={() => selectAutocomplete(day, name)}>{name}</div>
                     ))}
                   </div>
                 )}
@@ -88,7 +88,7 @@ export default function MatsedelTab({
                 <>
                   <div style={{ position: 'relative' }}>
                     <button
-                      style={{ background: isCopying ? 'var(--clr-primary)' : 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: isCopying ? '#fff' : 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                      style={{ background: isCopying ? 'var(--clr-primary)' : 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', cursor: 'pointer', color: isCopying ? '#fff' : 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
                       onClick={() => setCopyingDay(isCopying ? null : day)}
                       title="Kopiera till annan dag"
                     >
@@ -96,7 +96,7 @@ export default function MatsedelTab({
                       <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Kopiera</span>
                     </button>
                     {isCopying && (
-                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 30, padding: '8px', minWidth: '140px' }}>
+                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 30, padding: '8px', minWidth: '140px' }}>
                         <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '6px', paddingLeft: '4px' }}>Kopiera till:</div>
                         {WEEKDAYS.filter(d => d !== day).map(d => (
                           <button
@@ -112,7 +112,7 @@ export default function MatsedelTab({
                     )}
                   </div>
                   <button
-                    style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                    style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
                     onClick={() => onEditRecipe(recipe ?? { id: null, name: mealValue, ingredients: [] })}
                     title="Öppna recepteditor"
                   >
@@ -136,7 +136,7 @@ export default function MatsedelTab({
         )
       })}
 
-      <button style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }} onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}>
+      <button style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed var(--clr-secondary)', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }} onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}>
         + Skapa nytt recept
       </button>
 
@@ -157,13 +157,13 @@ export default function MatsedelTab({
       )}
 
       {Object.keys(savedMeals).length > 0 && (
-        <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+        <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
           <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: '0 0 12px' }}>📅 Sparade matsedlar</h3>
           {Object.entries(savedMeals).sort(([a], [b]) => b.localeCompare(a)).map(([week, data]) => {
             const isOpen = openMealKey === week
             const count = WEEKDAYS.filter(d => data.meals?.[d]).length
             return (
-              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
                 <button onClick={() => setOpenMealKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
                   <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -174,7 +174,7 @@ export default function MatsedelTab({
                 {isOpen && (
                   <div style={{ padding: '4px 14px 14px', background: 'var(--clr-bg-card)' }}>
                     {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
-                      <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid #f0f7ef', fontSize: '14px' }}>
+                      <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid var(--clr-bg)', fontSize: '14px' }}>
                         <span style={{ minWidth: '72px', color: '#888', textTransform: 'capitalize' }}>{d}</span>
                         <span style={{ color: '#222' }}>{data.meals[d]}</span>
                       </div>
@@ -188,7 +188,7 @@ export default function MatsedelTab({
         </div>
       )}
 
-      <div style={{ marginTop: '24px', borderTop: '1px solid #e8f5e9', paddingTop: '20px' }}>
+      <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
         <button onClick={() => setShowRecipes(v => !v)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 12px' }}>
           <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: 0 }}>
             📖 Alla recept <span style={{ fontSize: '14px', color: 'var(--clr-secondary)', fontFamily: 'system-ui' }}>({allRecipes.length})</span>
@@ -198,18 +198,18 @@ export default function MatsedelTab({
         {showRecipes && allRecipes.map(recipe => {
           const isOpen = openRecipeId === recipe.id || openRecipeId === recipe.name
           return (
-            <div key={recipe.id || recipe.name} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
+            <div key={recipe.id || recipe.name} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', gap: '10px', cursor: 'pointer' }} onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}>
                 <span style={{ flex: 1, fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{recipe.name}</span>
                 <span style={{ fontSize: '12px', color: '#aaa' }}>{recipe.ingredients?.length || 0} ingredienser</span>
-                <button onClick={e => { e.stopPropagation(); onEditRecipe(recipe) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: 'var(--clr-secondary)' }}>✏️</button>
+                <button aria-label={`Redigera recept ${recipe.name}`} onClick={e => { e.stopPropagation(); onEditRecipe(recipe) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: 'var(--clr-secondary)' }}>✏️</button>
                 <span style={{ color: 'var(--clr-secondary)', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
               </div>
               {isOpen && (
                 <div style={{ padding: '8px 14px 14px', background: 'var(--clr-bg-card)' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {(recipe.ingredients || []).map((ing, i) => (
-                      <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>
+                      <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>
                         {ing.amount ? `${ing.amount} ` : ''}{ing.name}
                       </span>
                     ))}

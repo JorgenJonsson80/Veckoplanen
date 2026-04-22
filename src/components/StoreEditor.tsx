@@ -41,7 +41,7 @@ function SortableStoreRow({ cat }: { cat: Category }) {
 
 function StoreRowGhost({ cat }: { cat: Category }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '10px', padding: '10px 12px', boxShadow: '0 12px 32px rgba(45,80,22,0.25)', gap: '10px', cursor: 'grabbing', userSelect: 'none', border: '2px solid #2d5016' }}>
+    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '10px', padding: '10px 12px', boxShadow: '0 12px 32px rgba(45,80,22,0.25)', gap: '10px', cursor: 'grabbing', userSelect: 'none', border: '2px solid var(--clr-primary)' }}>
       <span style={{ color: '#bbb', fontSize: '18px' }}>⠿</span>
       <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
       <span style={{ flex: 1, fontSize: '15px' }}>{cat.name}</span>
@@ -55,13 +55,13 @@ const s = {
   handle: { width: '40px', height: '4px', background: 'var(--clr-border)', borderRadius: '2px', margin: '0 auto 16px' },
   title: { fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '20px', margin: '0 0 16px' },
   label: { display: 'block', fontWeight: '600', color: 'var(--clr-primary)', marginBottom: '6px', fontSize: '13px' },
-  input: { width: '100%', padding: '10px 12px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '16px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' } as React.CSSProperties,
+  input: { width: '100%', padding: '10px 12px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '16px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' } as React.CSSProperties,
   emojiRow: { display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '16px' },
   emojiBtn: { width: '38px', height: '38px', border: '2px solid transparent', borderRadius: '8px', fontSize: '20px', cursor: 'pointer', background: 'var(--clr-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' } as React.CSSProperties,
   emojiBtnSel: { borderColor: 'var(--clr-primary)', background: 'var(--clr-bg-subtle)' },
   footer: { display: 'flex', gap: '10px', marginTop: '16px' },
   saveBtn: { flex: 1, padding: '12px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer', fontFamily: 'Georgia, serif' } as React.CSSProperties,
-  cancelBtn: { flex: 1, padding: '12px', background: 'var(--clr-bg)', color: 'var(--clr-primary)', border: '1.5px solid #c8e6c9', borderRadius: '10px', fontSize: '16px', cursor: 'pointer' } as React.CSSProperties,
+  cancelBtn: { flex: 1, padding: '12px', background: 'var(--clr-bg)', color: 'var(--clr-primary)', border: '1.5px solid var(--clr-border)', borderRadius: '10px', fontSize: '16px', cursor: 'pointer' } as React.CSSProperties,
   deleteBtn: { padding: '12px 16px', background: '#ffebee', color: 'var(--clr-error)', border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer' },
 }
 
@@ -112,7 +112,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         <label style={s.label}>Ikon</label>
         <div style={s.emojiRow}>
           {STORE_EMOJIS.map(e => (
-            <button key={e} style={{ ...s.emojiBtn, ...(emoji === e ? s.emojiBtnSel : {}) }} onClick={() => setEmoji(e)}>{e}</button>
+            <button key={e} aria-label={e} style={{ ...s.emojiBtn, ...(emoji === e ? s.emojiBtnSel : {}) }} onClick={() => setEmoji(e)}>{e}</button>
           ))}
         </div>
 
@@ -137,7 +137,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         <div style={s.footer}>
           <button style={s.cancelBtn} onClick={onClose}>Avbryt</button>
           {!isNew && store?.id && (
-            <button style={s.deleteBtn} onClick={() => onDelete(store.id!)}>🗑</button>
+            <button aria-label="Radera butik" style={s.deleteBtn} onClick={() => onDelete(store.id!)}>🗑</button>
           )}
           <button style={s.saveBtn} onClick={handleSave}>Spara</button>
         </div>

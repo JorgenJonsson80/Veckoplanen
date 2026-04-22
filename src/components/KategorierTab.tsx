@@ -31,7 +31,7 @@ function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: stri
       <span style={{ fontSize: '22px' }}>{cat.emoji}</span>
       <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
       {isCustom && (
-        <button style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--clr-error)', fontSize: '14px' }} onClick={() => onRemove(cat.id)}>×</button>
+        <button aria-label="Ta bort kategori" style={{ background: '#ffebee', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--clr-error)', fontSize: '14px' }} onClick={() => onRemove(cat.id)}>×</button>
       )}
     </div>
   )
@@ -40,7 +40,7 @@ function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: stri
 function CatDragGhost({ cat }: { cat: Category }) {
   const isCustom = cat.id.startsWith('custom_')
   return (
-    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '10px', padding: '10px 12px', boxShadow: '0 12px 32px rgba(45,80,22,0.25)', gap: '10px', cursor: 'grabbing', userSelect: 'none', border: '2px solid #2d5016' }}>
+    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '10px', padding: '10px 12px', boxShadow: '0 12px 32px rgba(45,80,22,0.25)', gap: '10px', cursor: 'grabbing', userSelect: 'none', border: '2px solid var(--clr-primary)' }}>
       <span style={{ color: '#bbb', fontSize: '18px', lineHeight: 1 }}>⠿</span>
       <span style={{ fontSize: '22px' }}>{cat.emoji}</span>
       <span style={{ flex: 1, fontSize: '15px', color: '#222' }}>{cat.name}</span>
@@ -94,7 +94,7 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
         </DragOverlay>
       </DndContext>
 
-      <button style={{ width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed #6b8f5e', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }} onClick={() => setShowNewCat(v => !v)}>
+      <button style={{ width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed var(--clr-secondary)', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }} onClick={() => setShowNewCat(v => !v)}>
         {showNewCat ? 'Avbryt' : '+ Lägg till kategori'}
       </button>
       {showNewCat && <NewCategoryForm onAdd={handleAddCategory} />}
