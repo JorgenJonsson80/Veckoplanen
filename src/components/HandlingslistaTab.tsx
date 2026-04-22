@@ -96,38 +96,51 @@ export default function HandlingslistaTab({
     setExtraSuggestions([])
   }
 
+  const storeBtnCls = (active: boolean) =>
+    `shrink-0 px-3.5 py-1.5 rounded-full text-sm cursor-pointer border font-[inherit] whitespace-nowrap ${active ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-border'}`
+
   return (
     <div>
-      <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 12px', fontSize: '22px' }}>Handlingslista</h2>
+      <h2 className="font-serif text-primary text-[22px] mb-3">Handlingslista</h2>
 
       {/* Butiksväljare */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '2px' }}>
-        <button onClick={() => onSetActiveStore(null)} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer', border: '1.5px solid', fontFamily: 'inherit', whiteSpace: 'nowrap', background: !activeStoreId ? 'var(--clr-primary)' : '#fff', color: !activeStoreId ? '#fff' : 'var(--clr-primary)', borderColor: !activeStoreId ? 'var(--clr-primary)' : 'var(--clr-border)' }}>📋 Standard</button>
+      <div className="flex gap-2 overflow-x-auto mb-4 pb-0.5">
+        <button onClick={() => onSetActiveStore(null)} className={storeBtnCls(!activeStoreId)}>📋 Standard</button>
         {stores.map(store => (
-          <button key={store.id} onClick={() => onSetActiveStore(store.id)} onDoubleClick={() => onEditStore(store)} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer', border: '1.5px solid', fontFamily: 'inherit', whiteSpace: 'nowrap', background: activeStoreId === store.id ? 'var(--clr-primary)' : '#fff', color: activeStoreId === store.id ? '#fff' : 'var(--clr-primary)', borderColor: activeStoreId === store.id ? 'var(--clr-primary)' : 'var(--clr-border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            key={store.id}
+            onClick={() => onSetActiveStore(store.id)}
+            onDoubleClick={() => onEditStore(store)}
+            className={`${storeBtnCls(activeStoreId === store.id)} flex items-center gap-1.5`}
+          >
             {store.emoji} {store.name}
-            {activeStoreId === store.id && <span onClick={e => { e.stopPropagation(); onEditStore(store) }} style={{ fontSize: '12px', opacity: 0.8 }}>✏️</span>}
+            {activeStoreId === store.id && (
+              <span onClick={e => { e.stopPropagation(); onEditStore(store) }} className="text-xs opacity-80">✏️</span>
+            )}
           </button>
         ))}
-        <button onClick={onNewStore} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: '20px', fontSize: '14px', cursor: 'pointer', border: '1.5px dashed var(--clr-secondary)', background: 'var(--clr-bg)', color: 'var(--clr-primary)', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>+ Butik</button>
+        <button onClick={onNewStore} className="shrink-0 px-3.5 py-1.5 rounded-full text-sm cursor-pointer border border-dashed border-secondary bg-bg text-primary font-[inherit] whitespace-nowrap">+ Butik</button>
       </div>
 
       {/* Framstegsbar */}
       {totalItems > 0 && (
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--clr-secondary)', marginBottom: '4px' }}>
+        <div className="mb-4">
+          <div className="flex justify-between items-center text-sm text-secondary mb-1">
             <span>{checkedCount} av {totalItems} plockat</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="flex items-center gap-2.5">
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
-              <button onClick={handleShare} style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
-              <button onClick={onSaveWeeklyList} style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>💾 {getWeekLabel(currentWeek)}</button>
+              <button onClick={handleShare} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer">{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
+              <button onClick={onSaveWeeklyList} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer">💾 {getWeekLabel(currentWeek)}</button>
             </div>
           </div>
-          <div style={{ height: '8px', background: 'var(--clr-border)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: 'var(--clr-primary)', borderRadius: '4px', width: `${(checkedCount / totalItems) * 100}%`, transition: 'width 0.3s' }} />
+          <div className="h-2 bg-border rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-[width] duration-300" style={{ width: `${(checkedCount / totalItems) * 100}%` }} />
           </div>
           {checkedCount > 0 && (
-            <button onClick={handleClearChecked} style={{ marginTop: '10px', width: '100%', padding: '10px', background: confirmClear ? 'var(--clr-error)' : checkedCount === totalItems ? 'var(--clr-primary)' : '#f5f5f5', color: confirmClear || checkedCount === totalItems ? '#fff' : '#888', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s' }}>
+            <button
+              onClick={handleClearChecked}
+              className={`mt-2.5 w-full py-2.5 border-0 rounded-lg text-sm cursor-pointer transition-colors duration-200 ${confirmClear ? 'bg-error text-white' : checkedCount === totalItems ? 'bg-primary text-white' : 'bg-[#f5f5f5] text-[#888]'}`}
+            >
               {confirmClear ? '⚠️ Tryck igen för att bekräfta' : checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
             </button>
           )}
@@ -136,45 +149,50 @@ export default function HandlingslistaTab({
 
       {/* Budget-widget */}
       {!showBudgetEdit && !budget && (
-        <button onClick={() => { setShowBudgetEdit(true); setBudgetInput(''); setSpendInput('') }} style={{ background: 'none', border: 'none', color: '#aaa', fontSize: '12px', cursor: 'pointer', padding: '0 0 12px', display: 'block' }}>+ Lägg till budget (valfritt)</button>
+        <button onClick={() => { setShowBudgetEdit(true); setBudgetInput(''); setSpendInput('') }} className="bg-transparent border-0 text-[#aaa] text-xs cursor-pointer p-0 pb-3 block">
+          + Lägg till budget (valfritt)
+        </button>
       )}
       {!showBudgetEdit && budget != null && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', background: '#fff', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <span style={{ fontSize: '16px' }}>💰</span>
-          <div style={{ flex: 1 }}>
+        <div className="flex items-center gap-2.5 mb-3.5 bg-white rounded-xl px-3.5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <span className="text-base">💰</span>
+          <div className="flex-1">
             {weeklySpend != null ? (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
-                  <span style={{ color: weeklySpend > budget ? 'var(--clr-error)' : 'var(--clr-primary)', fontWeight: '700' }}>{weeklySpend} kr</span>
-                  <span style={{ color: '#aaa' }}>av {budget} kr</span>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className={`font-bold ${weeklySpend > budget ? 'text-error' : 'text-primary'}`}>{weeklySpend} kr</span>
+                  <span className="text-[#aaa]">av {budget} kr</span>
                 </div>
-                <div style={{ height: '5px', background: 'var(--clr-bg-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '3px', width: `${Math.min((weeklySpend / budget) * 100, 100)}%`, background: weeklySpend > budget ? 'var(--clr-error)' : 'var(--clr-primary)', transition: 'width 0.3s' }} />
+                <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-[width] duration-300 ${weeklySpend > budget ? 'bg-error' : 'bg-primary'}`}
+                    style={{ width: `${Math.min((weeklySpend / budget) * 100, 100)}%` }}
+                  />
                 </div>
               </>
             ) : (
-              <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
+              <span className="text-sm text-secondary">Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
             )}
           </div>
-          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '14px', padding: '4px' }}>✏️</button>
+          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} className="bg-transparent border-0 text-[#aaa] cursor-pointer text-sm p-1">✏️</button>
         </div>
       )}
       {showBudgetEdit && (
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '14px', marginBottom: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <p style={{ margin: '0 0 10px', fontWeight: '700', color: 'var(--clr-primary)', fontSize: '14px' }}>💰 Budget (valfritt)</p>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Budgetmål (kr)</label>
-              <input type="number" inputMode="numeric" placeholder="t.ex. 800" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
+        <div className="bg-white rounded-xl p-3.5 mb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <p className="m-0 mb-2.5 font-bold text-primary text-sm">💰 Budget (valfritt)</p>
+          <div className="flex gap-2 mb-2">
+            <div className="flex-1">
+              <label className="text-xs text-[#888] block mb-0.5">Budgetmål (kr)</label>
+              <input type="number" inputMode="numeric" placeholder="t.ex. 800" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] box-border" />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: '3px' }}>Vad kostade det? (kr)</label>
-              <input type="number" inputMode="numeric" placeholder="t.ex. 650" value={spendInput} onChange={e => setSpendInput(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box' }} />
+            <div className="flex-1">
+              <label className="text-xs text-[#888] block mb-0.5">Vad kostade det? (kr)</label>
+              <input type="number" inputMode="numeric" placeholder="t.ex. 650" value={spendInput} onChange={e => setSpendInput(e.target.value)} className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] box-border" />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { onSetBudget(budgetInput.trim() ? Number(budgetInput) : null); onSetWeeklySpend(spendInput.trim() ? Number(spendInput) : null); setShowBudgetEdit(false) }} style={{ flex: 1, padding: '9px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}>Spara</button>
-            <button onClick={() => setShowBudgetEdit(false)} style={{ padding: '9px 14px', background: '#f5f5f5', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', color: '#888' }}>Avbryt</button>
+          <div className="flex gap-2">
+            <button onClick={() => { onSetBudget(budgetInput.trim() ? Number(budgetInput) : null); onSetWeeklySpend(spendInput.trim() ? Number(spendInput) : null); setShowBudgetEdit(false) }} className="flex-1 py-2 bg-primary text-white border-0 rounded-lg text-sm cursor-pointer">Spara</button>
+            <button onClick={() => setShowBudgetEdit(false)} className="px-3.5 py-2 bg-[#f5f5f5] border-0 rounded-lg text-sm cursor-pointer text-[#888]">Avbryt</button>
           </div>
         </div>
       )}
@@ -184,18 +202,18 @@ export default function HandlingslistaTab({
         const items = allItemsGrouped[cat.id] || []
         if (items.length === 0) return null
         return (
-          <div key={cat.id} style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--clr-secondary)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{cat.emoji} {cat.name}</h3>
+          <div key={cat.id} className="mb-4">
+            <h3 className="text-sm font-bold text-secondary mb-2 uppercase tracking-[0.5px]">{cat.emoji} {cat.name}</h3>
             {items.map((item, idx) => {
               const checked = !!checkedItems[item.name]
               return (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '10px 12px', background: checked ? '#f5f5f5' : '#fff', borderRadius: '8px', marginBottom: '6px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', gap: '10px' }}>
-                  <input type="checkbox" checked={checked} onChange={() => onToggleItem(item.name, cat.id)} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--clr-primary)' }} />
-                  <span style={{ flex: 1, textDecoration: checked ? 'line-through' : 'none', color: checked ? '#aaa' : '#222', fontSize: '15px' }}>{item.name}</span>
-                  {item.amount && <span style={{ fontSize: '12px', color: '#888' }}>{item.amount}</span>}
+                <div key={idx} className={`flex items-center px-3 py-2.5 rounded-lg mb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] gap-2.5 ${checked ? 'bg-[#f5f5f5]' : 'bg-white'}`}>
+                  <input type="checkbox" checked={checked} onChange={() => onToggleItem(item.name, cat.id)} className="w-4.5 h-4.5 cursor-pointer accent-primary" />
+                  <span className={`flex-1 text-[15px] ${checked ? 'line-through text-[#aaa]' : 'text-[#222]'}`}>{item.name}</span>
+                  {item.amount && <span className="text-xs text-[#888]">{item.amount}</span>}
                   {item.isExtra
-                    ? <button aria-label="Ta bort vara" style={{ background: 'none', border: 'none', color: 'var(--clr-error)', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} onClick={() => onRemoveExtraItem(item.id!)}>×</button>
-                    : <button aria-label="Dölj — har hemma" style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '16px', padding: '0', lineHeight: 1 }} title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
+                    ? <button aria-label="Ta bort vara" className="bg-transparent border-0 text-error cursor-pointer text-base p-0 leading-none" onClick={() => onRemoveExtraItem(item.id!)}>×</button>
+                    : <button aria-label="Dölj — har hemma" className="bg-transparent border-0 text-[#ccc] cursor-pointer text-base p-0 leading-none" title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
                   }
                 </div>
               )
@@ -205,79 +223,97 @@ export default function HandlingslistaTab({
       })}
 
       {hiddenCount > 0 && (
-        <button onClick={onRestoreIngredients} style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', color: '#aaa', fontSize: '13px', cursor: 'pointer', padding: '4px 0 12px' }}>
+        <button onClick={onRestoreIngredients} className="block w-full text-center bg-transparent border-0 text-[#aaa] text-sm cursor-pointer py-1 pb-3">
           + Visa {hiddenCount} dolda {hiddenCount === 1 ? 'vara' : 'varor'} (har hemma)
         </button>
       )}
 
       {totalItems === 0 && (
-        <div style={{ textAlign: 'center', padding: '28px 0 16px', color: '#888' }}>
-          <p style={{ margin: '0 0 6px', fontSize: '15px' }}>Listan är tom.</p>
-          <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+        <div className="text-center py-7 pb-4 text-[#888]">
+          <p className="mb-1.5 text-[15px]">Listan är tom.</p>
+          <p className="m-0 text-sm leading-relaxed">
             Lägg till varor manuellt med formuläret nedan — eller välj rätter i Matsedeln för att fylla listan automatiskt.
           </p>
         </div>
       )}
 
       {likelyEmptyItems.length > 0 && (
-        <div style={{ marginTop: '8px', background: '#fff8e1', borderRadius: '10px', padding: '12px 14px', border: '1px solid #ffe082' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#f57f17', margin: '0 0 8px' }}>⚠️ Borde vara slut hemma</h3>
-          {likelyEmptyItems.map((item, idx) => <div key={idx} style={{ fontSize: '14px', color: '#555', padding: '3px 0' }}>• {item.name}</div>)}
+        <div className="mt-2 bg-[#fff8e1] rounded-xl px-3.5 py-3 border border-[#ffe082]">
+          <h3 className="text-sm font-bold text-[#f57f17] mb-2">⚠️ Borde vara slut hemma</h3>
+          {likelyEmptyItems.map((item, idx) => <div key={idx} className="text-sm text-[#555] py-0.5">• {item.name}</div>)}
         </div>
       )}
 
       {/* Lägg till extra vara */}
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '14px', marginTop: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
-        <p style={{ margin: '0 0 10px', fontWeight: '700', color: 'var(--clr-primary)', fontSize: '14px' }}>Lägg till extra vara</p>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <input style={{ width: '100%', padding: '9px 10px', border: `1.5px solid ${isDuplicate ? '#ffb300' : 'var(--clr-border)'}`, borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }} value={newExtraItem} onChange={e => handleExtraItemInput(e.target.value)} onBlur={() => setTimeout(() => setExtraSuggestions([]), 150)} placeholder="Varunamn" onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()} />
-            {isDuplicate && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#f57f17' }}>⚠️ Finns redan i listan</p>}
+      <div className="bg-white rounded-xl p-3.5 mt-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+        <p className="m-0 mb-2.5 font-bold text-primary text-sm">Lägg till extra vara</p>
+        <div className="flex gap-2 mb-2">
+          <div className="flex-1 relative">
+            <input
+              className={`w-full px-2.5 py-2 border rounded-lg text-[15px] font-[inherit] box-border ${isDuplicate ? 'border-[#ffb300]' : 'border-border'}`}
+              value={newExtraItem}
+              onChange={e => handleExtraItemInput(e.target.value)}
+              onBlur={() => setTimeout(() => setExtraSuggestions([]), 150)}
+              placeholder="Varunamn"
+              onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()}
+            />
+            {isDuplicate && <p className="m-0 mt-1 text-xs text-[#f57f17]">⚠️ Finns redan i listan</p>}
             {extraSuggestions.length > 0 && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                 {extraSuggestions.map(name => (
-                  <div key={name} style={{ padding: '9px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid var(--clr-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onMouseDown={() => { setNewExtraItem(name); setExtraSuggestions([]) }}>
+                  <div
+                    key={name}
+                    className="px-3 py-2 cursor-pointer text-[15px] border-b border-bg flex justify-between items-center"
+                    onMouseDown={() => { setNewExtraItem(name); setExtraSuggestions([]) }}
+                  >
                     <span>{name}</span>
-                    <span style={{ fontSize: '11px', color: '#aaa' }}>köpt {history[name]?.count || 0}×</span>
+                    <span className="text-[11px] text-[#aaa]">köpt {history[name]?.count || 0}×</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
-          <select style={{ padding: '9px 6px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '14px', background: '#fff', fontFamily: 'inherit' }} value={newExtraCat} onChange={e => setNewExtraCat(e.target.value)}>
+          <select
+            className="px-1.5 py-2 border border-border rounded-lg text-sm bg-white font-[inherit]"
+            value={newExtraCat}
+            onChange={e => setNewExtraCat(e.target.value)}
+          >
             {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
           </select>
         </div>
-        <button style={{ width: '100%', padding: '10px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }} onClick={handleAddExtraItem}>Lägg till</button>
+        <button className="w-full py-2.5 bg-primary text-white border-0 rounded-lg text-[15px] cursor-pointer" onClick={handleAddExtraItem}>Lägg till</button>
       </div>
 
       {/* Arkiverade handlingslistor */}
       {Object.keys(savedLists).length > 0 && (
-        <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
-          <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: '0 0 12px' }}>📦 Arkiverade listor</h3>
+        <div className="mt-6 border-t border-bg-subtle pt-5">
+          <h3 className="font-serif text-primary text-lg mb-3">📦 Arkiverade listor</h3>
           {Object.entries(savedLists).sort(([a], [b]) => b.localeCompare(a)).map(([week, data]) => {
             const isOpen = openListKey === week
             return (
-              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
-                <button onClick={() => setOpenListKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>{data.items?.length || 0} varor</span>
-                    <span style={{ color: 'var(--clr-secondary)' }}>{isOpen ? '▲' : '▼'}</span>
+              <div key={week} className="rounded-xl border border-border mb-2 overflow-hidden">
+                <button
+                  onClick={() => setOpenListKey(isOpen ? null : week)}
+                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                >
+                  <span className="font-bold text-primary text-[15px]">{getWeekLabel(week)}</span>
+                  <div className="flex gap-2.5 items-center">
+                    <span className="text-sm text-secondary">{data.items?.length || 0} varor</span>
+                    <span className="text-secondary">{isOpen ? '▲' : '▼'}</span>
                   </div>
                 </button>
                 {isOpen && (
-                  <div style={{ padding: '4px 14px 14px', background: 'var(--clr-bg-card)' }}>
+                  <div className="px-3.5 pt-1 pb-3.5 bg-bg-card">
                     {data.meals && Object.entries(data.meals).filter(([, v]) => v).length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px 0 10px' }}>
+                      <div className="flex flex-wrap gap-1 py-2 pb-2.5">
                         {Object.entries(data.meals).filter(([, v]) => v).map(([, meal]) => (
-                          <span key={meal} style={{ fontSize: '12px', background: 'var(--clr-bg)', borderRadius: '4px', padding: '2px 7px', color: 'var(--clr-primary)' }}>{meal}</span>
+                          <span key={meal} className="text-xs bg-bg rounded px-1.5 py-0.5 text-primary">{meal}</span>
                         ))}
                       </div>
                     )}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    <div className="flex flex-wrap gap-1.5">
                       {(data.items || []).map((item, i) => (
-                        <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>{item.amount ? `${item.amount} ` : ''}{item.name}</span>
+                        <span key={i} className="text-sm bg-white border border-border rounded-md px-2 py-0.5 text-[#444]">{item.amount ? `${item.amount} ` : ''}{item.name}</span>
                       ))}
                     </div>
                   </div>
