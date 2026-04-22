@@ -5,17 +5,6 @@ interface Props {
   onUpdatePassword: (password: string) => Promise<{ error: AuthError | null }>
 }
 
-const s = {
-  container: { minHeight: '100vh', background: 'var(--clr-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' },
-  card: { background: '#fff', borderRadius: '16px', padding: '32px 24px', width: '100%', maxWidth: '380px', boxShadow: '0 4px 20px rgba(45,80,22,0.12)' },
-  title: { fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '26px', margin: '0 0 8px', textAlign: 'center' as const },
-  sub: { color: 'var(--clr-secondary)', textAlign: 'center' as const, fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' },
-  label: { display: 'block', fontWeight: '600', color: 'var(--clr-primary)', marginBottom: '6px', fontSize: '14px' },
-  input: { width: '100%', padding: '11px 12px', border: '2px solid #c8e6c9', borderRadius: '8px', fontSize: '16px', marginBottom: '14px', boxSizing: 'border-box', fontFamily: 'inherit' } as React.CSSProperties,
-  btn: { width: '100%', padding: '13px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Georgia, serif' } as React.CSSProperties,
-  err: { color: 'var(--clr-error)', fontSize: '13px', marginBottom: '10px' },
-}
-
 export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -35,25 +24,39 @@ export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
   }
 
   if (done) return (
-    <div style={s.container}><div style={s.card}>
-      <h1 style={s.title}>Veckoplanen</h1>
-      <div style={{ fontSize: '44px', textAlign: 'center', margin: '0 0 16px' }}>✅</div>
-      <p style={{ ...s.sub, color: 'var(--clr-primary)', fontWeight: '600' }}>Lösenordet är uppdaterat!</p>
-      <p style={s.sub}>Du är inloggad och kan börja använda appen.</p>
-    </div></div>
+    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+        <h1 className="font-serif text-primary text-2xl text-center mb-4">Veckoplanen</h1>
+        <div className="text-5xl text-center mb-4">✅</div>
+        <p className="text-primary font-semibold text-center text-sm mb-1">Lösenordet är uppdaterat!</p>
+        <p className="text-secondary text-center text-sm leading-relaxed">Du är inloggad och kan börja använda appen.</p>
+      </div>
+    </div>
   )
 
   return (
-    <div style={s.container}>
-      <div style={s.card}>
-        <h1 style={s.title}>Veckoplanen</h1>
-        <p style={s.sub}>Välj ett nytt lösenord för ditt konto.</p>
-        <label style={s.label}>Nytt lösenord</label>
-        <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minst 8 tecken" autoFocus />
-        <label style={s.label}>Bekräfta lösenord</label>
-        <input style={s.input} type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Samma lösenord igen" onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
-        {err && <p style={s.err}>{err}</p>}
-        <button style={s.btn} onClick={handleSubmit} disabled={loading}>{loading ? 'Sparar...' : 'Spara nytt lösenord'}</button>
+    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+        <h1 className="font-serif text-primary text-2xl text-center mb-2">Veckoplanen</h1>
+        <p className="text-secondary text-center text-sm leading-relaxed mb-6">Välj ett nytt lösenord för ditt konto.</p>
+
+        <label className="block font-semibold text-primary text-sm mb-1.5">Nytt lösenord</label>
+        <input
+          className="w-full px-3 py-2.5 border-2 border-border rounded-lg text-base mb-3.5 font-[inherit]"
+          type="password" value={password} onChange={e => setPassword(e.target.value)}
+          placeholder="Minst 8 tecken" autoFocus
+        />
+        <label className="block font-semibold text-primary text-sm mb-1.5">Bekräfta lösenord</label>
+        <input
+          className="w-full px-3 py-2.5 border-2 border-border rounded-lg text-base mb-3.5 font-[inherit]"
+          type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+          placeholder="Samma lösenord igen" onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+        />
+        {err && <p className="text-error text-sm mb-2.5">{err}</p>}
+        <button
+          className="w-full py-3 bg-primary text-white border-0 rounded-xl text-base font-semibold cursor-pointer font-serif mt-1"
+          onClick={handleSubmit} disabled={loading}
+        >{loading ? 'Sparar...' : 'Spara nytt lösenord'}</button>
       </div>
     </div>
   )
