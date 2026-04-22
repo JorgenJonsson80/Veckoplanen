@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
+import { getWeekLabel } from '../utils/date'
 import type { Recipe, SavedWeekPlan, RecipeDraft } from '../types'
 
 interface Props {
@@ -105,7 +106,7 @@ export default function MatsedelTab({
       </button>
 
       <button onClick={onSaveMealPlan} disabled={!hasMeal} style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: hasMeal ? 'var(--clr-primary)' : '#e0e0e0', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '15px', cursor: hasMeal ? 'pointer' : 'default', fontFamily: 'Georgia, serif' }}>
-        💾 Spara matsedeln ({currentWeek})
+        💾 Spara matsedeln ({getWeekLabel(currentWeek)})
       </button>
 
       {hasMeal && (
@@ -129,7 +130,7 @@ export default function MatsedelTab({
             return (
               <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
                 <button onClick={() => setOpenMealKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{week}</span>
+                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>{count} rätter</span>
                     <span style={{ color: 'var(--clr-secondary)' }}>{isOpen ? '▲' : '▼'}</span>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { getWeekLabel } from '../utils/date'
 import type { Category, Store, ShoppingListItem, SavedShoppingList, PurchaseRecord } from '../types'
 
 interface Props {
@@ -115,7 +116,7 @@ export default function HandlingslistaTab({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
               <button onClick={handleShare} style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
-              <button onClick={onSaveWeeklyList} style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>💾 {currentWeek}</button>
+              <button onClick={onSaveWeeklyList} style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', color: 'var(--clr-primary)', cursor: 'pointer' }}>💾 {getWeekLabel(currentWeek)}</button>
             </div>
           </div>
           <div style={{ height: '8px', background: 'var(--clr-border)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -246,7 +247,7 @@ export default function HandlingslistaTab({
             return (
               <div key={week} style={{ borderRadius: '10px', border: '1.5px solid #c8e6c9', marginBottom: '8px', overflow: 'hidden' }}>
                 <button onClick={() => setOpenListKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{week}</span>
+                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>{data.items?.length || 0} varor</span>
                     <span style={{ color: 'var(--clr-secondary)' }}>{isOpen ? '▲' : '▼'}</span>
