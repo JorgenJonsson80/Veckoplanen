@@ -151,6 +151,7 @@ export default function App() {
                 onSetBudget={app.setBudget} onSetWeeklySpend={app.setWeeklySpend}
                 onSaveWeeklyList={() => app.saveWeeklyList(Object.values(app.allItemsGrouped).flat(), app.meals)}
                 onClearChecked={app.clearChecked}
+                suggestedRebuys={app.suggestedRebuys}
               />
             )}
             {activeTab === 'kategorier' && (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getISOWeek } from '../utils/date'
 import type { RoomState, Category, ShoppingListItem, UpdateStateFn } from '../types'
 
@@ -39,6 +39,31 @@ export function useShoppingList(
     })
     setLikelyEmptyItems(items)
   }, [ingredientMap, categories, state?.purchaseHistory, state?.extraItems])
+
+  const suggestedRebuys = useMemo(() => {
+    const now = Date.now()
+    const history = state?.purchaseHistory ?? {}
+    const currentNames = new Set([
+      ...Object.keys(ingredientMap),
+      ...(state?.extraItems ?? []).map(i => i.name),
+    ])
+    return Object.entries(history)
+      .filter(([name, record]) => {
+        if (!record?.lastBought) return false
+        if (currentNames.has(name)) return false
+        const cat = categories.find(c => c.id === (record.cat || 'ovrigt'))
+        const shelfLife = cat?.shelfLife ?? 7
+        const daysSince = (now - new Date(record.lastBought).getTime()) / 86400000
+        return daysSince > shelfLife
+      })
+      .map(([name, record]) => ({
+        name,
+        catId: record.cat || categories[0]?.id || 'ovrigt',
+        daysSince: Math.floor((now - new Date(record.lastBought!).getTime()) / 86400000),
+      }))
+      .sort((a, b) => b.daysSince - a.daysSince)
+      .slice(0, 8)
+  }, [state?.purchaseHistory, state?.extraItems, ingredientMap, categories])
 
   const toggleItem = useCallback((itemName: string, category: string) => {
     const isChecked = !!(state?.checkedItems?.[itemName])
@@ -97,6 +122,7 @@ export function useShoppingList(
 
   return {
     likelyEmptyItems,
+    suggestedRebuys,
     toggleItem,
     saveWeeklyList,
     addExtraItem,

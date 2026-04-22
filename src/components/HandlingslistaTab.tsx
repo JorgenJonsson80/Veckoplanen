@@ -30,6 +30,7 @@ interface Props {
   onClearChecked: () => void
   onSetBudget: (value: number | null) => void
   onSetWeeklySpend: (value: number | null) => void
+  suggestedRebuys: { name: string; catId: string; daysSince: number }[]
 }
 
 export default function HandlingslistaTab({
@@ -40,7 +41,7 @@ export default function HandlingslistaTab({
   onToggleItem, onRemoveExtraItem, onAddExtraItem,
   onHideIngredient, onRestoreIngredients, hiddenCount,
   onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
-  onSetBudget, onSetWeeklySpend,
+  onSetBudget, onSetWeeklySpend, suggestedRebuys,
 }: Props) {
   const [newExtraItem, setNewExtraItem] = useState('')
   const [newExtraCat, setNewExtraCat] = useState('')
@@ -259,6 +260,32 @@ export default function HandlingslistaTab({
         <div className="mt-2 bg-[#fff8e1] rounded-xl px-3.5 py-3 border border-[#ffe082]">
           <h3 className="text-sm font-bold text-[#f57f17] mb-2">⚠️ Borde vara slut hemma</h3>
           {likelyEmptyItems.map((item, idx) => <div key={idx} className="text-sm text-[#555] py-0.5">• {item.name}</div>)}
+        </div>
+      )}
+
+      {suggestedRebuys.length > 0 && (
+        <div className="mt-3 bg-bg-subtle rounded-xl px-3.5 py-3 border border-border">
+          <h3 className="text-sm font-bold text-primary mb-2.5">💡 Dags att köpa igen?</h3>
+          <div className="flex flex-col gap-2">
+            {suggestedRebuys.map(item => (
+              <div key={item.name} className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-sm text-[#222] font-medium">{item.name}</span>
+                  <span className="text-xs text-[#aaa] ml-2">
+                    {item.daysSince < 30
+                      ? `${item.daysSince} dagar sedan`
+                      : `${Math.round(item.daysSince / 7)} veckor sedan`}
+                  </span>
+                </div>
+                <button
+                  onClick={() => onAddExtraItem(item.name, item.catId)}
+                  className="shrink-0 px-3 py-1 bg-primary text-white border-0 rounded-lg text-xs cursor-pointer font-medium"
+                >
+                  + Lägg till
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
