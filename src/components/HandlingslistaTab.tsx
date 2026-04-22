@@ -196,7 +196,14 @@ export default function HandlingslistaTab({
         )
       })}
 
-      {totalItems === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '32px 0' }}>Välj rätter i matsedeln för att generera handlingslistan.</p>}
+      {totalItems === 0 && (
+        <div style={{ textAlign: 'center', padding: '28px 0 16px', color: '#888' }}>
+          <p style={{ margin: '0 0 6px', fontSize: '15px' }}>Listan är tom.</p>
+          <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+            Lägg till varor manuellt med formuläret nedan — eller välj rätter i Matsedeln för att fylla listan automatiskt.
+          </p>
+        </div>
+      )}
 
       {likelyEmptyItems.length > 0 && (
         <div style={{ marginTop: '8px', background: '#fff8e1', borderRadius: '10px', padding: '12px 14px', border: '1px solid #ffe082' }}>

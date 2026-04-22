@@ -12,7 +12,7 @@ const s = {
   container: {
     minHeight: '100vh', background: 'var(--clr-bg)',
     display: 'flex', flexDirection: 'column' as const,
-    alignItems: 'center', justifyContent: 'center', padding: '24px',
+    alignItems: 'center', justifyContent: 'flex-start', padding: '32px 24px 48px',
   },
   card: {
     background: '#fff', borderRadius: '16px', padding: '32px 24px',
@@ -126,8 +126,30 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
 
   return (
     <div style={s.container}>
+      <div style={{ width: '100%', maxWidth: '380px', marginBottom: '28px', textAlign: 'center' }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '32px', margin: '0 0 8px' }}>Veckoplanen</h1>
+        <p style={{ color: 'var(--clr-secondary)', fontSize: '16px', margin: '0 0 28px', lineHeight: 1.4 }}>
+          Planera veckans middagar och få en smart handlingslista — ensam eller tillsammans med familjen.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+          {([
+            ['🍽', 'Välj veckans middagar', 'Fyll i rätterna dag för dag. Har du recept sparade fylls handlingslistan på automatiskt — men du kan också skriva in varor direkt.'],
+            ['🛒', 'Handla utan stress', 'Alla ingredienser samlas i en lista sorterad efter dina butikshyllor. Bocka av medan du handlar.'],
+            ['👨‍👩‍👧', 'Dela med familjen', 'Skapa ett familjerum och dela en länk — alla ser och redigerar samma lista i realtid.'],
+          ] as const).map(([icon, title, desc]) => (
+            <div key={title} style={{ display: 'flex', gap: '12px', background: '#fff', borderRadius: '12px', padding: '14px', boxShadow: '0 2px 8px rgba(45,80,22,0.07)' }}>
+              <span style={{ fontSize: '24px', lineHeight: 1, flexShrink: 0, marginTop: '2px' }}>{icon}</span>
+              <div>
+                <strong style={{ color: 'var(--clr-primary)', fontSize: '14px', display: 'block', marginBottom: '3px' }}>{title}</strong>
+                <span style={{ color: '#666', fontSize: '13px', lineHeight: 1.4 }}>{desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div style={s.card}>
-        <h1 style={s.title}>Veckoplanen</h1>
+        <h1 style={{ ...s.title, fontSize: '20px', margin: '0 0 20px' }}>Kom igång — det tar en minut</h1>
         <div style={s.tabs}>
           {([['login', 'Logga in'], ['register', 'Skapa konto']] as const).map(([key, label]) => (
             <button
