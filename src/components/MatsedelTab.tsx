@@ -20,11 +20,17 @@ export default function MatsedelTab({
   onSetMeal, onSaveMealPlan, onLoadMealPlan, onEditRecipe, onClearMeals,
 }: Props) {
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
+  const [copyingDay, setCopyingDay] = useState<string | null>(null)
   const [openMealKey, setOpenMealKey] = useState<string | null>(null)
   const [showRecipes, setShowRecipes] = useState(false)
   const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const hasMeal = WEEKDAYS.some(d => meals[d])
+
+  function copyMealToDay(fromDay: string, toDay: string) {
+    onSetMeal(toDay, meals[fromDay] || '')
+    setCopyingDay(null)
+  }
 
   function handleMealInput(day: string, value: string) {
     onSetMeal(day, value)
@@ -56,6 +62,8 @@ export default function MatsedelTab({
         const isOpen = autocomplete.day === day && autocomplete.results.length > 0
         const recipe = allRecipes.find(r => r.name.toLowerCase() === mealValue.toLowerCase())
 
+        const isCopying = copyingDay === day
+
         return (
           <div key={day} style={{ background: '#fff', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -77,14 +85,41 @@ export default function MatsedelTab({
                 )}
               </div>
               {mealValue && (
-                <button
-                  style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
-                  onClick={() => onEditRecipe(recipe ?? { id: null, name: mealValue, ingredients: [] })}
-                  title="Öppna recepteditor"
-                >
-                  <span style={{ fontSize: '14px' }}>✏️</span>
-                  <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Recept</span>
-                </button>
+                <>
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      style={{ background: isCopying ? 'var(--clr-primary)' : 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: isCopying ? '#fff' : 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                      onClick={() => setCopyingDay(isCopying ? null : day)}
+                      title="Kopiera till annan dag"
+                    >
+                      <span style={{ fontSize: '14px' }}>⧉</span>
+                      <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Kopiera</span>
+                    </button>
+                    {isCopying && (
+                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', background: '#fff', border: '1.5px solid #c8e6c9', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 30, padding: '8px', minWidth: '140px' }}>
+                        <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '6px', paddingLeft: '4px' }}>Kopiera till:</div>
+                        {WEEKDAYS.filter(d => d !== day).map(d => (
+                          <button
+                            key={d}
+                            onMouseDown={() => copyMealToDay(day, d)}
+                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '7px 10px', background: meals[d] ? '#fff8e1' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', color: '#333' }}
+                          >
+                            {d.charAt(0).toUpperCase() + d.slice(1)}
+                            {meals[d] && <span style={{ fontSize: '11px', color: '#aaa', marginLeft: '6px' }}>({meals[d].slice(0, 12)}{meals[d].length > 12 ? '…' : ''})</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    style={{ background: 'var(--clr-bg)', border: '1px solid #c8e6c9', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                    onClick={() => onEditRecipe(recipe ?? { id: null, name: mealValue, ingredients: [] })}
+                    title="Öppna recepteditor"
+                  >
+                    <span style={{ fontSize: '14px' }}>✏️</span>
+                    <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Recept</span>
+                  </button>
+                </>
               )}
             </div>
             {recipe && (
