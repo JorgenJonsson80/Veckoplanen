@@ -54,81 +54,80 @@ export default function MatsedelTab({
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', margin: '0 0 16px', fontSize: '22px' }}>Veckans matsedel</h2>
+      <h2 className="font-serif text-primary text-[22px] mb-4">Veckans matsedel</h2>
 
       {WEEKDAYS.map(day => {
         const dayLabel = day.charAt(0).toUpperCase() + day.slice(1)
         const mealValue = meals[day] || ''
         const isOpen = autocomplete.day === day && autocomplete.results.length > 0
         const recipe = allRecipes.find(r => r.name.toLowerCase() === mealValue.toLowerCase())
-
         const isCopying = copyingDay === day
 
         return (
-          <div key={day} style={{ background: '#fff', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ minWidth: '80px', fontWeight: '700', color: 'var(--clr-primary)', fontSize: '14px' }}>{dayLabel}</span>
-              <div style={{ flex: 1, position: 'relative' }}>
+          <div key={day} className="bg-white rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+            <div className="flex items-center gap-2.5">
+              <span className="min-w-20 font-bold text-primary text-sm">{dayLabel}</span>
+              <div className="flex-1 relative">
                 <input
-                  style={{ width: '100%', padding: '8px 10px', border: '1.5px solid var(--clr-border)', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] font-[inherit] box-border"
                   value={mealValue}
                   onChange={e => handleMealInput(day, e.target.value)}
                   onBlur={() => setTimeout(() => setAutocomplete({ day: null, results: [] }), 150)}
                   placeholder="Välj rätt..."
                 />
                 {isOpen && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '0 0 8px 8px', zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                     {autocomplete.results.map(name => (
-                      <div key={name} style={{ padding: '10px 12px', cursor: 'pointer', fontSize: '15px', borderBottom: '1px solid var(--clr-bg)' }} onMouseDown={() => selectAutocomplete(day, name)}>{name}</div>
+                      <div key={name} className="px-3 py-2.5 cursor-pointer text-[15px] border-b border-bg" onMouseDown={() => selectAutocomplete(day, name)}>{name}</div>
                     ))}
                   </div>
                 )}
               </div>
               {mealValue && (
                 <>
-                  <div style={{ position: 'relative' }}>
+                  <div className="relative">
                     <button
-                      style={{ background: isCopying ? 'var(--clr-primary)' : 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', cursor: 'pointer', color: isCopying ? '#fff' : 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                      className={`border border-border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none ${isCopying ? 'bg-primary text-white' : 'bg-bg text-primary'}`}
                       onClick={() => setCopyingDay(isCopying ? null : day)}
                       title="Kopiera till annan dag"
                     >
-                      <span style={{ fontSize: '14px' }}>⧉</span>
-                      <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Kopiera</span>
+                      <span className="text-sm">⧉</span>
+                      <span className="text-[9px] font-semibold tracking-[0.3px]">Kopiera</span>
                     </button>
                     {isCopying && (
-                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', background: '#fff', border: '1.5px solid var(--clr-border)', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 30, padding: '8px', minWidth: '140px' }}>
-                        <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '6px', paddingLeft: '4px' }}>Kopiera till:</div>
+                      <div className="absolute top-full right-0 mt-1.5 bg-white border border-border rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-30 p-2 min-w-35">
+                        <div className="text-[11px] text-[#aaa] mb-1.5 pl-1">Kopiera till:</div>
                         {WEEKDAYS.filter(d => d !== day).map(d => (
                           <button
                             key={d}
                             onMouseDown={() => copyMealToDay(day, d)}
-                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '7px 10px', background: meals[d] ? '#fff8e1' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', color: '#333' }}
+                            className={`block w-full text-left px-2.5 py-1.5 border-0 rounded-md cursor-pointer text-sm text-[#333] ${meals[d] ? 'bg-[#fff8e1]' : 'bg-white'}`}
                           >
                             {d.charAt(0).toUpperCase() + d.slice(1)}
-                            {meals[d] && <span style={{ fontSize: '11px', color: '#aaa', marginLeft: '6px' }}>({meals[d].slice(0, 12)}{meals[d].length > 12 ? '…' : ''})</span>}
+                            {meals[d] && <span className="text-[11px] text-[#aaa] ml-1.5">({meals[d].slice(0, 12)}{meals[d].length > 12 ? '…' : ''})</span>}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
                   <button
-                    style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--clr-primary)', padding: '4px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', lineHeight: 1 }}
+                    className="bg-bg border border-border rounded-md cursor-pointer text-primary px-2 py-1 flex flex-col items-center gap-px leading-none"
                     onClick={() => onEditRecipe(recipe ?? { id: null, name: mealValue, ingredients: [] })}
                     title="Öppna recepteditor"
                   >
-                    <span style={{ fontSize: '14px' }}>✏️</span>
-                    <span style={{ fontSize: '9px', fontWeight: '600', letterSpacing: '0.3px' }}>Recept</span>
+                    <span className="text-sm">✏️</span>
+                    <span className="text-[9px] font-semibold tracking-[0.3px]">Recept</span>
                   </button>
                 </>
               )}
             </div>
             {recipe && (
-              <div style={{ marginTop: '8px', paddingLeft: '90px' }}>
-                <div style={{ fontSize: '12px', color: '#888', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              <div className="mt-2 pl-22.5">
+                <div className="text-xs text-[#888] flex flex-wrap gap-1">
                   {(recipe.ingredients || []).slice(0, 5).map((ing, i) => (
-                    <span key={i} style={{ background: 'var(--clr-bg)', borderRadius: '4px', padding: '1px 6px' }}>{ing.name}</span>
+                    <span key={i} className="bg-bg rounded px-1.5 py-px">{ing.name}</span>
                   ))}
-                  {(recipe.ingredients || []).length > 5 && <span style={{ color: '#aaa' }}>+{recipe.ingredients.length - 5} till</span>}
+                  {(recipe.ingredients || []).length > 5 && <span className="text-[#aaa]">+{recipe.ingredients.length - 5} till</span>}
                 </div>
               </div>
             )}
@@ -136,11 +135,18 @@ export default function MatsedelTab({
         )
       })}
 
-      <button style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: 'var(--clr-bg)', border: '1.5px dashed var(--clr-secondary)', borderRadius: '10px', color: 'var(--clr-primary)', fontSize: '15px', cursor: 'pointer' }} onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}>
+      <button
+        className="block w-full py-3 mt-2 bg-bg border border-dashed border-secondary rounded-xl text-primary text-[15px] cursor-pointer"
+        onClick={() => onEditRecipe({ id: null, name: '', ingredients: [] })}
+      >
         + Skapa nytt recept
       </button>
 
-      <button onClick={onSaveMealPlan} disabled={!hasMeal} style={{ display: 'block', width: '100%', padding: '12px', marginTop: '8px', background: hasMeal ? 'var(--clr-primary)' : '#e0e0e0', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '15px', cursor: hasMeal ? 'pointer' : 'default', fontFamily: 'Georgia, serif' }}>
+      <button
+        onClick={onSaveMealPlan}
+        disabled={!hasMeal}
+        className={`block w-full py-3 mt-2 border-0 rounded-xl text-white text-[15px] font-serif ${hasMeal ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+      >
         💾 Spara matsedeln ({getWeekLabel(currentWeek)})
       </button>
 
@@ -150,36 +156,42 @@ export default function MatsedelTab({
             if (confirmClear) { onClearMeals(); setConfirmClear(false) }
             else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000) }
           }}
-          style={{ display: 'block', width: '100%', padding: '10px', marginTop: '6px', background: confirmClear ? '#fff3e0' : 'none', border: `1.5px solid ${confirmClear ? 'var(--clr-warning)' : 'var(--clr-border)'}`, borderRadius: '10px', color: confirmClear ? 'var(--clr-warning)' : 'var(--clr-secondary)', fontSize: '14px', cursor: 'pointer' }}
+          className={`block w-full py-2.5 mt-1.5 rounded-xl text-sm cursor-pointer border ${confirmClear ? 'bg-[#fff3e0] border-warning text-warning' : 'bg-transparent border-border text-secondary'}`}
         >
           {confirmClear ? '⚠️ Tryck igen för att rensa hela veckan' : '🗑 Rensa matsedeln'}
         </button>
       )}
 
       {Object.keys(savedMeals).length > 0 && (
-        <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
-          <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: '0 0 12px' }}>📅 Sparade matsedlar</h3>
+        <div className="mt-6 border-t border-bg-subtle pt-5">
+          <h3 className="font-serif text-primary text-lg mb-3">📅 Sparade matsedlar</h3>
           {Object.entries(savedMeals).sort(([a], [b]) => b.localeCompare(a)).map(([week, data]) => {
             const isOpen = openMealKey === week
             const count = WEEKDAYS.filter(d => data.meals?.[d]).length
             return (
-              <div key={week} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
-                <button onClick={() => setOpenMealKey(isOpen ? null : week)} style={{ width: '100%', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-                  <span style={{ fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{getWeekLabel(week)}</span>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--clr-secondary)' }}>{count} rätter</span>
-                    <span style={{ color: 'var(--clr-secondary)' }}>{isOpen ? '▲' : '▼'}</span>
+              <div key={week} className="rounded-xl border border-border mb-2 overflow-hidden">
+                <button
+                  onClick={() => setOpenMealKey(isOpen ? null : week)}
+                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                >
+                  <span className="font-bold text-primary text-[15px]">{getWeekLabel(week)}</span>
+                  <div className="flex gap-2.5 items-center">
+                    <span className="text-sm text-secondary">{count} rätter</span>
+                    <span className="text-secondary">{isOpen ? '▲' : '▼'}</span>
                   </div>
                 </button>
                 {isOpen && (
-                  <div style={{ padding: '4px 14px 14px', background: 'var(--clr-bg-card)' }}>
+                  <div className="px-3.5 pt-1 pb-3.5 bg-bg-card">
                     {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
-                      <div key={d} style={{ display: 'flex', gap: '12px', padding: '6px 0', borderBottom: '1px solid var(--clr-bg)', fontSize: '14px' }}>
-                        <span style={{ minWidth: '72px', color: '#888', textTransform: 'capitalize' }}>{d}</span>
-                        <span style={{ color: '#222' }}>{data.meals[d]}</span>
+                      <div key={d} className="flex gap-3 py-1.5 border-b border-bg text-sm">
+                        <span className="min-w-18 text-[#888] capitalize">{d}</span>
+                        <span className="text-[#222]">{data.meals[d]}</span>
                       </div>
                     ))}
-                    <button onClick={() => handleLoadMealPlan(week)} style={{ marginTop: '12px', padding: '8px 16px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'Georgia, serif' }}>↩ Ladda den här matsedeln</button>
+                    <button
+                      onClick={() => handleLoadMealPlan(week)}
+                      className="mt-3 px-4 py-2 bg-primary text-white border-0 rounded-lg text-sm cursor-pointer font-serif"
+                    >↩ Ladda den här matsedeln</button>
                   </div>
                 )}
               </div>
@@ -188,28 +200,38 @@ export default function MatsedelTab({
         </div>
       )}
 
-      <div style={{ marginTop: '24px', borderTop: '1px solid var(--clr-bg-subtle)', paddingTop: '20px' }}>
-        <button onClick={() => setShowRecipes(v => !v)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 12px' }}>
-          <h3 style={{ fontFamily: 'Georgia, serif', color: 'var(--clr-primary)', fontSize: '18px', margin: 0 }}>
-            📖 Alla recept <span style={{ fontSize: '14px', color: 'var(--clr-secondary)', fontFamily: 'system-ui' }}>({allRecipes.length})</span>
+      <div className="mt-6 border-t border-bg-subtle pt-5">
+        <button
+          onClick={() => setShowRecipes(v => !v)}
+          className="w-full flex justify-between items-center bg-transparent border-0 cursor-pointer pb-3"
+        >
+          <h3 className="font-serif text-primary text-lg m-0">
+            📖 Alla recept <span className="text-sm text-secondary font-sans">({allRecipes.length})</span>
           </h3>
-          <span style={{ color: 'var(--clr-secondary)' }}>{showRecipes ? '▲' : '▼'}</span>
+          <span className="text-secondary">{showRecipes ? '▲' : '▼'}</span>
         </button>
         {showRecipes && allRecipes.map(recipe => {
           const isOpen = openRecipeId === recipe.id || openRecipeId === recipe.name
           return (
-            <div key={recipe.id || recipe.name} style={{ borderRadius: '10px', border: '1.5px solid var(--clr-border)', marginBottom: '8px', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', background: isOpen ? 'var(--clr-bg-subtle)' : '#fff', gap: '10px', cursor: 'pointer' }} onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}>
-                <span style={{ flex: 1, fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px' }}>{recipe.name}</span>
-                <span style={{ fontSize: '12px', color: '#aaa' }}>{recipe.ingredients?.length || 0} ingredienser</span>
-                <button aria-label={`Redigera recept ${recipe.name}`} onClick={e => { e.stopPropagation(); onEditRecipe(recipe) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', color: 'var(--clr-secondary)' }}>✏️</button>
-                <span style={{ color: 'var(--clr-secondary)', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
+            <div key={recipe.id || recipe.name} className="rounded-xl border border-border mb-2 overflow-hidden">
+              <div
+                className={`flex items-center px-3.5 py-3 gap-2.5 cursor-pointer ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}
+              >
+                <span className="flex-1 font-bold text-primary text-[15px]">{recipe.name}</span>
+                <span className="text-xs text-[#aaa]">{recipe.ingredients?.length || 0} ingredienser</span>
+                <button
+                  aria-label={`Redigera recept ${recipe.name}`}
+                  onClick={e => { e.stopPropagation(); onEditRecipe(recipe) }}
+                  className="bg-transparent border-0 cursor-pointer text-sm px-1 py-0.5 text-secondary"
+                >✏️</button>
+                <span className="text-secondary text-xs">{isOpen ? '▲' : '▼'}</span>
               </div>
               {isOpen && (
-                <div style={{ padding: '8px 14px 14px', background: 'var(--clr-bg-card)' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <div className="px-3.5 pt-2 pb-3.5 bg-bg-card">
+                  <div className="flex flex-wrap gap-1.5">
                     {(recipe.ingredients || []).map((ing, i) => (
-                      <span key={i} style={{ fontSize: '13px', background: '#fff', border: '1px solid var(--clr-border)', borderRadius: '6px', padding: '3px 8px', color: '#444' }}>
+                      <span key={i} className="text-sm bg-white border border-border rounded-md px-2 py-0.5 text-[#444]">
                         {ing.amount ? `${ing.amount} ` : ''}{ing.name}
                       </span>
                     ))}
