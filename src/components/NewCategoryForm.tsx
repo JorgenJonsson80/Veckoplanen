@@ -15,50 +15,38 @@ const EMOJI_OPTIONS = [
   '🧴','🧹','🧼','🪥','🛒','📦',
 ]
 
-const styles = {
-  container: { background: 'var(--clr-bg)', borderRadius: '10px', padding: '14px', marginTop: '12px' },
-  title: { fontWeight: '700', color: 'var(--clr-primary)', fontSize: '15px', marginBottom: '10px' },
-  emojiGrid: { display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '10px' },
-  emojiBtn: { width: '36px', height: '36px', border: '2px solid transparent', borderRadius: '8px', fontSize: '20px', cursor: 'pointer', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color 0.1s' } as React.CSSProperties,
-  emojiBtnSelected: { borderColor: 'var(--clr-primary)', background: 'var(--clr-bg-subtle)' },
-  row: { display: 'flex', gap: '8px' },
-  input: { flex: 1, padding: '9px 10px', border: '1.5px solid #c8e6c9', borderRadius: '8px', fontSize: '15px', fontFamily: 'inherit' } as React.CSSProperties,
-  addBtn: { padding: '9px 16px', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', whiteSpace: 'nowrap' as const },
-}
-
 export default function NewCategoryForm({ onAdd }: Props) {
   const [selectedEmoji, setSelectedEmoji] = useState('🛒')
   const [catName, setCatName] = useState('')
 
   function handleAdd() {
     if (!catName.trim()) return
-    const id = crypto.randomUUID()
-    onAdd({ id, name: catName.trim(), emoji: selectedEmoji, shelfLife: 30 })
+    onAdd({ id: crypto.randomUUID(), name: catName.trim(), emoji: selectedEmoji, shelfLife: 30 })
     setCatName('')
   }
 
   return (
-    <div style={styles.container}>
-      <p style={styles.title}>Ny kategori</p>
-      <div style={styles.emojiGrid}>
+    <div className="bg-bg rounded-xl p-3.5 mt-3">
+      <p className="font-bold text-primary text-[15px] mb-2.5">Ny kategori</p>
+      <div className="flex flex-wrap gap-1.5 mb-2.5">
         {EMOJI_OPTIONS.map(emoji => (
           <button
             key={emoji}
-            style={{ ...styles.emojiBtn, ...(selectedEmoji === emoji ? styles.emojiBtnSelected : {}) }}
             onClick={() => setSelectedEmoji(emoji)}
             title={emoji}
+            className={`w-9 h-9 border-2 rounded-lg text-xl cursor-pointer flex items-center justify-center transition-colors ${selectedEmoji === emoji ? 'border-primary bg-bg-subtle' : 'border-transparent bg-white'}`}
           >{emoji}</button>
         ))}
       </div>
-      <div style={styles.row}>
+      <div className="flex gap-2">
         <input
-          style={styles.input}
+          className="flex-1 px-2.5 py-2 border border-border rounded-lg text-[15px] font-[inherit]"
           value={catName}
           onChange={e => setCatName(e.target.value)}
           placeholder="t.ex. Ekologiskt"
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
         />
-        <button style={styles.addBtn} onClick={handleAdd}>Lägg till</button>
+        <button className="px-4 py-2 bg-primary text-white border-0 rounded-lg text-[15px] cursor-pointer whitespace-nowrap" onClick={handleAdd}>Lägg till</button>
       </div>
     </div>
   )
