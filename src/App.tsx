@@ -52,7 +52,7 @@ const s = {
 }
 
 export default function App() {
-  const { user, loading: authLoading, isRecovery, signInWithPassword, signUp, signInWithMagicLink, resetPassword, updatePassword, signOut } = useAuth()
+  const { user, loading: authLoading, isRecovery, signInWithPassword, signUp, signInWithMagicLink, resetPassword, updatePassword, signInWithGoogle, signOut } = useAuth()
 
   const pendingJoinCode = (() => {
     const match = window.location.pathname.match(/^\/join\/([A-Z0-9]{8})$/i)
@@ -206,6 +206,7 @@ export default function App() {
       onSignUp={signUp}
       onSignInWithMagicLink={signInWithMagicLink}
       onResetPassword={resetPassword}
+      onSignInWithGoogle={signInWithGoogle}
     />
   )
 

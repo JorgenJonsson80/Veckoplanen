@@ -56,6 +56,13 @@ export function useAuth() {
     return { error }
   }
 
+  async function signInWithGoogle(): Promise<void> {
+    await supabase!.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+  }
+
   async function signOut(): Promise<void> {
     await supabase!.auth.signOut()
   }
@@ -69,6 +76,7 @@ export function useAuth() {
     signInWithMagicLink,
     resetPassword,
     updatePassword,
+    signInWithGoogle,
     signOut,
   }
 }
