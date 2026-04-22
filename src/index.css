@@ -25,6 +25,13 @@
   --font-serif:     Georgia, serif;
 }
 
+@keyframes celebrate-in {
+  0%   { transform: translateY(-110%); opacity: 0; }
+  12%  { transform: translateY(0);     opacity: 1; }
+  75%  { transform: translateY(0);     opacity: 1; }
+  100% { transform: translateY(-110%); opacity: 0; }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }

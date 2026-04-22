@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { getWeekLabel } from '../utils/date'
 import type { Category, Store, ShoppingListItem, SavedShoppingList, PurchaseRecord } from '../types'
 
@@ -51,6 +51,16 @@ export default function HandlingslistaTab({
   const [budgetInput, setBudgetInput] = useState('')
   const [spendInput, setSpendInput] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
+  const prevCheckedCount = useRef(0)
+
+  useEffect(() => {
+    if (totalItems > 0 && checkedCount === totalItems && prevCheckedCount.current < totalItems) {
+      setShowCelebration(true)
+      setTimeout(() => setShowCelebration(false), 3200)
+    }
+    prevCheckedCount.current = checkedCount
+  }, [checkedCount, totalItems])
 
   function handleClearChecked() {
     if (!confirmClear) { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); return }
@@ -101,6 +111,14 @@ export default function HandlingslistaTab({
 
   return (
     <div>
+      {showCelebration && (
+        <div
+          className="fixed top-14 left-0 right-0 z-50 bg-primary text-white text-center py-3.5 text-base font-semibold shadow-lg"
+          style={{ animation: 'celebrate-in 3.2s ease forwards' }}
+        >
+          🎉 Klar med veckans handling!
+        </div>
+      )}
       <h2 className="font-serif text-primary text-[22px] mb-3">Handlingslista</h2>
 
       {/* Butiksväljare */}
