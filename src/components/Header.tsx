@@ -4,12 +4,13 @@ import type { Session } from '../types'
 interface HeaderProps {
   session: Session
   user: User
+  onHome: () => void
   onShowActivity: () => void
   onSwitchRoom: () => void
   onSignOut: () => void
 }
 
-export default function Header({ session, user, onShowActivity, onSwitchRoom, onSignOut }: HeaderProps) {
+export default function Header({ session, user, onHome, onShowActivity, onSwitchRoom, onSignOut }: HeaderProps) {
   function handleShareRoom() {
     const url = `${window.location.origin}/join/${session.roomCode}`
     if (navigator.share) navigator.share({ title: 'Gå med i Veckoplanen', url })
@@ -18,14 +19,19 @@ export default function Header({ session, user, onShowActivity, onSwitchRoom, on
 
   return (
     <header className="bg-primary text-white px-4 flex items-center justify-between h-14 sticky top-0 z-10">
-      <div>
+      <button
+        type="button"
+        onClick={onHome}
+        className="bg-transparent border-0 text-white text-left p-0 cursor-pointer font-[inherit]"
+        aria-label="Gå till startsidan"
+      >
         <h1 className="font-serif text-xl m-0">Veckoplanen</h1>
         {user.email && (
           <div className="text-[11px] text-white/65 mt-px">
             {session.name} · {user.email.split('@')[0]}
           </div>
         )}
-      </div>
+      </button>
       <div className="flex items-center gap-2.5">
         {session.roomCode && (
           <button

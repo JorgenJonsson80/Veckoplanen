@@ -87,6 +87,7 @@ export default function App() {
       <Header
         session={app.session}
         user={user}
+        onHome={() => setActiveTab('matsedel')}
         onShowActivity={() => setShowActivity(true)}
         onSwitchRoom={app.handleSwitchRoom}
         onSignOut={() => app.handleSignOut(signOut)}
