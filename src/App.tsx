@@ -5,7 +5,7 @@ import ResetPasswordScreen from './components/ResetPasswordScreen'
 import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
 import Tabs, { type TabKey } from './components/Tabs'
-import Onboarding from './components/Onboarding'
+import FirstRunSetup from './components/FirstRunSetup'
 import { useAuth } from './hooks/useAuth'
 import { useAppState, getRecentRooms } from './hooks/useAppState'
 import AppContext from './context/AppContext'
@@ -39,7 +39,7 @@ export default function App() {
   const [showActivity, setShowActivity] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState<RecipeDraft | null>(null)
   const [editingStore, setEditingStore] = useState<StoreDraft | null>(null)
-  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('veckoplanen_onboarded'))
+  const isFirstTime = !localStorage.getItem('veckoplanen_onboarded')
   const [generatedToast, setGeneratedToast] = useState<string | null>(null)
   const [justGenerated, setJustGenerated] = useState(false)
   const mealsRef = useRef(app.meals)
@@ -67,14 +67,17 @@ export default function App() {
       onSignInWithGoogle={signInWithGoogle}
     />
   )
-  if (!app.session) return (
-    <RoomSetup
-      onStart={app.handleStart}
-      initialJoinCode={pendingJoinCode}
-      recentRooms={getRecentRooms(user.id)}
-      recentRoomsKey={`veckoplanen_recent_rooms_${user.id}`}
-    />
-  )
+  if (!app.session) {
+    if (isFirstTime) return <FirstRunSetup onStart={app.handleStart} initialJoinCode={pendingJoinCode} />
+    return (
+      <RoomSetup
+        onStart={app.handleStart}
+        initialJoinCode={pendingJoinCode}
+        recentRooms={getRecentRooms(user.id)}
+        recentRoomsKey={`veckoplanen_recent_rooms_${user.id}`}
+      />
+    )
+  }
   if (app.roomNotFound) return (
     <div className="min-h-screen bg-bg max-w-150 mx-auto flex items-center justify-center">
       <div className="text-center px-6 py-8 max-w-85">
@@ -92,12 +95,6 @@ export default function App() {
   function handleSaveStore(store: Store) { app.saveStore(store); setEditingStore(null) }
   function handleDeleteStore(storeId: string) { app.deleteStore(storeId); setEditingStore(null) }
   function handleSaveRecipe(recipe: RecipeDraft) { app.saveRecipe(recipe); setEditingRecipe(null) }
-  function handleStartOnboarding() {
-    localStorage.setItem('veckoplanen_onboarded', '1')
-    setActiveTab('matsedel')
-    setShowWelcome(false)
-  }
-
   return (
     <AppContext.Provider value={app}>
     <div className="min-h-screen bg-bg font-sans max-w-150 mx-auto relative">
@@ -164,7 +161,6 @@ export default function App() {
         </div>
       )}
 
-      {showWelcome && <Onboarding onStart={handleStartOnboarding} />}
     </div>
     </AppContext.Provider>
   )
