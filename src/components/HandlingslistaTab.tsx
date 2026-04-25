@@ -1,54 +1,37 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { getWeekLabel } from '../utils/date'
-import type { Category, Store, ShoppingListItem, SavedShoppingList, PurchaseRecord, BudgetWeekRecord } from '../types'
+import { useAppContext } from '../context/AppContext'
+import type { Store } from '../types'
 
 interface Props {
-  stores: Store[]
-  activeStoreId: string | null
-  orderedCategories: Category[]
-  allItemsGrouped: Record<string, ShoppingListItem[]>
-  checkedItems: Record<string, boolean>
-  totalItems: number
-  checkedCount: number
-  likelyEmptyItems: ShoppingListItem[]
-  savedLists: Record<string, SavedShoppingList>
-  history: Record<string, PurchaseRecord>
-  categories: Category[]
-  currentWeek: string
-  budget: number | null
-  weeklySpend: number | null
-  budgetSummary: {
-    current: BudgetWeekRecord | null
-    previous: BudgetWeekRecord | null
-    averageSpend: number | null
-    recordedWeeks: number
-  }
-  onToggleItem: (name: string, catId: string) => void
-  onRemoveExtraItem: (id: string) => void
-  onAddExtraItem: (name: string, catId: string) => void
-  onHideIngredient: (name: string) => void
-  onRestoreIngredients: () => void
-  hiddenCount: number
-  onSetActiveStore: (id: string | null) => void
   onEditStore: (store: Store) => void
   onNewStore: () => void
-  onSaveWeeklyList: () => void
-  onClearChecked: () => void
-  onSetBudget: (value: number | null) => void
-  onSetWeeklySpend: (value: number | null) => void
-  suggestedRebuys: { name: string; catId: string; daysSince: number; intervalDays?: number }[]
 }
 
-export default function HandlingslistaTab({
-  stores, activeStoreId, orderedCategories, allItemsGrouped,
-  checkedItems, totalItems, checkedCount, likelyEmptyItems,
-  savedLists, history, categories, currentWeek,
-  budget, weeklySpend, budgetSummary,
-  onToggleItem, onRemoveExtraItem, onAddExtraItem,
-  onHideIngredient, onRestoreIngredients, hiddenCount,
-  onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
-  onSetBudget, onSetWeeklySpend, suggestedRebuys,
-}: Props) {
+export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
+  const {
+    stores, activeStoreId, orderedCategories, allItemsGrouped,
+    checkedItems, totalItems, checkedCount, likelyEmptyItems,
+    savedLists, purchaseHistory: history, categories, currentWeek,
+    budget, weeklySpend, budgetSummary,
+    toggleItem: onToggleItem,
+    removeExtraItem: onRemoveExtraItem,
+    addExtraItem: onAddExtraItem,
+    hideIngredient: onHideIngredient,
+    restoreIngredients: onRestoreIngredients,
+    hiddenIngredients,
+    setActiveStore: onSetActiveStore,
+    saveWeeklyList,
+    clearChecked: onClearChecked,
+    setBudget: onSetBudget,
+    setWeeklySpend: onSetWeeklySpend,
+    suggestedRebuys,
+    meals,
+  } = useAppContext()
+  const hiddenCount = hiddenIngredients.length
+  function onSaveWeeklyList() {
+    saveWeeklyList(Object.values(allItemsGrouped).flat(), meals)
+  }
   const [newExtraItem, setNewExtraItem] = useState('')
   const [newExtraCat, setNewExtraCat] = useState('')
   const [extraSuggestions, setExtraSuggestions] = useState<string[]>([])

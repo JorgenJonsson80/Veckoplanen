@@ -11,14 +11,10 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import NewCategoryForm from './NewCategoryForm'
-import type { Category, Session } from '../types'
+import { useAppContext } from '../context/AppContext'
+import type { Category } from '../types'
 
 interface Props {
-  categories: Category[]
-  session: Session
-  onReorder: (cats: Category[]) => void
-  onAddCategory: (cat: Category) => void
-  onRemoveCategory: (catId: string) => void
   onDeleteRoom: () => void
 }
 
@@ -63,7 +59,14 @@ function CatDragGhost({ cat }: { cat: Category }) {
   )
 }
 
-export default function KategorierTab({ categories, session, onReorder, onAddCategory, onRemoveCategory, onDeleteRoom }: Props) {
+export default function KategorierTab({ onDeleteRoom }: Props) {
+  const {
+    categories,
+    session,
+    handleCatReorder: onReorder,
+    addCategory: onAddCategory,
+    removeCategory: onRemoveCategory,
+  } = useAppContext()
   const [activeCatId, setActiveCatId] = useState<string | null>(null)
   const [showNewCat, setShowNewCat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -122,14 +125,14 @@ export default function KategorierTab({ categories, session, onReorder, onAddCat
       </button>
       {showNewCat && <NewCategoryForm onAdd={handleAddCategory} />}
 
-      {session.roomCode && (
+      {session?.roomCode && (
         <div className="mt-8 pt-5 border-t border-[#ffcdd2]">
           <p className="text-[#aaa] text-xs mb-2">Farozon</p>
           <button
             onClick={handleDeleteRoom}
             className={`w-full py-3 border border-[#ef9a9a] rounded-xl text-[15px] cursor-pointer transition-colors duration-200 ${confirmDelete ? 'bg-error text-white' : 'bg-white text-error'}`}
           >
-            {confirmDelete ? '⚠️ Tryck igen — detta går inte att ångra' : `🗑 Radera rummet ${session.roomCode}`}
+            {confirmDelete ? '⚠️ Tryck igen — detta går inte att ångra' : `🗑 Radera rummet ${session?.roomCode}`}
           </button>
         </div>
       )}

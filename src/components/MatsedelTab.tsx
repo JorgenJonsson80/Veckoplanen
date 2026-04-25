@@ -1,42 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
 import { getWeekLabel } from '../utils/date'
-import type { Recipe, SavedWeekPlan, FavoriteWeekPlan, RecipeDraft, BudgetWeekRecord } from '../types'
+import { useAppContext } from '../context/AppContext'
+import type { Recipe, RecipeDraft } from '../types'
 
 const QUICK_START_MEALS = ['Tacos', 'Spagetti Bolognese', 'Kycklinggryta', 'Pannkakor', 'Laxpasta']
 
 interface Props {
-  meals: Record<string, string>
-  allRecipes: Recipe[]
-  favoriteRecipeIds: string[]
-  favoriteWeeks: FavoriteWeekPlan[]
-  savedMeals: Record<string, SavedWeekPlan>
-  currentWeek: string
-  budget: number | null
-  weeklySpend: number | null
-  budgetSummary: {
-    current: BudgetWeekRecord | null
-    previous: BudgetWeekRecord | null
-    averageSpend: number | null
-    recordedWeeks: number
-  }
-  onSetMeal: (day: string, value: string) => void
-  onSaveMealPlan: () => void
-  onLoadMealPlan: (weekKey: string) => void
-  onSaveFavoriteWeek: (name: string) => void
-  onLoadFavoriteWeek: (favoriteWeekId: string) => void
-  onDeleteFavoriteWeek: (favoriteWeekId: string) => void
-  onGenerateWeek: (selectedMeals: string[]) => void
-  onToggleFavoriteRecipe: (recipeId: string) => void
   onEditRecipe: (recipe: RecipeDraft) => void
-  onClearMeals: () => void
+  onLoadFavoriteWeek: (favoriteWeekId: string) => void
+  onGenerateWeek: (selectedMeals: string[]) => void
 }
 
-export default function MatsedelTab({
-  meals, allRecipes, favoriteRecipeIds, favoriteWeeks, savedMeals, currentWeek,
-  budget, weeklySpend, budgetSummary,
-  onSetMeal, onSaveMealPlan, onLoadMealPlan, onSaveFavoriteWeek, onLoadFavoriteWeek, onDeleteFavoriteWeek, onGenerateWeek, onToggleFavoriteRecipe, onEditRecipe, onClearMeals,
-}: Props) {
+export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenerateWeek }: Props) {
+  const {
+    meals, allRecipes,
+    favoriteRecipes: favoriteRecipeIds,
+    favoriteWeeks, savedMeals, currentWeek,
+    budget, weeklySpend, budgetSummary,
+    setMeal: onSetMeal,
+    saveMealPlan: onSaveMealPlan,
+    loadMealPlan: onLoadMealPlan,
+    saveFavoriteWeek: onSaveFavoriteWeek,
+    deleteFavoriteWeek: onDeleteFavoriteWeek,
+    toggleFavoriteRecipe: onToggleFavoriteRecipe,
+    clearMeals: onClearMeals,
+  } = useAppContext()
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
   const [copyingDay, setCopyingDay] = useState<string | null>(null)
   const [openMealKey, setOpenMealKey] = useState<string | null>(null)

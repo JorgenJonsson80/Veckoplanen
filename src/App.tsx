@@ -8,6 +8,7 @@ import Tabs, { type TabKey } from './components/Tabs'
 import Onboarding from './components/Onboarding'
 import { useAuth } from './hooks/useAuth'
 import { useAppState, getRecentRooms } from './hooks/useAppState'
+import AppContext from './context/AppContext'
 import type { RecipeDraft, Store } from './types'
 
 const RecipeEditor = lazy(() => import('./components/RecipeEditor'))
@@ -83,6 +84,7 @@ export default function App() {
   }
 
   return (
+    <AppContext.Provider value={app}>
     <div className="min-h-screen bg-bg font-sans max-w-150 mx-auto relative">
       <Header
         session={app.session}
@@ -115,50 +117,19 @@ export default function App() {
           <Suspense fallback={<p className="text-secondary p-6 text-center">Laddar...</p>}>
             {activeTab === 'matsedel' && (
               <MatsedelTab
-                meals={app.meals}
-                allRecipes={app.allRecipes}
-                favoriteRecipeIds={app.favoriteRecipes}
-                favoriteWeeks={app.favoriteWeeks}
-                savedMeals={app.savedMeals}
-                currentWeek={app.currentWeek}
-                budget={app.budget}
-                weeklySpend={app.weeklySpend}
-                budgetSummary={app.budgetSummary}
-                onSetMeal={app.setMeal}
-                onSaveMealPlan={app.saveMealPlan}
-                onLoadMealPlan={app.loadMealPlan}
-                onSaveFavoriteWeek={app.saveFavoriteWeek}
-                onLoadFavoriteWeek={favoriteWeekId => {
-                  app.loadFavoriteWeek(favoriteWeekId)
-                  setActiveTab('handlingslista')
-                }}
-                onDeleteFavoriteWeek={app.deleteFavoriteWeek}
-                onGenerateWeek={selectedMeals => {
-                  app.generateWeekFromMeals(selectedMeals)
-                  setActiveTab('handlingslista')
-                }}
-                onToggleFavoriteRecipe={app.toggleFavoriteRecipe}
                 onEditRecipe={setEditingRecipe}
-                onClearMeals={app.clearMeals}
+                onLoadFavoriteWeek={id => { app.loadFavoriteWeek(id); setActiveTab('handlingslista') }}
+                onGenerateWeek={meals => { app.generateWeekFromMeals(meals); setActiveTab('handlingslista') }}
               />
             )}
             {activeTab === 'handlingslista' && (
               <HandlingslistaTab
-                stores={app.stores} activeStoreId={app.activeStoreId} orderedCategories={app.orderedCategories} allItemsGrouped={app.allItemsGrouped}
-                checkedItems={app.checkedItems} totalItems={app.totalItems} checkedCount={app.checkedCount} likelyEmptyItems={app.likelyEmptyItems}
-                savedLists={app.savedLists} history={app.purchaseHistory} categories={app.categories} currentWeek={app.currentWeek}
-                onToggleItem={app.toggleItem} onRemoveExtraItem={app.removeExtraItem} onAddExtraItem={app.addExtraItem}
-                onHideIngredient={app.hideIngredient} onRestoreIngredients={app.restoreIngredients} hiddenCount={app.hiddenIngredients.length}
-                onSetActiveStore={app.setActiveStore} onEditStore={setEditingStore} onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
-                budget={app.budget} weeklySpend={app.weeklySpend} budgetSummary={app.budgetSummary}
-                onSetBudget={app.setBudget} onSetWeeklySpend={app.setWeeklySpend}
-                onSaveWeeklyList={() => app.saveWeeklyList(Object.values(app.allItemsGrouped).flat(), app.meals)}
-                onClearChecked={app.clearChecked}
-                suggestedRebuys={app.suggestedRebuys}
+                onEditStore={setEditingStore}
+                onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
               />
             )}
             {activeTab === 'kategorier' && (
-              <KategorierTab categories={app.categories} session={app.session} onReorder={app.handleCatReorder} onAddCategory={app.addCategory} onRemoveCategory={app.removeCategory} onDeleteRoom={() => app.handleDeleteRoom(signOut)} />
+              <KategorierTab onDeleteRoom={() => app.handleDeleteRoom(signOut)} />
             )}
           </Suspense>
         </ErrorBoundary>
@@ -174,5 +145,6 @@ export default function App() {
 
       {showWelcome && <Onboarding onStart={handleStartOnboarding} />}
     </div>
+    </AppContext.Provider>
   )
 }
