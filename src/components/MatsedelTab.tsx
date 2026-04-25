@@ -1,26 +1,32 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
 import { getWeekLabel } from '../utils/date'
-import type { Recipe, SavedWeekPlan, RecipeDraft } from '../types'
+import type { Recipe, SavedWeekPlan, FavoriteWeekPlan, RecipeDraft } from '../types'
 
 const QUICK_START_MEALS = ['Tacos', 'Spagetti Bolognese', 'Kycklinggryta', 'Pannkakor', 'Laxpasta']
 
 interface Props {
   meals: Record<string, string>
   allRecipes: Recipe[]
+  favoriteRecipeIds: string[]
+  favoriteWeeks: FavoriteWeekPlan[]
   savedMeals: Record<string, SavedWeekPlan>
   currentWeek: string
   onSetMeal: (day: string, value: string) => void
   onSaveMealPlan: () => void
   onLoadMealPlan: (weekKey: string) => void
+  onSaveFavoriteWeek: (name: string) => void
+  onLoadFavoriteWeek: (favoriteWeekId: string) => void
+  onDeleteFavoriteWeek: (favoriteWeekId: string) => void
   onGenerateWeek: (selectedMeals: string[]) => void
+  onToggleFavoriteRecipe: (recipeId: string) => void
   onEditRecipe: (recipe: RecipeDraft) => void
   onClearMeals: () => void
 }
 
 export default function MatsedelTab({
-  meals, allRecipes, savedMeals, currentWeek,
-  onSetMeal, onSaveMealPlan, onLoadMealPlan, onGenerateWeek, onEditRecipe, onClearMeals,
+  meals, allRecipes, favoriteRecipeIds, favoriteWeeks, savedMeals, currentWeek,
+  onSetMeal, onSaveMealPlan, onLoadMealPlan, onSaveFavoriteWeek, onLoadFavoriteWeek, onDeleteFavoriteWeek, onGenerateWeek, onToggleFavoriteRecipe, onEditRecipe, onClearMeals,
 }: Props) {
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
   const [copyingDay, setCopyingDay] = useState<string | null>(null)
@@ -28,9 +34,32 @@ export default function MatsedelTab({
   const [showRecipes, setShowRecipes] = useState(false)
   const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
-  const [quickMeals, setQuickMeals] = useState<string[]>(() => QUICK_START_MEALS.slice(0, 3))
+  const [showFavoriteWeekForm, setShowFavoriteWeekForm] = useState(false)
+  const [favoriteWeekName, setFavoriteWeekName] = useState('')
   const hasMeal = WEEKDAYS.some(d => meals[d])
+  const favoriteRecipes = useMemo(
+    () => favoriteRecipeIds
+      .map(id => allRecipes.find(recipe => recipe.id === id))
+      .filter((recipe): recipe is Recipe => recipe !== undefined),
+    [allRecipes, favoriteRecipeIds]
+  )
+  const quickStartMeals = useMemo(() => {
+    const names = [
+      ...favoriteRecipes.map(recipe => recipe.name),
+      ...QUICK_START_MEALS,
+    ]
+    return Array.from(new Set(names)).slice(0, 5)
+  }, [favoriteRecipes])
+  const [quickMeals, setQuickMeals] = useState<string[]>(() => quickStartMeals.slice(0, 3))
   const canGenerateWeek = quickMeals.length >= 3 && quickMeals.length <= 5
+
+  useEffect(() => {
+    setQuickMeals(selected => {
+      const valid = selected.filter(name => quickStartMeals.includes(name))
+      if (valid.length >= 3) return valid.slice(0, 5)
+      return quickStartMeals.slice(0, Math.min(3, quickStartMeals.length))
+    })
+  }, [quickStartMeals])
 
   function toggleQuickMeal(mealName: string) {
     setQuickMeals(selected => {
@@ -65,6 +94,13 @@ export default function MatsedelTab({
     setOpenMealKey(null)
   }
 
+  function handleSaveFavoriteWeek() {
+    if (!favoriteWeekName.trim()) return
+    onSaveFavoriteWeek(favoriteWeekName)
+    setFavoriteWeekName('')
+    setShowFavoriteWeekForm(false)
+  }
+
   return (
     <div>
       <h2 className="font-serif text-primary text-[22px] mb-4">Veckans matsedel</h2>
@@ -73,13 +109,16 @@ export default function MatsedelTab({
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <h3 className="font-serif text-primary text-lg m-0">Snabbstart</h3>
-            <p className="text-secondary text-sm m-0 mt-1">Välj 3-5 rätter så fyller vi veckan och listan.</p>
+            <p className="text-secondary text-sm m-0 mt-1">
+              {favoriteRecipes.length >= 3 ? 'Bygg veckan från era favoriter.' : 'Välj 3-5 rätter så fyller vi veckan och listan.'}
+            </p>
           </div>
           <span className="text-xs text-secondary whitespace-nowrap mt-1">{quickMeals.length}/5 valda</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-          {QUICK_START_MEALS.map(mealName => {
+          {quickStartMeals.map(mealName => {
             const selected = quickMeals.includes(mealName)
+            const isFavorite = favoriteRecipes.some(recipe => recipe.name === mealName)
             return (
               <button
                 key={mealName}
@@ -88,6 +127,7 @@ export default function MatsedelTab({
                 className={`text-left px-3 py-2.5 rounded-lg border cursor-pointer font-[inherit] text-sm ${selected ? 'bg-primary text-white border-primary' : 'bg-bg text-primary border-border'}`}
               >
                 <span className="font-bold">{selected ? '✓ ' : ''}{mealName}</span>
+                {isFavorite && <span className={`ml-1.5 text-xs ${selected ? 'text-white/75' : 'text-secondary'}`}>★</span>}
               </button>
             )
           })}
@@ -101,6 +141,42 @@ export default function MatsedelTab({
           Generera vecka
         </button>
       </div>
+
+      {favoriteWeeks.length > 0 && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-serif text-primary text-lg m-0">Favoritveckor</h3>
+            <span className="text-xs text-secondary">{favoriteWeeks.length} sparade</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {favoriteWeeks.map(week => {
+              const mealCount = WEEKDAYS.filter(day => week.meals?.[day]).length
+              return (
+                <div key={week.id} className="bg-white rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => onLoadFavoriteWeek(week.id)}
+                      className="flex-1 bg-transparent border-0 p-0 cursor-pointer text-left"
+                    >
+                      <span className="block font-bold text-primary text-[15px]">{week.name}</span>
+                      <span className="block text-xs text-secondary mt-0.5">{mealCount} rätter</span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Ta bort favoritveckan ${week.name}`}
+                      onClick={() => onDeleteFavoriteWeek(week.id)}
+                      className="bg-bg border border-border rounded-md text-secondary cursor-pointer px-2 py-1 text-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {WEEKDAYS.map(day => {
         const dayLabel = day.charAt(0).toUpperCase() + day.slice(1)
@@ -197,6 +273,48 @@ export default function MatsedelTab({
       </button>
 
       {hasMeal && (
+        <div className="mt-2">
+          {!showFavoriteWeekForm ? (
+            <button
+              type="button"
+              onClick={() => setShowFavoriteWeekForm(true)}
+              className="block w-full py-2.5 bg-white border border-border rounded-xl text-primary text-sm cursor-pointer"
+            >
+              ★ Spara som favoritvecka
+            </button>
+          ) : (
+            <div className="bg-white border border-border rounded-xl p-3">
+              <label className="block text-xs text-secondary mb-1">Namn på favoritveckan</label>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 px-2.5 py-2 border border-border rounded-lg text-[15px] font-[inherit] box-border"
+                  value={favoriteWeekName}
+                  onChange={e => setFavoriteWeekName(e.target.value)}
+                  placeholder="t.ex. Snabba veckan"
+                  onKeyDown={e => e.key === 'Enter' && handleSaveFavoriteWeek()}
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveFavoriteWeek}
+                  disabled={!favoriteWeekName.trim()}
+                  className={`px-3 py-2 border-0 rounded-lg text-sm text-white ${favoriteWeekName.trim() ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+                >
+                  Spara
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowFavoriteWeekForm(false); setFavoriteWeekName('') }}
+                className="mt-2 bg-transparent border-0 text-secondary text-xs cursor-pointer p-0"
+              >
+                Avbryt
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasMeal && (
         <button
           onClick={() => {
             if (confirmClear) { onClearMeals(); setConfirmClear(false) }
@@ -258,6 +376,7 @@ export default function MatsedelTab({
         </button>
         {showRecipes && allRecipes.map(recipe => {
           const isOpen = openRecipeId === recipe.id || openRecipeId === recipe.name
+          const isFavorite = favoriteRecipeIds.includes(recipe.id)
           return (
             <div key={recipe.id || recipe.name} className="rounded-xl border border-border mb-2 overflow-hidden">
               <div
@@ -266,6 +385,12 @@ export default function MatsedelTab({
               >
                 <span className="flex-1 font-bold text-primary text-[15px]">{recipe.name}</span>
                 <span className="text-xs text-[#aaa]">{recipe.ingredients?.length || 0} ingredienser</span>
+                <button
+                  aria-label={isFavorite ? `Ta bort ${recipe.name} från favoriter` : `Lägg ${recipe.name} som favorit`}
+                  title={isFavorite ? 'Ta bort favorit' : 'Lägg till favorit'}
+                  onClick={e => { e.stopPropagation(); onToggleFavoriteRecipe(recipe.id) }}
+                  className={`bg-transparent border-0 cursor-pointer text-lg px-1 py-0 leading-none ${isFavorite ? 'text-[#d89100]' : 'text-[#c8c0b5]'}`}
+                >★</button>
                 <button
                   aria-label={`Redigera recept ${recipe.name}`}
                   onClick={e => { e.stopPropagation(); onEditRecipe(recipe) }}

@@ -7,6 +7,13 @@ interface IngredientInfo {
   category: string
 }
 
+function getUpdatedAverageInterval(existingInterval: number | undefined, lastBought: string | null | undefined, now: number): number | undefined {
+  if (!lastBought) return existingInterval
+  const daysSince = (now - new Date(lastBought).getTime()) / 86400000
+  if (!Number.isFinite(daysSince) || daysSince < 1) return existingInterval
+  return existingInterval ? Math.round((existingInterval * 0.7 + daysSince * 0.3) * 10) / 10 : Math.round(daysSince * 10) / 10
+}
+
 export function useShoppingList(
   state: RoomState | null,
   updateState: UpdateStateFn,
@@ -54,12 +61,14 @@ export function useShoppingList(
         const cat = categories.find(c => c.id === (record.cat || 'ovrigt'))
         const shelfLife = cat?.shelfLife ?? 7
         const daysSince = (now - new Date(record.lastBought).getTime()) / 86400000
-        return daysSince > shelfLife
+        const intervalDays = record.averageIntervalDays ?? shelfLife
+        return daysSince >= Math.max(3, intervalDays * 0.8)
       })
       .map(([name, record]) => ({
         name,
         catId: record.cat || categories[0]?.id || 'ovrigt',
         daysSince: Math.floor((now - new Date(record.lastBought!).getTime()) / 86400000),
+        intervalDays: record.averageIntervalDays,
       }))
       .sort((a, b) => b.daysSince - a.daysSince)
       .slice(0, 8)
@@ -71,8 +80,17 @@ export function useShoppingList(
       const next = { ...prev, checkedItems: { ...prev.checkedItems, [itemName]: !isChecked } }
       const hist = prev.purchaseHistory ?? {}
       if (!isChecked) {
-        const existing = hist[itemName] ?? { count: 0 }
-        next.purchaseHistory = { ...hist, [itemName]: { lastBought: new Date().toISOString(), count: existing.count + 1, cat: category } }
+        const existing = hist[itemName] ?? { count: 0, lastBought: null }
+        const now = Date.now()
+        next.purchaseHistory = {
+          ...hist,
+          [itemName]: {
+            lastBought: new Date(now).toISOString(),
+            count: existing.count + 1,
+            cat: category,
+            averageIntervalDays: getUpdatedAverageInterval(existing.averageIntervalDays, existing.lastBought, now),
+          },
+        }
       } else {
         const existing = hist[itemName]
         if (existing) {

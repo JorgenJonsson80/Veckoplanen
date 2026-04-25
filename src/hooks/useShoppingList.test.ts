@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useShoppingList } from './useShoppingList'
 import type { RoomState, Category, UpdateStateFn } from '../types'
@@ -17,6 +17,8 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
     customRecipes: [],
     recipeOverrides: {},
     hiddenBuiltin: [],
+    favoriteRecipes: [],
+    favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
     ...overrides,
@@ -26,8 +28,13 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
 const ingredientMap = {
   Köttfärs: { amount: '500g', category: 'kott', sources: ['Tacos'] },
 }
+const emptyIngredientMap = {}
 
 describe('useShoppingList', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('toggleItem checks an unchecked item', () => {
     const state = makeState()
     const updateState = vi.fn() as unknown as UpdateStateFn
@@ -48,6 +55,37 @@ describe('useShoppingList', () => {
     expect(next.purchaseHistory['Köttfärs'].count).toBe(1)
     expect(next.purchaseHistory['Köttfärs'].lastBought).toBeTruthy()
   })
+
+  it('toggleItem learns average purchase interval from previous purchases', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-04-22T00:00:00Z').getTime())
+    const state = makeState({
+      purchaseHistory: { Köttfärs: { lastBought: '2026-04-01T00:00:00.000Z', count: 1, cat: 'kott' } },
+    })
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useShoppingList(state, updateState, ingredientMap, categories))
+
+    act(() => { result.current.toggleItem('Köttfärs', 'kott') })
+
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    expect(next.purchaseHistory['Köttfärs'].averageIntervalDays).toBe(21)
+  })
+
+  it('suggests rebuys from learned purchase interval', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-04-22T00:00:00Z').getTime())
+    const state = makeState({
+      purchaseHistory: {
+        Kaffe: { lastBought: '2026-04-01T00:00:00.000Z', count: 3, cat: 'torrvara', averageIntervalDays: 21 },
+      },
+    })
+
+    const { result } = renderHook(() => useShoppingList(state, vi.fn() as unknown as UpdateStateFn, emptyIngredientMap, categories))
+
+    expect(result.current.suggestedRebuys).toEqual([
+      { name: 'Kaffe', catId: 'torrvara', daysSince: 21, intervalDays: 21 },
+    ])
+  })
+
 
   it('toggleItem unchecks a checked item and decrements count', () => {
     const lastBought = new Date().toISOString()

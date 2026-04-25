@@ -27,6 +27,7 @@ export interface PurchaseRecord {
   lastBought: string | null
   count: number
   cat?: string
+  averageIntervalDays?: number
 }
 
 export interface ExtraItem {
@@ -36,6 +37,13 @@ export interface ExtraItem {
 }
 
 export interface SavedWeekPlan {
+  meals: Record<string, string>
+  savedAt: string
+}
+
+export interface FavoriteWeekPlan {
+  id: string
+  name: string
   meals: Record<string, string>
   savedAt: string
 }
@@ -61,6 +69,8 @@ export interface RoomState {
   customRecipes: Recipe[]
   recipeOverrides: Record<string, Partial<Recipe>>
   hiddenBuiltin: string[]
+  favoriteRecipes: string[]
+  favoriteWeeks: FavoriteWeekPlan[]
   hiddenIngredients?: string[]
   activityLog: ActivityLogEntry[]
   purchaseHistory: Record<string, PurchaseRecord>

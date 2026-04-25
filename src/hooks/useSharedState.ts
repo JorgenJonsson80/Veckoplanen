@@ -49,6 +49,8 @@ function defaultState(categories: Category[]): RoomState {
     customRecipes: [],
     recipeOverrides: {},
     hiddenBuiltin: [],
+    favoriteRecipes: [],
+    favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
   }

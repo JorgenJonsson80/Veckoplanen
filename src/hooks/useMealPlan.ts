@@ -6,6 +6,7 @@ import type { RoomState, UpdateStateFn } from '../types'
 export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn) {
   const meals = state?.meals ?? {}
   const savedMeals = state?.savedMeals ?? {}
+  const favoriteWeeks = state?.favoriteWeeks ?? []
 
   const setMeal = useCallback((day: string, value: string) => {
     updateState(
@@ -29,6 +30,46 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     if (!saved) return
     updateState(prev => ({ ...prev, meals: { ...saved.meals } }))
   }, [updateState, state?.savedMeals])
+
+  const saveFavoriteWeek = useCallback((name: string) => {
+    const current = state?.meals ?? {}
+    if (!WEEKDAYS.some(d => current[d])) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
+
+    updateState(
+      prev => ({
+        ...prev,
+        favoriteWeeks: [
+          ...(prev.favoriteWeeks ?? []),
+          { id: crypto.randomUUID(), name: trimmedName, meals: { ...current }, savedAt: new Date().toISOString() },
+        ],
+      }),
+      `sparade favoritveckan "${trimmedName}"`
+    )
+  }, [updateState, state?.meals])
+
+  const loadFavoriteWeek = useCallback((favoriteWeekId: string) => {
+    const favoriteWeek = (state?.favoriteWeeks ?? []).find(week => week.id === favoriteWeekId)
+    if (!favoriteWeek) return
+    updateState(
+      prev => ({
+        ...prev,
+        meals: { ...favoriteWeek.meals },
+        checkedItems: {},
+        hiddenIngredients: [],
+        weeklySpend: null,
+      }),
+      `laddade favoritveckan "${favoriteWeek.name}"`
+    )
+  }, [updateState, state?.favoriteWeeks])
+
+  const deleteFavoriteWeek = useCallback((favoriteWeekId: string) => {
+    updateState(prev => ({
+      ...prev,
+      favoriteWeeks: (prev.favoriteWeeks ?? []).filter(week => week.id !== favoriteWeekId),
+    }))
+  }, [updateState])
 
   const generateWeekFromMeals = useCallback((mealNames: string[]) => {
     const selected = mealNames.map(name => name.trim()).filter(Boolean).slice(0, 5)
@@ -55,5 +96,17 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     updateState(prev => ({ ...prev, meals: empty }), 'rensade matsedeln')
   }, [updateState])
 
-  return { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, generateWeekFromMeals, clearMeals }
+  return {
+    meals,
+    savedMeals,
+    favoriteWeeks,
+    setMeal,
+    saveMealPlan,
+    loadMealPlan,
+    saveFavoriteWeek,
+    loadFavoriteWeek,
+    deleteFavoriteWeek,
+    generateWeekFromMeals,
+    clearMeals,
+  }
 }

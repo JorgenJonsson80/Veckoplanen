@@ -30,7 +30,7 @@ interface Props {
   onClearChecked: () => void
   onSetBudget: (value: number | null) => void
   onSetWeeklySpend: (value: number | null) => void
-  suggestedRebuys: { name: string; catId: string; daysSince: number }[]
+  suggestedRebuys: { name: string; catId: string; daysSince: number; intervalDays?: number }[]
 }
 
 export default function HandlingslistaTab({
@@ -272,9 +272,11 @@ export default function HandlingslistaTab({
                 <div>
                   <span className="text-sm text-[#222] font-medium">{item.name}</span>
                   <span className="text-xs text-[#aaa] ml-2">
-                    {item.daysSince < 30
-                      ? `${item.daysSince} dagar sedan`
-                      : `${Math.round(item.daysSince / 7)} veckor sedan`}
+                    {item.intervalDays
+                      ? `brukar köpas var ${item.intervalDays < 14 ? `${Math.round(item.intervalDays)} dagar` : `${Math.round(item.intervalDays / 7)} veckor`}`
+                      : item.daysSince < 30
+                        ? `${item.daysSince} dagar sedan`
+                        : `${Math.round(item.daysSince / 7)} veckor sedan`}
                   </span>
                 </div>
                 <button

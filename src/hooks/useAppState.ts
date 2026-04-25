@@ -80,7 +80,7 @@ export function useAppState(user: User | null) {
     setSession(null)
   }
 
-  const { allRecipes, saveRecipe: saveRecipeData } = useRecipes(state, updateState)
+  const { allRecipes, favoriteRecipes, saveRecipe: saveRecipeData, toggleFavoriteRecipe } = useRecipes(state, updateState)
   const categories = useMemo((): Category[] => state?.categories ?? DEFAULT_CATEGORIES, [state])
 
   const ingredientMap = useMemo(
@@ -88,7 +88,19 @@ export function useAppState(user: User | null) {
     [state?.meals, allRecipes]
   )
 
-  const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, generateWeekFromMeals, clearMeals } = useMealPlan(state, updateState)
+  const {
+    meals,
+    savedMeals,
+    favoriteWeeks,
+    setMeal,
+    saveMealPlan,
+    loadMealPlan,
+    saveFavoriteWeek,
+    loadFavoriteWeek,
+    deleteFavoriteWeek,
+    generateWeekFromMeals,
+    clearMeals,
+  } = useMealPlan(state, updateState)
 
   const checkedItems = state?.checkedItems ?? {}
   const extraItems = state?.extraItems ?? []
@@ -180,13 +192,19 @@ export function useAppState(user: User | null) {
     handleSignOut,
     clearRoomNotFound,
     allRecipes,
+    favoriteRecipes,
+    toggleFavoriteRecipe,
     categories,
     ingredientMap,
     meals,
     savedMeals,
+    favoriteWeeks,
     setMeal,
     saveMealPlan,
     loadMealPlan,
+    saveFavoriteWeek,
+    loadFavoriteWeek,
+    deleteFavoriteWeek,
     generateWeekFromMeals,
     clearMeals,
     checkedItems,

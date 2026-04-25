@@ -13,6 +13,8 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
     customRecipes: [],
     recipeOverrides: {},
     hiddenBuiltin: [],
+    favoriteRecipes: [],
+    favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
     ...overrides,
@@ -101,5 +103,31 @@ describe('useRecipes — saveRecipe', () => {
     expect(next.customRecipes).toHaveLength(1)
     expect(next.customRecipes[0].name).toBe('Färsk pasta')
     expect(next.customRecipes[0].id).toMatch(/^[0-9a-f-]{36}$/)
+  })
+})
+
+describe('useRecipes — favorites', () => {
+  it('adds a recipe to favorites', () => {
+    const state = makeState()
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useRecipes(state, updateState))
+
+    act(() => { result.current.toggleFavoriteRecipe('tacos') })
+
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    expect(next.favoriteRecipes).toEqual(['tacos'])
+  })
+
+  it('removes a recipe from favorites', () => {
+    const state = makeState({ favoriteRecipes: ['tacos', 'pannkakor'] })
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useRecipes(state, updateState))
+
+    act(() => { result.current.toggleFavoriteRecipe('tacos') })
+
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    expect(next.favoriteRecipes).toEqual(['pannkakor'])
   })
 })

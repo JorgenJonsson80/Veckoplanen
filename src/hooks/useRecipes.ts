@@ -3,6 +3,8 @@ import { DEFAULT_RECIPES } from '../constants/recipes'
 import type { RoomState, Recipe, RecipeDraft, UpdateStateFn } from '../types'
 
 export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) {
+  const favoriteRecipes = state?.favoriteRecipes ?? []
+
   const allRecipes = useMemo((): Recipe[] => {
     const custom = state?.customRecipes ?? []
     const overrides = state?.recipeOverrides ?? {}
@@ -43,5 +45,18 @@ export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) 
     }
   }, [updateState])
 
-  return { allRecipes, saveRecipe }
+  const toggleFavoriteRecipe = useCallback((recipeId: string) => {
+    const isFavorite = favoriteRecipes.includes(recipeId)
+    updateState(
+      prev => ({
+        ...prev,
+        favoriteRecipes: isFavorite
+          ? (prev.favoriteRecipes ?? []).filter(id => id !== recipeId)
+          : [...(prev.favoriteRecipes ?? []), recipeId],
+      }),
+      isFavorite ? 'tog bort en favoriträtt' : 'lade till en favoriträtt'
+    )
+  }, [favoriteRecipes, updateState])
+
+  return { allRecipes, favoriteRecipes, saveRecipe, toggleFavoriteRecipe }
 }

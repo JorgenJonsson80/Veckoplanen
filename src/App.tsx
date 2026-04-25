@@ -110,15 +110,24 @@ export default function App() {
               <MatsedelTab
                 meals={app.meals}
                 allRecipes={app.allRecipes}
+                favoriteRecipeIds={app.favoriteRecipes}
+                favoriteWeeks={app.favoriteWeeks}
                 savedMeals={app.savedMeals}
                 currentWeek={app.currentWeek}
                 onSetMeal={app.setMeal}
                 onSaveMealPlan={app.saveMealPlan}
                 onLoadMealPlan={app.loadMealPlan}
+                onSaveFavoriteWeek={app.saveFavoriteWeek}
+                onLoadFavoriteWeek={favoriteWeekId => {
+                  app.loadFavoriteWeek(favoriteWeekId)
+                  setActiveTab('handlingslista')
+                }}
+                onDeleteFavoriteWeek={app.deleteFavoriteWeek}
                 onGenerateWeek={selectedMeals => {
                   app.generateWeekFromMeals(selectedMeals)
                   setActiveTab('handlingslista')
                 }}
+                onToggleFavoriteRecipe={app.toggleFavoriteRecipe}
                 onEditRecipe={setEditingRecipe}
                 onClearMeals={app.clearMeals}
               />
