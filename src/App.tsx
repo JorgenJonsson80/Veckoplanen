@@ -101,6 +101,12 @@ export default function App() {
           )}
         </div>
       )}
+      {app.appError && (
+        <div className="bg-[#fff3e0] border-b border-[#ffcc02] px-4 py-2 text-sm text-warning flex items-center gap-2">
+          <span className="flex-1">⚠️ {app.appError}</span>
+          <button onClick={app.clearAppError} className="bg-transparent border-0 text-warning cursor-pointer text-base px-1 leading-none" title="Stäng">×</button>
+        </div>
+      )}
 
       <Tabs activeTab={activeTab} onChange={setActiveTab} />
 

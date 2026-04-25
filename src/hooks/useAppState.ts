@@ -35,6 +35,8 @@ export function useAppState(user: User | null) {
     catch { return null }
   })
 
+  const [appError, setAppError] = useState<string | null>(null)
+
   const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
     session?.roomCode ?? null,
     session?.name ?? 'Användare',
@@ -56,7 +58,7 @@ export function useAppState(user: User | null) {
 
   async function handleDeleteRoom(signOut: () => Promise<void>) {
     const { error: delErr } = await deleteRoom()
-    if (delErr) { alert('Kunde inte radera rummet: ' + (delErr as Error).message); return }
+    if (delErr) { setAppError('Kunde inte radera rummet: ' + (delErr as Error).message); return }
     if (user?.id && session?.roomCode) {
       const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode)
       localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated))
@@ -158,7 +160,7 @@ export function useAppState(user: User | null) {
 
   function removeCategory(catId: string) {
     const hasItems = Object.values(ingredientMap).some(i => i.category === catId) || (state?.extraItems ?? []).some(i => i.category === catId)
-    if (hasItems) { alert('Kategorin används av varor och kan inte tas bort.'); return }
+    if (hasItems) { setAppError('Kategorin används av varor och kan inte tas bort.'); return }
     updateState(prev => ({ ...prev, categories: (prev.categories ?? DEFAULT_CATEGORIES).filter(c => c.id !== catId) }))
   }
 
@@ -185,6 +187,8 @@ export function useAppState(user: User | null) {
     error,
     syncError,
     clearSyncError,
+    appError,
+    clearAppError: () => setAppError(null),
     roomNotFound,
     handleStart,
     handleSwitchRoom,
