@@ -73,4 +73,31 @@ describe('useMealPlan', () => {
     act(() => { result.current.loadMealPlan('2099-W99') })
     expect(updateState).not.toHaveBeenCalled()
   })
+
+  it('generateWeekFromMeals fills the week and resets stale shopping list state', () => {
+    const state = makeState({
+      checkedItems: { Mjölk: true },
+      hiddenIngredients: ['Tomat'],
+      weeklySpend: 450,
+    })
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useMealPlan(state, updateState))
+
+    act(() => { result.current.generateWeekFromMeals(['Tacos', 'Pannkakor', 'Laxpasta']) })
+
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    expect(next.meals).toEqual({
+      måndag: 'Tacos',
+      tisdag: 'Pannkakor',
+      onsdag: 'Laxpasta',
+      torsdag: 'Tacos',
+      fredag: 'Pannkakor',
+      lördag: 'Laxpasta',
+      söndag: 'Tacos',
+    })
+    expect(next.checkedItems).toEqual({})
+    expect(next.hiddenIngredients).toEqual([])
+    expect(next.weeklySpend).toBeNull()
+  })
 })

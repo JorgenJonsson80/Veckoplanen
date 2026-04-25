@@ -30,10 +30,30 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     updateState(prev => ({ ...prev, meals: { ...saved.meals } }))
   }, [updateState, state?.savedMeals])
 
+  const generateWeekFromMeals = useCallback((mealNames: string[]) => {
+    const selected = mealNames.map(name => name.trim()).filter(Boolean).slice(0, 5)
+    if (selected.length < 3) return
+
+    const nextMeals = Object.fromEntries(
+      WEEKDAYS.map((day, index) => [day, selected[index % selected.length]])
+    )
+
+    updateState(
+      prev => ({
+        ...prev,
+        meals: nextMeals,
+        checkedItems: {},
+        hiddenIngredients: [],
+        weeklySpend: null,
+      }),
+      `genererade en veckomeny med ${selected.length} rätter`
+    )
+  }, [updateState])
+
   const clearMeals = useCallback(() => {
     const empty = Object.fromEntries(WEEKDAYS.map(d => [d, '']))
     updateState(prev => ({ ...prev, meals: empty }), 'rensade matsedeln')
   }, [updateState])
 
-  return { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals }
+  return { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, generateWeekFromMeals, clearMeals }
 }

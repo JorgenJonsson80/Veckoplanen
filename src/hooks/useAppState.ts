@@ -88,7 +88,7 @@ export function useAppState(user: User | null) {
     [state?.meals, allRecipes]
   )
 
-  const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, clearMeals } = useMealPlan(state, updateState)
+  const { meals, savedMeals, setMeal, saveMealPlan, loadMealPlan, generateWeekFromMeals, clearMeals } = useMealPlan(state, updateState)
 
   const checkedItems = state?.checkedItems ?? {}
   const extraItems = state?.extraItems ?? []
@@ -187,6 +187,7 @@ export function useAppState(user: User | null) {
     setMeal,
     saveMealPlan,
     loadMealPlan,
+    generateWeekFromMeals,
     clearMeals,
     checkedItems,
     extraItems,

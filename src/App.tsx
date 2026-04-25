@@ -107,7 +107,21 @@ export default function App() {
         <ErrorBoundary>
           <Suspense fallback={<p className="text-secondary p-6 text-center">Laddar...</p>}>
             {activeTab === 'matsedel' && (
-              <MatsedelTab meals={app.meals} allRecipes={app.allRecipes} savedMeals={app.savedMeals} currentWeek={app.currentWeek} onSetMeal={app.setMeal} onSaveMealPlan={app.saveMealPlan} onLoadMealPlan={app.loadMealPlan} onEditRecipe={setEditingRecipe} onClearMeals={app.clearMeals} />
+              <MatsedelTab
+                meals={app.meals}
+                allRecipes={app.allRecipes}
+                savedMeals={app.savedMeals}
+                currentWeek={app.currentWeek}
+                onSetMeal={app.setMeal}
+                onSaveMealPlan={app.saveMealPlan}
+                onLoadMealPlan={app.loadMealPlan}
+                onGenerateWeek={selectedMeals => {
+                  app.generateWeekFromMeals(selectedMeals)
+                  setActiveTab('handlingslista')
+                }}
+                onEditRecipe={setEditingRecipe}
+                onClearMeals={app.clearMeals}
+              />
             )}
             {activeTab === 'handlingslista' && (
               <HandlingslistaTab

@@ -3,6 +3,8 @@ import { WEEKDAYS } from '../hooks/useSharedState'
 import { getWeekLabel } from '../utils/date'
 import type { Recipe, SavedWeekPlan, RecipeDraft } from '../types'
 
+const QUICK_START_MEALS = ['Tacos', 'Spagetti Bolognese', 'Kycklinggryta', 'Pannkakor', 'Laxpasta']
+
 interface Props {
   meals: Record<string, string>
   allRecipes: Recipe[]
@@ -11,13 +13,14 @@ interface Props {
   onSetMeal: (day: string, value: string) => void
   onSaveMealPlan: () => void
   onLoadMealPlan: (weekKey: string) => void
+  onGenerateWeek: (selectedMeals: string[]) => void
   onEditRecipe: (recipe: RecipeDraft) => void
   onClearMeals: () => void
 }
 
 export default function MatsedelTab({
   meals, allRecipes, savedMeals, currentWeek,
-  onSetMeal, onSaveMealPlan, onLoadMealPlan, onEditRecipe, onClearMeals,
+  onSetMeal, onSaveMealPlan, onLoadMealPlan, onGenerateWeek, onEditRecipe, onClearMeals,
 }: Props) {
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
   const [copyingDay, setCopyingDay] = useState<string | null>(null)
@@ -25,7 +28,17 @@ export default function MatsedelTab({
   const [showRecipes, setShowRecipes] = useState(false)
   const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
+  const [quickMeals, setQuickMeals] = useState<string[]>(() => QUICK_START_MEALS.slice(0, 3))
   const hasMeal = WEEKDAYS.some(d => meals[d])
+  const canGenerateWeek = quickMeals.length >= 3 && quickMeals.length <= 5
+
+  function toggleQuickMeal(mealName: string) {
+    setQuickMeals(selected => {
+      if (selected.includes(mealName)) return selected.filter(name => name !== mealName)
+      if (selected.length >= 5) return selected
+      return [...selected, mealName]
+    })
+  }
 
   function copyMealToDay(fromDay: string, toDay: string) {
     onSetMeal(toDay, meals[fromDay] || '')
@@ -55,6 +68,39 @@ export default function MatsedelTab({
   return (
     <div>
       <h2 className="font-serif text-primary text-[22px] mb-4">Veckans matsedel</h2>
+
+      <div className="bg-white rounded-xl px-3.5 py-3.5 mb-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h3 className="font-serif text-primary text-lg m-0">Snabbstart</h3>
+            <p className="text-secondary text-sm m-0 mt-1">Välj 3-5 rätter så fyller vi veckan och listan.</p>
+          </div>
+          <span className="text-xs text-secondary whitespace-nowrap mt-1">{quickMeals.length}/5 valda</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          {QUICK_START_MEALS.map(mealName => {
+            const selected = quickMeals.includes(mealName)
+            return (
+              <button
+                key={mealName}
+                type="button"
+                onClick={() => toggleQuickMeal(mealName)}
+                className={`text-left px-3 py-2.5 rounded-lg border cursor-pointer font-[inherit] text-sm ${selected ? 'bg-primary text-white border-primary' : 'bg-bg text-primary border-border'}`}
+              >
+                <span className="font-bold">{selected ? '✓ ' : ''}{mealName}</span>
+              </button>
+            )
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={() => onGenerateWeek(quickMeals)}
+          disabled={!canGenerateWeek}
+          className={`block w-full py-3 border-0 rounded-xl text-white text-[15px] font-serif ${canGenerateWeek ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+        >
+          Generera vecka
+        </button>
+      </div>
 
       {WEEKDAYS.map(day => {
         const dayLabel = day.charAt(0).toUpperCase() + day.slice(1)
