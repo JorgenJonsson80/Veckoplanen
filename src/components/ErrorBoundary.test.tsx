@@ -24,14 +24,18 @@ describe('ErrorBoundary', () => {
   it('renders fallback UI when a child throws', () => {
     render(<ErrorBoundary><Bomb shouldThrow={true} /></ErrorBoundary>)
     expect(screen.getByText('Något gick fel')).toBeTruthy()
-    expect(screen.getByText('Ladda om sidan')).toBeTruthy()
+    expect(screen.getByText('Försök igen')).toBeTruthy()
   })
 
-  it('reload button calls window.location.reload', async () => {
-    const reload = vi.fn()
-    Object.defineProperty(window, 'location', { value: { reload }, writable: true })
-    render(<ErrorBoundary><Bomb shouldThrow={true} /></ErrorBoundary>)
-    await userEvent.click(screen.getByText('Ladda om sidan'))
-    expect(reload).toHaveBeenCalledOnce()
+  it('retry button clears the error', async () => {
+    let shouldThrow = true
+    function RecoverableBomb() {
+      return <Bomb shouldThrow={shouldThrow} />
+    }
+
+    render(<ErrorBoundary><RecoverableBomb /></ErrorBoundary>)
+    shouldThrow = false
+    await userEvent.click(screen.getByText('Försök igen'))
+    expect(screen.getByText('Allt ok')).toBeTruthy()
   })
 })
