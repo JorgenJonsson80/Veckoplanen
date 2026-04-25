@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
 import { getWeekLabel } from '../utils/date'
-import type { Recipe, SavedWeekPlan, FavoriteWeekPlan, RecipeDraft } from '../types'
+import type { Recipe, SavedWeekPlan, FavoriteWeekPlan, RecipeDraft, BudgetWeekRecord } from '../types'
 
 const QUICK_START_MEALS = ['Tacos', 'Spagetti Bolognese', 'Kycklinggryta', 'Pannkakor', 'Laxpasta']
 
@@ -12,6 +12,14 @@ interface Props {
   favoriteWeeks: FavoriteWeekPlan[]
   savedMeals: Record<string, SavedWeekPlan>
   currentWeek: string
+  budget: number | null
+  weeklySpend: number | null
+  budgetSummary: {
+    current: BudgetWeekRecord | null
+    previous: BudgetWeekRecord | null
+    averageSpend: number | null
+    recordedWeeks: number
+  }
   onSetMeal: (day: string, value: string) => void
   onSaveMealPlan: () => void
   onLoadMealPlan: (weekKey: string) => void
@@ -26,6 +34,7 @@ interface Props {
 
 export default function MatsedelTab({
   meals, allRecipes, favoriteRecipeIds, favoriteWeeks, savedMeals, currentWeek,
+  budget, weeklySpend, budgetSummary,
   onSetMeal, onSaveMealPlan, onLoadMealPlan, onSaveFavoriteWeek, onLoadFavoriteWeek, onDeleteFavoriteWeek, onGenerateWeek, onToggleFavoriteRecipe, onEditRecipe, onClearMeals,
 }: Props) {
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
@@ -52,6 +61,12 @@ export default function MatsedelTab({
   }, [favoriteRecipes])
   const [quickMeals, setQuickMeals] = useState<string[]>(() => quickStartMeals.slice(0, 3))
   const canGenerateWeek = quickMeals.length >= 3 && quickMeals.length <= 5
+  const bestFavoriteWeekSpend = useMemo(() => {
+    const spends = favoriteWeeks
+      .map(week => week.estimatedSpend)
+      .filter((spend): spend is number => spend != null)
+    return spends.length ? Math.min(...spends) : null
+  }, [favoriteWeeks])
 
   useEffect(() => {
     setQuickMeals(selected => {
@@ -115,6 +130,12 @@ export default function MatsedelTab({
           </div>
           <span className="text-xs text-secondary whitespace-nowrap mt-1">{quickMeals.length}/5 valda</span>
         </div>
+        <div className="mb-3 rounded-lg bg-bg px-3 py-2 text-xs text-secondary flex flex-wrap gap-x-3 gap-y-1">
+          {budget != null ? <span>Budget: {budget} kr</span> : <span>Sätt budget i handlingslistan</span>}
+          {weeklySpend != null && <span>Senast: {weeklySpend} kr</span>}
+          {budgetSummary.averageSpend != null && <span>Snitt: {budgetSummary.averageSpend} kr</span>}
+          {bestFavoriteWeekSpend != null && <span>Billig favorit: ca {bestFavoriteWeekSpend} kr</span>}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
           {quickStartMeals.map(mealName => {
             const selected = quickMeals.includes(mealName)
@@ -161,9 +182,12 @@ export default function MatsedelTab({
                     >
                       <span className="block font-bold text-primary text-[15px]">{week.name}</span>
                       <span className="block text-xs text-secondary mt-0.5">
-                        {mealCount} rätter{week.estimatedSpend != null ? ` · ca ${week.estimatedSpend} kr` : ''}
+                        {mealCount} rätter
                       </span>
                     </button>
+                    {week.estimatedSpend != null && (
+                      <span className="shrink-0 rounded-full bg-bg px-2.5 py-1 text-xs font-bold text-primary">ca {week.estimatedSpend} kr</span>
+                    )}
                     <button
                       type="button"
                       aria-label={`Ta bort favoritveckan ${week.name}`}

@@ -114,6 +114,9 @@ export default function App() {
                 favoriteWeeks={app.favoriteWeeks}
                 savedMeals={app.savedMeals}
                 currentWeek={app.currentWeek}
+                budget={app.budget}
+                weeklySpend={app.weeklySpend}
+                budgetSummary={app.budgetSummary}
                 onSetMeal={app.setMeal}
                 onSaveMealPlan={app.saveMealPlan}
                 onLoadMealPlan={app.loadMealPlan}
