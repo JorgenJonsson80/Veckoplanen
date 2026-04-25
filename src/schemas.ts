@@ -48,6 +48,13 @@ const FavoriteWeekPlanSchema = z.object({
   name: z.string().min(1).max(50),
   meals: z.record(z.string().max(20), z.string().max(100)),
   savedAt: z.string().max(30),
+  estimatedSpend: z.number().min(0).max(1_000_000).optional(),
+})
+
+const BudgetWeekRecordSchema = z.object({
+  budget: z.number().nullable(),
+  spend: z.number().nullable(),
+  savedAt: z.string().max(30),
 })
 
 const ShoppingListItemSchema = z.object({
@@ -85,6 +92,7 @@ export const RoomStateSchema = z.object({
   purchaseHistory: z.record(z.string(), PurchaseRecordSchema).default({}),
   savedMeals: z.record(z.string(), SavedWeekPlanSchema).optional(),
   savedLists: z.record(z.string(), SavedShoppingListSchema).optional(),
+  budgetHistory: z.record(z.string().max(20), BudgetWeekRecordSchema).optional(),
   budget: z.number().nullable().optional(),
   weeklySpend: z.number().nullable().optional(),
   stores: z.array(StoreSchema).optional(),

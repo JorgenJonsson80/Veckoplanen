@@ -46,6 +46,13 @@ export interface FavoriteWeekPlan {
   name: string
   meals: Record<string, string>
   savedAt: string
+  estimatedSpend?: number
+}
+
+export interface BudgetWeekRecord {
+  budget: number | null
+  spend: number | null
+  savedAt: string
 }
 
 export interface ShoppingListItem {
@@ -76,6 +83,7 @@ export interface RoomState {
   purchaseHistory: Record<string, PurchaseRecord>
   savedMeals?: Record<string, SavedWeekPlan>
   savedLists?: Record<string, SavedShoppingList>
+  budgetHistory?: Record<string, BudgetWeekRecord>
   budget?: number | null
   weeklySpend?: number | null
   stores?: Store[]

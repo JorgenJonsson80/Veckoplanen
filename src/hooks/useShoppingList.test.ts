@@ -21,6 +21,7 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
     favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
+    budgetHistory: {},
     ...overrides,
   }
 }
@@ -148,5 +149,36 @@ describe('useShoppingList', () => {
     const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
     const next = updater(state)
     expect(next.checkedItems).toEqual({})
+  })
+
+  it('setWeeklySpend stores budget history for the current week', () => {
+    const state = makeState({ budget: 900 })
+    const updateState = vi.fn() as unknown as UpdateStateFn
+    const { result } = renderHook(() => useShoppingList(state, updateState, ingredientMap, categories))
+
+    act(() => { result.current.setWeeklySpend(840) })
+
+    const updater = (updateState as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    const next = updater(state)
+    const weekKey = Object.keys(next.budgetHistory ?? {})[0]
+    expect(next.weeklySpend).toBe(840)
+    expect(next.budgetHistory?.[weekKey]).toMatchObject({ budget: 900, spend: 840 })
+  })
+
+  it('budgetSummary exposes current, previous and four week average', () => {
+    const state = makeState({
+      budgetHistory: {
+        '2026-W13': { budget: 900, spend: 700, savedAt: '2026-03-27T00:00:00Z' },
+        '2026-W14': { budget: 900, spend: 800, savedAt: '2026-04-03T00:00:00Z' },
+        '2026-W15': { budget: 900, spend: 900, savedAt: '2026-04-10T00:00:00Z' },
+        '2026-W16': { budget: 900, spend: 1000, savedAt: '2026-04-17T00:00:00Z' },
+      },
+    })
+
+    const { result } = renderHook(() => useShoppingList(state, vi.fn() as unknown as UpdateStateFn, ingredientMap, categories))
+
+    expect(result.current.budgetSummary.previous?.spend).toBe(1000)
+    expect(result.current.budgetSummary.averageSpend).toBe(850)
+    expect(result.current.budgetSummary.recordedWeeks).toBe(4)
   })
 })

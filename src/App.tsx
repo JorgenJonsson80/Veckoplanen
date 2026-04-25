@@ -140,7 +140,7 @@ export default function App() {
                 onToggleItem={app.toggleItem} onRemoveExtraItem={app.removeExtraItem} onAddExtraItem={app.addExtraItem}
                 onHideIngredient={app.hideIngredient} onRestoreIngredients={app.restoreIngredients} hiddenCount={app.hiddenIngredients.length}
                 onSetActiveStore={app.setActiveStore} onEditStore={setEditingStore} onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
-                budget={app.budget} weeklySpend={app.weeklySpend}
+                budget={app.budget} weeklySpend={app.weeklySpend} budgetSummary={app.budgetSummary}
                 onSetBudget={app.setBudget} onSetWeeklySpend={app.setWeeklySpend}
                 onSaveWeeklyList={() => app.saveWeeklyList(Object.values(app.allItemsGrouped).flat(), app.meals)}
                 onClearChecked={app.clearChecked}

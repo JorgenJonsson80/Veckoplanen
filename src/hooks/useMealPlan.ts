@@ -36,18 +36,19 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     if (!WEEKDAYS.some(d => current[d])) return
     const trimmedName = name.trim()
     if (!trimmedName) return
+    const estimatedSpend = state?.weeklySpend ?? state?.budgetHistory?.[getISOWeek()]?.spend ?? undefined
 
     updateState(
       prev => ({
         ...prev,
         favoriteWeeks: [
           ...(prev.favoriteWeeks ?? []),
-          { id: crypto.randomUUID(), name: trimmedName, meals: { ...current }, savedAt: new Date().toISOString() },
+          { id: crypto.randomUUID(), name: trimmedName, meals: { ...current }, savedAt: new Date().toISOString(), estimatedSpend },
         ],
       }),
       `sparade favoritveckan "${trimmedName}"`
     )
-  }, [updateState, state?.meals])
+  }, [updateState, state?.meals, state?.weeklySpend, state?.budgetHistory])
 
   const loadFavoriteWeek = useCallback((favoriteWeekId: string) => {
     const favoriteWeek = (state?.favoriteWeeks ?? []).find(week => week.id === favoriteWeekId)

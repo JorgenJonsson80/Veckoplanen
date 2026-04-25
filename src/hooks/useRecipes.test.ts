@@ -17,6 +17,7 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
     favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
+    budgetHistory: {},
     ...overrides,
   }
 }

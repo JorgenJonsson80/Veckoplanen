@@ -21,6 +21,7 @@ export function useShoppingList(
   categories: Category[]
 ) {
   const [likelyEmptyItems, setLikelyEmptyItems] = useState<ShoppingListItem[]>([])
+  const budgetHistory = state?.budgetHistory ?? {}
 
   useEffect(() => {
     const now = Date.now()
@@ -73,6 +74,25 @@ export function useShoppingList(
       .sort((a, b) => b.daysSince - a.daysSince)
       .slice(0, 8)
   }, [state?.purchaseHistory, state?.extraItems, ingredientMap, categories])
+
+  const budgetSummary = useMemo(() => {
+    const entries = Object.entries(budgetHistory)
+      .filter(([, record]) => record.spend != null)
+      .sort(([a], [b]) => b.localeCompare(a))
+
+    const currentWeek = getISOWeek()
+    const current = budgetHistory[currentWeek] ?? null
+    const previous = entries.find(([week]) => week !== currentWeek)?.[1] ?? null
+    const recent = entries.slice(0, 4).map(([, record]) => record.spend).filter((spend): spend is number => spend != null)
+    const averageSpend = recent.length ? Math.round(recent.reduce((sum, spend) => sum + spend, 0) / recent.length) : null
+
+    return {
+      current,
+      previous,
+      averageSpend,
+      recordedWeeks: entries.length,
+    }
+  }, [budgetHistory])
 
   const toggleItem = useCallback((itemName: string, category: string) => {
     const isChecked = !!(state?.checkedItems?.[itemName])
@@ -131,16 +151,50 @@ export function useShoppingList(
   }, [updateState])
 
   const setBudget = useCallback((value: number | null) => {
-    updateState(prev => ({ ...prev, budget: value }))
+    const weekKey = getISOWeek()
+    updateState(prev => {
+      const next = { ...prev, budget: value }
+      if (prev.weeklySpend != null) {
+        next.budgetHistory = {
+          ...(prev.budgetHistory ?? {}),
+          [weekKey]: {
+            budget: value,
+            spend: prev.weeklySpend,
+            savedAt: new Date().toISOString(),
+          },
+        }
+      }
+      return next
+    })
   }, [updateState])
 
   const setWeeklySpend = useCallback((value: number | null) => {
-    updateState(prev => ({ ...prev, weeklySpend: value }))
+    const weekKey = getISOWeek()
+    updateState(prev => {
+      if (value == null) {
+        const { [weekKey]: _removed, ...rest } = prev.budgetHistory ?? {}
+        return { ...prev, weeklySpend: null, budgetHistory: rest }
+      }
+      return {
+        ...prev,
+        weeklySpend: value,
+        budgetHistory: {
+          ...(prev.budgetHistory ?? {}),
+          [weekKey]: {
+            budget: prev.budget ?? null,
+            spend: value,
+            savedAt: new Date().toISOString(),
+          },
+        },
+      }
+    })
   }, [updateState])
 
   return {
     likelyEmptyItems,
     suggestedRebuys,
+    budgetHistory,
+    budgetSummary,
     toggleItem,
     saveWeeklyList,
     addExtraItem,

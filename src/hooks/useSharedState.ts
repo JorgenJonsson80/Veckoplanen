@@ -53,6 +53,7 @@ function defaultState(categories: Category[]): RoomState {
     favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
+    budgetHistory: {},
   }
 }
 

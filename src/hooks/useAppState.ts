@@ -142,7 +142,7 @@ export function useAppState(user: User | null) {
     [allItemsGrouped, checkedItems]
   )
 
-  const { likelyEmptyItems, suggestedRebuys, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, hideIngredient, restoreIngredients, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
+  const { likelyEmptyItems, suggestedRebuys, budgetHistory, budgetSummary, toggleItem, saveWeeklyList, addExtraItem, removeExtraItem, hideIngredient, restoreIngredients, clearChecked, setBudget, setWeeklySpend } = useShoppingList(state, updateState, ingredientMap, categories)
 
   function saveRecipe(updatedRecipe: RecipeDraft) {
     return saveRecipeData(updatedRecipe)
@@ -220,6 +220,8 @@ export function useAppState(user: User | null) {
     checkedCount,
     likelyEmptyItems,
     suggestedRebuys,
+    budgetHistory,
+    budgetSummary,
     toggleItem,
     saveWeeklyList,
     addExtraItem,

@@ -16,6 +16,7 @@ function makeState(overrides: Partial<RoomState> = {}): RoomState {
     favoriteWeeks: [],
     activityLog: [],
     purchaseHistory: {},
+    budgetHistory: {},
     ...overrides,
   }
 }
@@ -104,7 +105,7 @@ describe('useMealPlan', () => {
   })
 
   it('saveFavoriteWeek stores the current meals with a name', () => {
-    const state = makeState({ meals: { måndag: 'Tacos', tisdag: 'Pannkakor' } })
+    const state = makeState({ meals: { måndag: 'Tacos', tisdag: 'Pannkakor' }, weeklySpend: 780 })
     const updateState = vi.fn() as unknown as UpdateStateFn
     const { result } = renderHook(() => useMealPlan(state, updateState))
 
@@ -115,6 +116,7 @@ describe('useMealPlan', () => {
     expect(next.favoriteWeeks).toHaveLength(1)
     expect(next.favoriteWeeks[0].name).toBe('Snabba veckan')
     expect(next.favoriteWeeks[0].meals).toEqual(state.meals)
+    expect(next.favoriteWeeks[0].estimatedSpend).toBe(780)
   })
 
   it('loadFavoriteWeek restores meals and resets stale shopping list state', () => {

@@ -160,7 +160,9 @@ export default function MatsedelTab({
                       className="flex-1 bg-transparent border-0 p-0 cursor-pointer text-left"
                     >
                       <span className="block font-bold text-primary text-[15px]">{week.name}</span>
-                      <span className="block text-xs text-secondary mt-0.5">{mealCount} rätter</span>
+                      <span className="block text-xs text-secondary mt-0.5">
+                        {mealCount} rätter{week.estimatedSpend != null ? ` · ca ${week.estimatedSpend} kr` : ''}
+                      </span>
                     </button>
                     <button
                       type="button"

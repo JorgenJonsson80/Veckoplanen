@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { getWeekLabel } from '../utils/date'
-import type { Category, Store, ShoppingListItem, SavedShoppingList, PurchaseRecord } from '../types'
+import type { Category, Store, ShoppingListItem, SavedShoppingList, PurchaseRecord, BudgetWeekRecord } from '../types'
 
 interface Props {
   stores: Store[]
@@ -17,6 +17,12 @@ interface Props {
   currentWeek: string
   budget: number | null
   weeklySpend: number | null
+  budgetSummary: {
+    current: BudgetWeekRecord | null
+    previous: BudgetWeekRecord | null
+    averageSpend: number | null
+    recordedWeeks: number
+  }
   onToggleItem: (name: string, catId: string) => void
   onRemoveExtraItem: (id: string) => void
   onAddExtraItem: (name: string, catId: string) => void
@@ -37,7 +43,7 @@ export default function HandlingslistaTab({
   stores, activeStoreId, orderedCategories, allItemsGrouped,
   checkedItems, totalItems, checkedCount, likelyEmptyItems,
   savedLists, history, categories, currentWeek,
-  budget, weeklySpend,
+  budget, weeklySpend, budgetSummary,
   onToggleItem, onRemoveExtraItem, onAddExtraItem,
   onHideIngredient, onRestoreIngredients, hiddenCount,
   onSetActiveStore, onEditStore, onNewStore, onSaveWeeklyList, onClearChecked,
@@ -109,6 +115,8 @@ export default function HandlingslistaTab({
 
   const storeBtnCls = (active: boolean) =>
     `shrink-0 px-3.5 py-1.5 rounded-full text-sm cursor-pointer border font-[inherit] whitespace-nowrap ${active ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-border'}`
+  const budgetDelta = budget != null && weeklySpend != null ? weeklySpend - budget : null
+  const previousDelta = budgetSummary.previous?.spend != null && weeklySpend != null ? weeklySpend - budgetSummary.previous.spend : null
 
   return (
     <div>
@@ -185,8 +193,21 @@ export default function HandlingslistaTab({
                 <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-[width] duration-300 ${weeklySpend > budget ? 'bg-error' : 'bg-primary'}`}
-                    style={{ width: `${Math.min((weeklySpend / budget) * 100, 100)}%` }}
+                    style={{ width: `${budget > 0 ? Math.min((weeklySpend / budget) * 100, 100) : 0}%` }}
                   />
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-xs text-secondary">
+                  {budgetDelta != null && (
+                    <span className={budgetDelta > 0 ? 'text-error' : 'text-primary'}>
+                      {budgetDelta > 0 ? `${budgetDelta} kr över budget` : `${Math.abs(budgetDelta)} kr under budget`}
+                    </span>
+                  )}
+                  {previousDelta != null && previousDelta !== 0 && (
+                    <span>{Math.abs(previousDelta)} kr {previousDelta > 0 ? 'mer' : 'mindre'} än förra veckan</span>
+                  )}
+                  {budgetSummary.averageSpend != null && (
+                    <span>Snitt 4 veckor: {budgetSummary.averageSpend} kr</span>
+                  )}
                 </div>
               </>
             ) : (
