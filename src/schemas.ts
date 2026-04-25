@@ -82,7 +82,7 @@ export const RoomStateSchema = z.object({
   checkedItems: z.record(z.string(), z.boolean()).default({}),
   extraItems: z.array(ExtraItemSchema).default([]),
   categories: z.array(CategorySchema).default([]),
-  customRecipes: z.array(RecipeSchema).default([]),
+  customRecipes: z.array(RecipeSchema).max(200).default([]),
   recipeOverrides: z.record(z.string(), RecipeSchema.partial()).default({}),
   hiddenBuiltin: z.array(z.string()).default([]),
   favoriteRecipes: z.array(z.string().max(64)).default([]),

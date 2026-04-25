@@ -4,8 +4,11 @@
 alter table public.rooms enable row level security;
 alter table public.room_members enable row level security;
 
-create unique index if not exists room_members_room_id_user_id_idx
-on public.room_members(room_id, user_id);
+drop index if exists room_members_room_id_user_id_idx;
+alter table public.room_members
+  drop constraint if exists room_members_room_id_user_id_key;
+alter table public.room_members
+  add constraint room_members_room_id_user_id_key unique (room_id, user_id);
 
 drop policy if exists "rooms_select" on public.rooms;
 drop policy if exists "rooms_update" on public.rooms;
@@ -23,9 +26,49 @@ drop policy if exists "room_members_insert_self" on public.room_members;
 drop policy if exists "room_members_update_self" on public.room_members;
 drop policy if exists "room_members_delete_self_or_creator" on public.room_members;
 
+drop trigger if exists rooms_limit_trigger on public.rooms;
+drop trigger if exists room_members_limit_trigger on public.room_members;
+drop function if exists public.check_room_limit();
+drop function if exists public.check_member_limit();
 drop function if exists public.is_room_member(uuid);
 drop function if exists public.is_room_creator(uuid);
 drop function if exists public.join_room_by_code(text, text);
+
+create or replace function public.check_room_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select count(*) from public.rooms where created_by = new.created_by) >= 5 then
+    raise exception 'Max 5 rum per användare';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger rooms_limit_trigger
+before insert on public.rooms
+for each row execute function public.check_room_limit();
+
+create or replace function public.check_member_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select count(*) from public.room_members where room_id = new.room_id) >= 20 then
+    raise exception 'Rummet är fullt (max 20 medlemmar)';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger room_members_limit_trigger
+before insert on public.room_members
+for each row execute function public.check_member_limit();
 
 create or replace function public.is_room_member(check_room_id uuid)
 returns boolean
@@ -87,7 +130,7 @@ begin
 
   insert into public.room_members(room_id, user_id, display_name)
   values(found_room.id, auth.uid(), clean_name)
-  on conflict (room_id, user_id)
+  on conflict on constraint room_members_room_id_user_id_key
   do update set display_name = excluded.display_name;
 
   return query select found_room.id, found_room.state::jsonb;
