@@ -12,6 +12,11 @@ function parseRoomState(raw: unknown): RoomState | null {
 
 const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
 
+const SYNC_DEBOUNCE_MS = 500
+const SYNC_RETRY_DELAY_MS = 4000
+const MAX_ACTIVITY_LOG = 50
+const MAX_STATE_BYTES = 500_000
+
 function cacheKey(roomCode: string): string {
   return `veckoplanen_cache_${roomCode}`
 }
@@ -228,11 +233,11 @@ export function useSharedState(
         next.activityLog = [
           { user: userName, action: activityEntry, time: new Date().toISOString() },
           ...log,
-        ].slice(0, 50)
+        ].slice(0, MAX_ACTIVITY_LOG)
       }
 
       const serialized = JSON.stringify(next)
-      if (serialized.length > 500_000) {
+      if (serialized.length > MAX_STATE_BYTES) {
         setSyncError('Rummet har för mycket data. Ta bort gamla recept eller varor.')
         return prev
       }
@@ -264,7 +269,7 @@ export function useSharedState(
               } else {
                 setSyncError('Synkfel – försöker igen…')
                 if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
-                retryTimeoutRef.current = setTimeout(() => attemptWrite(true), 4000)
+                retryTimeoutRef.current = setTimeout(() => attemptWrite(true), SYNC_RETRY_DELAY_MS)
               }
             })
         }
@@ -273,7 +278,7 @@ export function useSharedState(
         writeDebounceRef.current = setTimeout(() => {
           writeDebounceRef.current = null
           attemptWrite(false)
-        }, 500)
+        }, SYNC_DEBOUNCE_MS)
       }
 
       return next
