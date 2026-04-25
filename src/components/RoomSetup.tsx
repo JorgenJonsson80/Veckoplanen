@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { generateRoomCode, isValidRoomCode, normalizeRoomCode, ROOM_CODE_LENGTH } from '../utils/roomCode'
 import type { Session } from '../types'
 
 interface Props {
@@ -9,21 +10,14 @@ interface Props {
   recentRoomsKey?: string | null
 }
 
-// I, O, 1, 0 excluded to avoid visual confusion when sharing codes verbally
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-const CODE_LENGTH = 8
-
-function generateRoomCode(): string {
-  const buf = new Uint8Array(CODE_LENGTH)
-  crypto.getRandomValues(buf)
-  return Array.from(buf, b => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('')
-}
-
 async function findUniqueCode(): Promise<string> {
   if (!supabase) return generateRoomCode()
-  const code = generateRoomCode()
-  const { data } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
-  return data ? generateRoomCode() : code
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = generateRoomCode()
+    const { data } = await supabase.from('rooms').select('code').eq('code', code).maybeSingle()
+    if (!data) return code
+  }
+  return generateRoomCode()
 }
 
 const MODE_OPTIONS = [
@@ -62,8 +56,8 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
     setErr('')
     if (!name.trim()) { setErr('Ange ditt namn.'); return }
     if (mode === 'join') {
-      const code = joinCode.trim().toUpperCase()
-      if (code.length !== CODE_LENGTH) { setErr(`Rumskoden måste vara ${CODE_LENGTH} tecken.`); return }
+      const code = normalizeRoomCode(joinCode)
+      if (!isValidRoomCode(code)) { setErr(`Rumskoden måste vara ${ROOM_CODE_LENGTH} tecken och bara innehålla giltiga tecken.`); return }
       onStart({ name: name.trim(), roomCode: code, mode })
     } else if (mode === 'create') {
       if (!generatedCode) { setErr('Väntar på rumskod...'); return }
@@ -142,7 +136,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
             {mode === 'join' && (
               <>
                 <label className={labelCls}>Rumskod</label>
-                <input className={inputCls} value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} placeholder="t.ex. ABCD2345" maxLength={CODE_LENGTH} onKeyDown={e => e.key === 'Enter' && handleStart()} />
+                <input className={inputCls} value={joinCode} onChange={e => setJoinCode(normalizeRoomCode(e.target.value))} placeholder="t.ex. ABCD2345" maxLength={ROOM_CODE_LENGTH} onKeyDown={e => e.key === 'Enter' && handleStart()} />
               </>
             )}
 
