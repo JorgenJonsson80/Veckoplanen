@@ -4,6 +4,9 @@
 alter table public.rooms enable row level security;
 alter table public.room_members enable row level security;
 
+create unique index if not exists room_members_room_id_user_id_idx
+on public.room_members(room_id, user_id);
+
 drop policy if exists "rooms_select" on public.rooms;
 drop policy if exists "rooms_update" on public.rooms;
 drop policy if exists "rooms_select_for_members" on public.rooms;
@@ -22,6 +25,7 @@ drop policy if exists "room_members_delete_self_or_creator" on public.room_membe
 
 drop function if exists public.is_room_member(uuid);
 drop function if exists public.is_room_creator(uuid);
+drop function if exists public.join_room_by_code(text, text);
 
 create or replace function public.is_room_member(check_room_id uuid)
 returns boolean
@@ -55,6 +59,42 @@ $$;
 
 grant execute on function public.is_room_member(uuid) to authenticated;
 grant execute on function public.is_room_creator(uuid) to authenticated;
+
+create or replace function public.join_room_by_code(join_code text, display_name text)
+returns table(room_id uuid, room_state jsonb)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  clean_code text := upper(trim(join_code));
+  clean_name text := left(coalesce(nullif(trim(display_name), ''), 'Användare'), 100);
+  found_room record;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select r.id, r.state
+  into found_room
+  from public.rooms r
+  where r.code = clean_code
+  limit 1;
+
+  if found_room.id is null then
+    return;
+  end if;
+
+  insert into public.room_members(room_id, user_id, display_name)
+  values(found_room.id, auth.uid(), clean_name)
+  on conflict (room_id, user_id)
+  do update set display_name = excluded.display_name;
+
+  return query select found_room.id, found_room.state::jsonb;
+end;
+$$;
+
+grant execute on function public.join_room_by_code(text, text) to authenticated;
 
 create policy "rooms_select_for_members"
 on public.rooms
@@ -121,7 +161,6 @@ using (
   or public.is_room_creator(room_members.room_id)
 );
 
--- Recommended next hardening step:
--- Move joining by room code into a security definer RPC instead of allowing
--- direct client SELECT on public.rooms by code. The current frontend still
--- reads by code, so apply this after the client is migrated to an RPC flow.
+-- Joining by room code is intentionally handled by public.join_room_by_code
+-- so clients do not need direct SELECT access to rooms by code before
+-- membership exists.

@@ -115,6 +115,24 @@ export function useSharedState(
 
     async function initRoom() {
       try {
+        if (!shouldCreateRef.current) {
+          const { data: joinedRows, error: joinError } = await supabase!
+            .rpc('join_room_by_code', { join_code: roomCode, display_name: userNameRef.current })
+
+          if (cancelled) return
+          if (joinError) throw joinError
+
+          const joined = Array.isArray(joinedRows) ? joinedRows[0] : null
+          if (!joined) {
+            setRoomNotFound(true)
+            return
+          }
+
+          roomIdRef.current = joined.room_id as string
+          applyState(parseRoomState(joined.room_state) ?? defaultState(defaultCategoriesRef.current))
+          return
+        }
+
         const { data, error: fetchError } = await supabase!
           .from('rooms')
           .select('*')
