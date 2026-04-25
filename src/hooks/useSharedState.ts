@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { RoomStateSchema } from '../schemas'
+import { errMsg } from '../utils/error'
 import type { RoomState, Category, UpdateStateFn } from '../types'
 
 function parseRoomState(raw: unknown): RoomState | null {
@@ -171,8 +172,8 @@ export function useSharedState(
         if (!readCache(roomCode!)) {
           setState(defaultState(defaultCategoriesRef.current))
         }
-        setError((err as Error).message)
-        console.error('Supabase-fel vid ruminit:', (err as Error).message)
+        setError(errMsg(err))
+        console.error('Supabase-fel vid ruminit:', errMsg(err))
       } finally {
         if (!cancelled) {
           setLoading(false)

@@ -7,6 +7,7 @@ import { DEFAULT_CATEGORIES } from '../constants/categories'
 import { getISOWeek } from '../utils/date'
 import { buildIngredientMap } from '../utils/ingredients'
 import type { User } from '@supabase/supabase-js'
+import { errMsg } from '../utils/error'
 import type { Session, Category, Store, ShoppingListItem, RecipeDraft } from '../types'
 
 type StoreDraft = Omit<Store, 'id'> & { id: string | null }
@@ -58,7 +59,7 @@ export function useAppState(user: User | null) {
 
   async function handleDeleteRoom(signOut: () => Promise<void>) {
     const { error: delErr } = await deleteRoom()
-    if (delErr) { setAppError('Kunde inte radera rummet: ' + (delErr as Error).message); return }
+    if (delErr) { setAppError('Kunde inte radera rummet: ' + errMsg(delErr)); return }
     if (user?.id && session?.roomCode) {
       const updated = getRecentRooms(user.id).filter(r => r.roomCode !== session.roomCode)
       localStorage.setItem(recentRoomsKey(user.id), JSON.stringify(updated))
