@@ -16,6 +16,7 @@ import type { Category } from '../types'
 
 interface Props {
   onDeleteRoom: () => void
+  onEnableSimpleMode: () => void
 }
 
 function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: string) => void }) {
@@ -59,7 +60,7 @@ function CatDragGhost({ cat }: { cat: Category }) {
   )
 }
 
-export default function KategorierTab({ onDeleteRoom }: Props) {
+export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Props) {
   const {
     categories,
     session,
@@ -125,8 +126,19 @@ export default function KategorierTab({ onDeleteRoom }: Props) {
       </button>
       {showNewCat && <NewCategoryForm onAdd={handleAddCategory} />}
 
+      <div className="mt-8 pt-5 border-t border-border">
+        <p className="text-secondary text-xs mb-2">Läge</p>
+        <button
+          onClick={onEnableSimpleMode}
+          className="w-full py-3 bg-bg border border-border rounded-xl text-[15px] cursor-pointer text-primary text-left px-4"
+        >
+          📱 Byt till enkelt läge
+          <span className="block text-secondary text-sm mt-0.5">Visa bara "Önska mat" och "Handla det här"</span>
+        </button>
+      </div>
+
       {session?.roomCode && (
-        <div className="mt-8 pt-5 border-t border-[#ffcdd2]">
+        <div className="mt-6 pt-5 border-t border-[#ffcdd2]">
           <p className="text-[#aaa] text-xs mb-2">Farozon</p>
           <button
             onClick={handleDeleteRoom}

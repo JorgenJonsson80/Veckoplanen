@@ -17,6 +17,7 @@ const StoreEditor = lazy(() => import('./components/StoreEditor'))
 const MatsedelTab = lazy(() => import('./components/MatsedelTab'))
 const HandlingslistaTab = lazy(() => import('./components/HandlingslistaTab'))
 const KategorierTab = lazy(() => import('./components/KategorierTab'))
+const YouthView = lazy(() => import('./components/YouthView'))
 
 type StoreDraft = Omit<Store, 'id'> & { id: string | null }
 
@@ -40,6 +41,7 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState<RecipeDraft | null>(null)
   const [editingStore, setEditingStore] = useState<StoreDraft | null>(null)
   const isFirstTime = !localStorage.getItem('veckoplanen_onboarded')
+  const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem('veckoplanen_simple_mode') === '1')
   const [generatedToast, setGeneratedToast] = useState<string | null>(null)
   const [justGenerated, setJustGenerated] = useState(false)
   const mealsRef = useRef(app.meals)
@@ -122,30 +124,42 @@ export default function App() {
         </div>
       )}
 
-      <Tabs activeTab={activeTab} onChange={setActiveTab} />
-
-      <main className="p-4 pb-20">
+      {simpleMode ? (
         <ErrorBoundary>
           <Suspense fallback={<p className="text-secondary p-6 text-center">Laddar...</p>}>
-            {activeTab === 'matsedel' && (
-              <MatsedelTab
-                onEditRecipe={setEditingRecipe}
-                onLoadFavoriteWeek={id => { app.loadFavoriteWeek(id); setActiveTab('handlingslista') }}
-                onGenerateWeek={meals => { app.generateWeekFromMeals(meals); setActiveTab('handlingslista'); setJustGenerated(true) }}
-              />
-            )}
-            {activeTab === 'handlingslista' && (
-              <HandlingslistaTab
-                onEditStore={setEditingStore}
-                onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
-              />
-            )}
-            {activeTab === 'kategorier' && (
-              <KategorierTab onDeleteRoom={() => app.handleDeleteRoom(signOut)} />
-            )}
+            <YouthView onSwitchToFull={() => { localStorage.removeItem('veckoplanen_simple_mode'); setSimpleMode(false) }} />
           </Suspense>
         </ErrorBoundary>
-      </main>
+      ) : (
+        <>
+          <Tabs activeTab={activeTab} onChange={setActiveTab} />
+          <main className="p-4 pb-20">
+            <ErrorBoundary>
+              <Suspense fallback={<p className="text-secondary p-6 text-center">Laddar...</p>}>
+                {activeTab === 'matsedel' && (
+                  <MatsedelTab
+                    onEditRecipe={setEditingRecipe}
+                    onLoadFavoriteWeek={id => { app.loadFavoriteWeek(id); setActiveTab('handlingslista') }}
+                    onGenerateWeek={meals => { app.generateWeekFromMeals(meals); setActiveTab('handlingslista'); setJustGenerated(true) }}
+                  />
+                )}
+                {activeTab === 'handlingslista' && (
+                  <HandlingslistaTab
+                    onEditStore={setEditingStore}
+                    onNewStore={() => setEditingStore({ id: null, name: '', emoji: '🏪', categoryOrder: app.categories.map(c => c.id) })}
+                  />
+                )}
+                {activeTab === 'kategorier' && (
+                  <KategorierTab
+                    onDeleteRoom={() => app.handleDeleteRoom(signOut)}
+                    onEnableSimpleMode={() => { localStorage.setItem('veckoplanen_simple_mode', '1'); setSimpleMode(true) }}
+                  />
+                )}
+              </Suspense>
+            </ErrorBoundary>
+          </main>
+        </>
+      )}
 
       <ErrorBoundary>
         <Suspense fallback={null}>
