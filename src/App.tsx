@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import RoomSetup from './components/RoomSetup'
 import AuthScreen from './components/AuthScreen'
 import ResetPasswordScreen from './components/ResetPasswordScreen'
@@ -40,6 +40,21 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState<RecipeDraft | null>(null)
   const [editingStore, setEditingStore] = useState<StoreDraft | null>(null)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('veckoplanen_onboarded'))
+  const [generatedToast, setGeneratedToast] = useState<string | null>(null)
+  const [justGenerated, setJustGenerated] = useState(false)
+  const mealsRef = useRef(app.meals)
+  const totalItemsRef = useRef(app.totalItems)
+  mealsRef.current = app.meals
+  totalItemsRef.current = app.totalItems
+
+  useEffect(() => {
+    if (!justGenerated) return
+    setJustGenerated(false)
+    const mealCount = Object.values(mealsRef.current).filter(Boolean).length
+    setGeneratedToast(`Veckan är klar — ${mealCount} middagar och ${totalItemsRef.current} varor i listan.`)
+    const t = setTimeout(() => setGeneratedToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [justGenerated])
 
   if (authLoading) return <Loading />
   if (isRecovery) return <ResetPasswordScreen onUpdatePassword={updatePassword} />
@@ -119,7 +134,7 @@ export default function App() {
               <MatsedelTab
                 onEditRecipe={setEditingRecipe}
                 onLoadFavoriteWeek={id => { app.loadFavoriteWeek(id); setActiveTab('handlingslista') }}
-                onGenerateWeek={meals => { app.generateWeekFromMeals(meals); setActiveTab('handlingslista') }}
+                onGenerateWeek={meals => { app.generateWeekFromMeals(meals); setActiveTab('handlingslista'); setJustGenerated(true) }}
               />
             )}
             {activeTab === 'handlingslista' && (
@@ -142,6 +157,12 @@ export default function App() {
           {editingStore && <StoreEditor store={editingStore} allCategories={app.categories} onSave={handleSaveStore} onDelete={handleDeleteStore} onClose={() => setEditingStore(null)} />}
         </Suspense>
       </ErrorBoundary>
+
+      {generatedToast && (
+        <div className="fixed top-14 left-0 right-0 z-50 bg-primary text-white text-center px-4 py-3.5 text-[15px] font-semibold shadow-lg">
+          ✅ {generatedToast}
+        </div>
+      )}
 
       {showWelcome && <Onboarding onStart={handleStartOnboarding} />}
     </div>
