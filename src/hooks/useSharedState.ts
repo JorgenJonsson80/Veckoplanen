@@ -128,7 +128,7 @@ export function useSharedState(
             return
           }
 
-          roomIdRef.current = joined.room_id as string
+          roomIdRef.current = joined.joined_room_id as string
           applyState(parseRoomState(joined.room_state) ?? defaultState(defaultCategoriesRef.current))
           return
         }

@@ -61,7 +61,7 @@ grant execute on function public.is_room_member(uuid) to authenticated;
 grant execute on function public.is_room_creator(uuid) to authenticated;
 
 create or replace function public.join_room_by_code(join_code text, display_name text)
-returns table(room_id uuid, room_state jsonb)
+returns table(joined_room_id uuid, room_state jsonb)
 language plpgsql
 security definer
 set search_path = public
