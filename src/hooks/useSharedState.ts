@@ -119,7 +119,7 @@ export function useSharedState(
           .from('rooms')
           .select('*')
           .eq('code', roomCode)
-          .single()
+          .maybeSingle()
 
         if (cancelled) return
         if (fetchError && fetchError.code !== 'PGRST116') throw fetchError
