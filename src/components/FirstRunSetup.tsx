@@ -47,7 +47,7 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
   }
 
   function handleSolo() {
-    finish({ name: name.trim(), roomCode: null, mode: 'solo' })
+    finish({ name: name.trim(), roomCode: generateRoomCode(), mode: 'solo' })
   }
 
   function handleFamilyCreate() {

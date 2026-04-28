@@ -102,7 +102,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
       if (!generatedCode) { setErr('Väntar på rumskod...'); return }
       onStart({ name: name.trim(), roomCode: generatedCode, mode })
     } else {
-      onStart({ name: name.trim(), roomCode: null, mode: 'solo' })
+      onStart({ name: name.trim(), roomCode: generateRoomCode(), mode: 'solo' })
     }
   }
 
