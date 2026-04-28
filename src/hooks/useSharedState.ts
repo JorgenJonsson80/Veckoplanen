@@ -253,7 +253,7 @@ export function useSharedState(
           const current = latestStateRef.current
           if (!current) return
           supabase!.from('rooms')
-            .update({ state: current, updated_at: new Date().toISOString() })
+            .update({ state: current })
             .eq('id', roomId)
             .then(({ error: writeError }) => {
               if (!writeError) {

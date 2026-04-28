@@ -111,10 +111,8 @@ export default function App() {
 
       {(app.error || app.syncError) && (
         <div className="bg-[#fff3e0] border-b border-[#ffcc02] px-4 py-2 text-sm text-warning flex items-center gap-2">
-          <span className="flex-1">⚠️ Kunde inte synka med servern – ändringar sparas lokalt.</span>
-          {app.syncError && (
-            <button onClick={app.clearSyncError} className="bg-transparent border-0 text-warning cursor-pointer text-base px-1 leading-none" title="Stäng">×</button>
-          )}
+          <span className="flex-1">⚠️ {app.syncError || app.error || 'Kunde inte synka med servern – ändringar sparas lokalt.'}</span>
+          <button onClick={app.clearSyncError} className="bg-transparent border-0 text-warning cursor-pointer text-base px-1 leading-none" title="Stäng">×</button>
         </div>
       )}
       {app.appError && (
