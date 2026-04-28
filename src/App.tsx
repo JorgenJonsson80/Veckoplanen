@@ -77,6 +77,7 @@ export default function App() {
         initialJoinCode={pendingJoinCode}
         recentRooms={getRecentRooms(user.id)}
         recentRoomsKey={`veckoplanen_recent_rooms_${user.id}`}
+        userId={user.id}
       />
     )
   }

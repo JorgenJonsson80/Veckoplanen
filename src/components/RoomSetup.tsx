@@ -3,11 +3,18 @@ import { supabase } from '../lib/supabase'
 import { generateRoomCode, isValidRoomCode, normalizeRoomCode, ROOM_CODE_LENGTH } from '../utils/roomCode'
 import type { Session } from '../types'
 
+interface SupabaseRoom {
+  id: string
+  code: string
+  created_by: string | null
+}
+
 interface Props {
   onStart: (sess: Session) => void
   initialJoinCode: string | null
   recentRooms?: Session[]
   recentRoomsKey?: string | null
+  userId?: string | null
 }
 
 async function findUniqueCode(): Promise<string> {
@@ -26,7 +33,7 @@ const MODE_OPTIONS = [
   { key: 'join', label: '🔑 Gå med i rum', desc: 'Du har fått en kod av en familjemedlem.' },
 ] as const
 
-export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], recentRoomsKey = null }: Props) {
+export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], recentRoomsKey = null, userId }: Props) {
   const [mode, setMode] = useState<'solo' | 'create' | 'join' | null>(initialJoinCode ? 'join' : null)
   const [recent, setRecent] = useState(recentRooms)
   const [name, setName] = useState('')
@@ -36,11 +43,18 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
   const [copied, setCopied] = useState(false)
   const [err, setErr] = useState('')
 
-  function removeRecent(idx: number) {
-    const updated = recent.filter((_, i) => i !== idx)
-    setRecent(updated)
-    if (recentRoomsKey) localStorage.setItem(recentRoomsKey, JSON.stringify(updated))
-  }
+  const [allRooms, setAllRooms] = useState<SupabaseRoom[]>([])
+  const [roomsLoading, setRoomsLoading] = useState(true)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [openingRoom, setOpeningRoom] = useState<SupabaseRoom | null>(null)
+
+  useEffect(() => {
+    if (!supabase) { setRoomsLoading(false); return }
+    supabase
+      .from('rooms')
+      .select('id, code, created_by')
+      .then(({ data }) => { setAllRooms(data ?? []); setRoomsLoading(false) })
+  }, [])
 
   useEffect(() => {
     if (mode !== 'create') return
@@ -50,6 +64,31 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
 
   function copyCode() {
     navigator.clipboard.writeText(generatedCode).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
+
+  function handleSelectRoom(room: SupabaseRoom) {
+    const cached = recent.find(r => r.roomCode === room.code)
+    if (cached) { onStart(cached); return }
+    setOpeningRoom(room)
+    setErr('')
+  }
+
+  function handleOpenRoom() {
+    if (!openingRoom) return
+    if (!name.trim()) { setErr('Ange ditt namn.'); return }
+    const isCreator = openingRoom.created_by === userId
+    onStart({ name: name.trim(), roomCode: openingRoom.code, mode: isCreator ? 'create' : 'join' })
+  }
+
+  async function handleDeleteRoom(room: SupabaseRoom) {
+    if (!supabase) return
+    await supabase.from('room_members').delete().eq('room_id', room.id)
+    await supabase.from('rooms').delete().eq('id', room.id)
+    setAllRooms(prev => prev.filter(r => r.id !== room.id))
+    const updated = recent.filter(r => r.roomCode !== room.code)
+    setRecent(updated)
+    if (recentRoomsKey) localStorage.setItem(recentRoomsKey, JSON.stringify(updated))
+    setConfirmDeleteId(null)
   }
 
   function handleStart() {
@@ -69,6 +108,43 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
 
   const inputCls = 'w-full px-3 py-2.5 border-2 border-border rounded-lg text-base mb-4 box-border font-[inherit]'
   const labelCls = 'block font-semibold text-primary text-sm mb-1.5'
+  const roomRowCls = 'flex items-center flex-1 px-3.5 py-2.5 bg-bg border border-border rounded-xl cursor-pointer gap-2.5 text-left'
+
+  if (openingRoom) {
+    const isCreator = openingRoom.created_by === userId
+    return (
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
+        <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+          <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
+          <p className="text-secondary text-center mb-6 text-[15px]">
+            {isCreator ? '🏠' : '🔑'} Öppnar rum <span className="font-mono font-bold">{openingRoom.code}</span>
+          </p>
+          <label className={labelCls}>Ditt namn</label>
+          <input
+            className={inputCls}
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="t.ex. Erik"
+            autoFocus
+            onKeyDown={e => e.key === 'Enter' && handleOpenRoom()}
+          />
+          {err && <p className="text-error text-sm mb-2">{err}</p>}
+          <button
+            className="w-full py-3.5 bg-primary text-white border-0 rounded-xl text-[17px] font-semibold cursor-pointer font-serif mb-2"
+            onClick={handleOpenRoom}
+          >
+            Öppna rum
+          </button>
+          <button
+            className="w-full py-2 bg-transparent border-0 text-secondary text-sm cursor-pointer underline"
+            onClick={() => { setOpeningRoom(null); setErr('') }}
+          >
+            ← Tillbaka
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
@@ -76,28 +152,49 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
         <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
         <p className="text-secondary text-center mb-7 text-[15px]">Din familjens matsedel och handlingslista</p>
 
-        {recent.length > 0 && (
+        {(roomsLoading || allRooms.length > 0) && (
           <div className="mb-5">
-            <p className="text-secondary text-xs font-bold mb-2 tracking-[0.5px] uppercase">Senast använda</p>
-            {recent.map((r, i) => (
-              <div key={i} className="flex items-center gap-1.5 mb-1.5">
-                <button
-                  className="flex items-center flex-1 px-3.5 py-2.5 bg-bg border border-border rounded-xl cursor-pointer gap-2.5 text-left"
-                  onClick={() => onStart(r)}
-                >
-                  <span className="text-xl">{r.mode === 'solo' ? '👤' : '🏠'}</span>
-                  <span className="flex-1 text-primary font-semibold text-[15px]">{r.name}</span>
-                  {r.roomCode && <span className="font-mono text-sm text-secondary tracking-[1px]">{r.roomCode}</span>}
-                  <span className="text-xs text-[#aaa]">{r.mode === 'solo' ? 'Eget' : 'Familjerum'}</span>
-                </button>
-                <button
-                  onClick={() => removeRecent(i)}
-                  className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
-                  title="Ta bort från listan"
-                >×</button>
-              </div>
-            ))}
-            <div className="border-t border-bg-subtle my-4" />
+            <p className="text-secondary text-xs font-bold mb-2 tracking-[0.5px] uppercase">Dina rum</p>
+            {roomsLoading ? (
+              <p className="text-secondary text-sm py-2">Laddar rum...</p>
+            ) : (
+              allRooms.map(room => {
+                const isOwner = room.created_by === userId
+                const cached = recent.find(r => r.roomCode === room.code)
+                const isConfirming = confirmDeleteId === room.id
+                return (
+                  <div key={room.id} className="flex items-center gap-1.5 mb-1.5">
+                    <button className={roomRowCls} onClick={() => { setConfirmDeleteId(null); handleSelectRoom(room) }}>
+                      <span className="text-xl">{isOwner ? '🏠' : '🔑'}</span>
+                      <span className="flex-1 font-mono text-primary font-semibold text-[15px] tracking-[1px]">{room.code}</span>
+                      {cached && <span className="text-xs text-secondary">{cached.name}</span>}
+                      <span className="text-xs text-[#aaa]">{isOwner ? 'Ditt rum' : 'Gick med'}</span>
+                    </button>
+                    {isOwner && (
+                      isConfirming ? (
+                        <>
+                          <button
+                            onClick={() => handleDeleteRoom(room)}
+                            className="shrink-0 h-8 px-2 bg-error text-white border-0 rounded-lg text-xs cursor-pointer font-semibold"
+                          >Radera</button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
+                          >×</button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(room.id)}
+                          className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
+                          title="Radera rum"
+                        >🗑</button>
+                      )
+                    )}
+                  </div>
+                )
+              })
+            )}
+            <div className="border-t border-[#f0f0f0] my-4" />
           </div>
         )}
 
@@ -105,7 +202,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
           {MODE_OPTIONS.map(({ key, label, desc }) => (
             <button
               key={key}
-              onClick={() => { setMode(key); setErr('') }}
+              onClick={() => { setMode(key); setErr(''); setConfirmDeleteId(null) }}
               className={`flex flex-col gap-0.5 w-full px-4 py-3.5 mb-2.5 border-2 border-primary rounded-xl text-base cursor-pointer text-left ${mode === key ? 'bg-primary text-white' : 'bg-white text-primary'}`}
             >
               <span>{label}</span>
