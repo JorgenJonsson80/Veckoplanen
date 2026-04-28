@@ -160,7 +160,14 @@ export function useSharedState(
             .select()
             .single()
           if (cancelled) return
-          if (createError) throw createError
+          if (createError) {
+            if (createError.message?.includes('Max 5')) {
+              setError('Du har skapat för många rum. Ta bort ett gammalt rum och försök igen.')
+              setLoading(false)
+              return
+            }
+            throw createError
+          }
           roomIdRef.current = (created as { id: string }).id
           applyState(fresh)
           ensureMembership((created as { id: string }).id)
