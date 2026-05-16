@@ -17,6 +17,48 @@ const SYNC_DEBOUNCE_MS = 500
 const SYNC_RETRY_DELAY_MS = 4000
 const MAX_ACTIVITY_LOG = 50
 const MAX_STATE_BYTES = 500_000
+const MAX_SAVED_WEEKS = 20
+const MAX_BUDGET_WEEKS = 52
+const PURCHASE_HISTORY_DAYS_COMMON = 730   // 2 years for items bought 3+ times
+const PURCHASE_HISTORY_DAYS_RARE = 365    // 1 year for items bought fewer times
+
+function pruneState(state: RoomState): RoomState {
+  const now = Date.now()
+  const result = { ...state }
+
+  if (result.savedMeals) {
+    const entries = Object.entries(result.savedMeals).sort(([a], [b]) => b.localeCompare(a))
+    if (entries.length > MAX_SAVED_WEEKS)
+      result.savedMeals = Object.fromEntries(entries.slice(0, MAX_SAVED_WEEKS))
+  }
+
+  if (result.savedLists) {
+    const entries = Object.entries(result.savedLists).sort(([a], [b]) => b.localeCompare(a))
+    if (entries.length > MAX_SAVED_WEEKS)
+      result.savedLists = Object.fromEntries(entries.slice(0, MAX_SAVED_WEEKS))
+  }
+
+  if (result.purchaseHistory) {
+    const cutoffCommon = now - PURCHASE_HISTORY_DAYS_COMMON * 86400000
+    const cutoffRare = now - PURCHASE_HISTORY_DAYS_RARE * 86400000
+    const pruned: typeof result.purchaseHistory = {}
+    for (const [name, record] of Object.entries(result.purchaseHistory)) {
+      if (!record.lastBought) continue
+      const ms = new Date(record.lastBought).getTime()
+      if ((record.count ?? 0) >= 3 ? ms > cutoffCommon : ms > cutoffRare)
+        pruned[name] = record
+    }
+    result.purchaseHistory = pruned
+  }
+
+  if (result.budgetHistory) {
+    const entries = Object.entries(result.budgetHistory).sort(([a], [b]) => b.localeCompare(a))
+    if (entries.length > MAX_BUDGET_WEEKS)
+      result.budgetHistory = Object.fromEntries(entries.slice(0, MAX_BUDGET_WEEKS))
+  }
+
+  return result
+}
 
 function cacheKey(roomCode: string): string {
   return `veckoplanen_cache_${roomCode}`
@@ -234,7 +276,7 @@ export function useSharedState(
 
   const updateState: UpdateStateFn = useCallback((updater, activityEntry) => {
     setState(prev => {
-      const next = typeof updater === 'function' ? updater(prev!) : updater
+      let next = typeof updater === 'function' ? updater(prev!) : updater
 
       if (activityEntry && userName) {
         const log = next.activityLog ?? []
@@ -243,6 +285,8 @@ export function useSharedState(
           ...log,
         ].slice(0, MAX_ACTIVITY_LOG)
       }
+
+      next = pruneState(next)
 
       const serialized = JSON.stringify(next)
       if (serialized.length > MAX_STATE_BYTES) {
