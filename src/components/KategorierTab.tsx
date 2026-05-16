@@ -12,6 +12,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import NewCategoryForm from './NewCategoryForm'
 import { useAppContext } from '../context/AppContext'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 import type { Category } from '../types'
 
 interface Props {
@@ -70,6 +71,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
     addCategory: onAddCategory,
     removeCategory: onRemoveCategory,
   } = useAppContext()
+  const { supported: pushSupported, subscribed, loading: pushLoading, error: pushError, subscribe, unsubscribe } = usePushNotifications(session?.roomCode ?? null)
   const [activeCatId, setActiveCatId] = useState<string | null>(null)
   const [showNewCat, setShowNewCat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -141,6 +143,25 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
             <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer" onClick={() => setHouseholdSize(Math.min(20, householdSize + 1))}>+</button>
           </div>
         </div>
+
+        {pushSupported && (
+          <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+            <div className="flex-1">
+              <span className="block text-[15px] text-primary font-medium">🔔 Middagsnotis kl 16:30</span>
+              <span className="block text-secondary text-sm mt-0.5">
+                {subscribed ? 'Du får en notis varje dag med vad som är planerat.' : 'Påminnelse varje dag om vad som är på matsedeln.'}
+              </span>
+              {pushError && <span className="block text-error text-xs mt-1">{pushError}</span>}
+            </div>
+            <button
+              onClick={subscribed ? unsubscribe : subscribe}
+              disabled={pushLoading}
+              className={`shrink-0 px-3.5 py-1.5 rounded-xl border-0 text-sm font-semibold cursor-pointer transition-colors ${subscribed ? 'bg-[#f5f5f5] text-[#888]' : 'bg-primary text-white'} ${pushLoading ? 'opacity-50 cursor-default' : ''}`}
+            >
+              {pushLoading ? '...' : subscribed ? 'Stäng av' : 'Aktivera'}
+            </button>
+          </div>
+        )}
 
         <p className="text-secondary text-xs mb-2 mt-4">Läge</p>
         <button

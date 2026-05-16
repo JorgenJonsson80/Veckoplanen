@@ -1,6 +1,32 @@
 // Service Worker för Veckoplanen – cache-first för app-skalet
 const CACHE = 'veckoplanen-__BUILD__';
 
+self.addEventListener('push', e => {
+  const data = e.data?.json() ?? {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || 'Veckoplanen', {
+      body: data.body,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      data: data.data,
+      tag: 'dinner-reminder',
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(list => {
+      for (const client of list) {
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
+  );
+});
+
 // Filer som alltid ska cachas vid installation
 const PRECACHE = ['/', '/index.html', '/manifest.json', '/icon.svg'];
 
