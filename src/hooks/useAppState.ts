@@ -4,7 +4,8 @@ import { useRecipes } from './useRecipes'
 import { useMealPlan } from './useMealPlan'
 import { useShoppingList } from './useShoppingList'
 import { DEFAULT_CATEGORIES } from '../constants/categories'
-import { getISOWeek } from '../utils/date'
+import { getISOWeek, getDateForWeekday } from '../utils/date'
+import { WEEKDAYS } from './useSharedState'
 import { buildIngredientMap } from '../utils/ingredients'
 import type { User } from '@supabase/supabase-js'
 import { errMsg } from '../utils/error'
@@ -88,9 +89,19 @@ export function useAppState(user: User | null) {
 
   const householdSize = state?.householdSize ?? 4
 
+  const mealsForShopping = useMemo(() => {
+    const ateOut = state?.ateOut ?? []
+    if (ateOut.length === 0) return state?.meals ?? {}
+    const result = { ...(state?.meals ?? {}) }
+    WEEKDAYS.forEach(day => {
+      if (ateOut.some(e => e.date === getDateForWeekday(day))) delete result[day]
+    })
+    return result
+  }, [state?.meals, state?.ateOut])
+
   const ingredientMap = useMemo(
-    () => buildIngredientMap(state?.meals ?? {}, allRecipes, householdSize),
-    [state?.meals, allRecipes, householdSize]
+    () => buildIngredientMap(mealsForShopping, allRecipes, householdSize),
+    [mealsForShopping, allRecipes, householdSize]
   )
 
   const {
