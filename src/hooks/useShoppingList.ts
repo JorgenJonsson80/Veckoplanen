@@ -35,18 +35,9 @@ export function useShoppingList(
       if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
         items.push({ name, amount: info.amount, isExtra: false })
       }
-    });
-    (state?.extraItems ?? []).forEach(item => {
-      const cat = categories.find(c => c.id === (item.category || 'ovrigt'))
-      if (!cat) return
-      const record = history[item.name]
-      if (!record?.lastBought) return
-      if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
-        items.push({ name: item.name, amount: '', isExtra: true, id: item.id })
-      }
     })
     setLikelyEmptyItems(items)
-  }, [ingredientMap, categories, state?.purchaseHistory, state?.extraItems])
+  }, [ingredientMap, categories, state?.purchaseHistory])
 
   const suggestedRebuys = useMemo(() => {
     const now = Date.now()
@@ -147,7 +138,7 @@ export function useShoppingList(
   }, [updateState])
 
   const clearChecked = useCallback(() => {
-    updateState(prev => ({ ...prev, checkedItems: {}, weeklySpend: null }), 'rensade handlingslistan')
+    updateState(prev => ({ ...prev, checkedItems: {}, extraItems: [], weeklySpend: null }), 'rensade handlingslistan')
   }, [updateState])
 
   const setBudget = useCallback((value: number | null) => {
