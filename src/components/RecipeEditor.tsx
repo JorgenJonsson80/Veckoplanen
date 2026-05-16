@@ -18,6 +18,7 @@ function withIds(ings: Ingredient[]): IngredientWithId[] {
 
 export default function RecipeEditor({ recipe, categories, onSave, onClose }: Props) {
   const [name, setName] = useState(recipe?.name || '')
+  const [portions, setPortions] = useState(recipe?.portions ?? 4)
   const [ingredients, setIngredients] = useState<IngredientWithId[]>(
     recipe?.ingredients?.length ? withIds(recipe.ingredients) : [{ name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]
   )
@@ -25,6 +26,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
 
   useEffect(() => {
     setName(recipe?.name || '')
+    setPortions(recipe?.portions ?? 4)
     setIngredients(
       recipe?.ingredients?.length ? withIds(recipe.ingredients) : [{ name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]
     )
@@ -46,7 +48,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
     if (!name.trim()) { setNameErr('Receptet måste ha ett namn.'); return }
     setNameErr('')
     const valid = ingredients.filter(i => i.name.trim()).map(({ _id: _, ...ing }) => ing)
-    onSave({ ...recipe, name: name.trim(), ingredients: valid })
+    onSave({ ...recipe, name: name.trim(), portions, ingredients: valid })
   }
 
   const inputCls = 'px-2 py-1.5 border border-border rounded-lg text-sm font-[inherit] w-full box-border'
@@ -65,6 +67,14 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
           placeholder="t.ex. Tacos"
         />
         {nameErr && <p className="text-error text-sm mb-3">{nameErr}</p>}
+
+        <label className="text-sm text-[#555] block mb-1">Portioner (receptet räcker till)</label>
+        <div className="flex items-center gap-3 mb-4">
+          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer flex-none" onClick={() => setPortions(p => Math.max(1, p - 1))}>−</button>
+          <span className="text-base font-semibold text-primary w-8 text-center">{portions}</span>
+          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer flex-none" onClick={() => setPortions(p => Math.min(20, p + 1))}>+</button>
+          <span className="text-sm text-secondary">pers — mängderna skalas automatiskt</span>
+        </div>
 
         <div className="grid grid-cols-[1fr_80px_110px_32px] gap-1.5 mb-1 items-center">
           <span className="text-[11px] text-[#888] font-semibold uppercase">Ingrediens</span>

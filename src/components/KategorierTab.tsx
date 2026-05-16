@@ -64,6 +64,8 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
   const {
     categories,
     session,
+    householdSize,
+    setHouseholdSize,
     handleCatReorder: onReorder,
     addCategory: onAddCategory,
     removeCategory: onRemoveCategory,
@@ -127,7 +129,20 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
       {showNewCat && <NewCategoryForm onAdd={handleAddCategory} />}
 
       <div className="mt-8 pt-5 border-t border-border">
-        <p className="text-secondary text-xs mb-2">Läge</p>
+        <p className="text-secondary text-xs mb-2">Hushåll</p>
+        <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+          <div className="flex-1">
+            <span className="block text-[15px] text-primary font-medium">👨‍👩‍👧 Antal i hushållet</span>
+            <span className="block text-secondary text-sm mt-0.5">Mängderna i handlingslistan skalas automatiskt</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer" onClick={() => setHouseholdSize(Math.max(1, householdSize - 1))}>−</button>
+            <span className="text-base font-bold text-primary w-6 text-center">{householdSize}</span>
+            <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer" onClick={() => setHouseholdSize(Math.min(20, householdSize + 1))}>+</button>
+          </div>
+        </div>
+
+        <p className="text-secondary text-xs mb-2 mt-4">Läge</p>
         <button
           onClick={onEnableSimpleMode}
           className="w-full py-3 bg-bg border border-border rounded-xl text-[15px] cursor-pointer text-primary text-left px-4"

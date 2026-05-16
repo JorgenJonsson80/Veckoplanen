@@ -17,6 +17,7 @@ const RecipeSchema = z.object({
   id: z.string().max(64),
   name: z.string().min(1).max(100),
   ingredients: z.array(IngredientSchema).max(100),
+  portions: z.number().int().min(1).max(50).optional(),
 })
 
 const ActivityLogEntrySchema = z.object({
@@ -97,6 +98,7 @@ export const RoomStateSchema = z.object({
   weeklySpend: z.number().nullable().optional(),
   stores: z.array(StoreSchema).optional(),
   activeStoreId: z.string().nullable().optional(),
+  householdSize: z.number().int().min(1).max(20).optional(),
 })
 
 export type RoomStateFromSchema = z.infer<typeof RoomStateSchema>

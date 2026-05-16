@@ -86,9 +86,11 @@ export function useAppState(user: User | null) {
   const { allRecipes, favoriteRecipes, saveRecipe: saveRecipeData, toggleFavoriteRecipe } = useRecipes(state, updateState)
   const categories = useMemo((): Category[] => state?.categories ?? DEFAULT_CATEGORIES, [state])
 
+  const householdSize = state?.householdSize ?? 4
+
   const ingredientMap = useMemo(
-    () => buildIngredientMap(state?.meals ?? {}, allRecipes),
-    [state?.meals, allRecipes]
+    () => buildIngredientMap(state?.meals ?? {}, allRecipes, householdSize),
+    [state?.meals, allRecipes, householdSize]
   )
 
   const {
@@ -181,6 +183,10 @@ export function useAppState(user: User | null) {
     updateState(prev => ({ ...prev, activeStoreId: storeId }))
   }
 
+  function setHouseholdSize(size: number) {
+    updateState(prev => ({ ...prev, householdSize: size }))
+  }
+
   return {
     session,
     state,
@@ -243,6 +249,8 @@ export function useAppState(user: User | null) {
     saveStore,
     deleteStore,
     setActiveStore,
+    householdSize,
+    setHouseholdSize,
     budget: state?.budget ?? null,
     weeklySpend: state?.weeklySpend ?? null,
     purchaseHistory: state?.purchaseHistory ?? {},
