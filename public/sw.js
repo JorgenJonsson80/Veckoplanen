@@ -49,6 +49,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const { request } = e;
+  if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
   // Supabase-anrop och externa resurser – gå alltid till nätverket
