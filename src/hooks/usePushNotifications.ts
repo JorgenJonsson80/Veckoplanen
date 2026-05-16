@@ -13,7 +13,13 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 }
 
 export function usePushNotifications(roomCode: string | null) {
-  const supported = 'serviceWorker' in navigator && 'PushManager' in window && !!VAPID_PUBLIC_KEY
+  const browserSupported = 'serviceWorker' in navigator && 'PushManager' in window
+  const supported = browserSupported && !!VAPID_PUBLIC_KEY
+  const unsupportedReason = !browserSupported
+    ? 'Din webbläsare stödjer inte push-notiser.'
+    : !VAPID_PUBLIC_KEY
+      ? 'Push-notiser ej konfigurerade (VAPID-nyckel saknas).'
+      : null
   const [subscribed, setSubscribed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,5 +71,5 @@ export function usePushNotifications(roomCode: string | null) {
     setLoading(false)
   }
 
-  return { supported, subscribed, loading, error, subscribe, unsubscribe }
+  return { supported, unsupportedReason, subscribed, loading, error, subscribe, unsubscribe }
 }

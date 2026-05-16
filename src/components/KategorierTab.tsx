@@ -71,7 +71,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
     addCategory: onAddCategory,
     removeCategory: onRemoveCategory,
   } = useAppContext()
-  const { supported: pushSupported, subscribed, loading: pushLoading, error: pushError, subscribe, unsubscribe } = usePushNotifications(session?.roomCode ?? null)
+  const { supported: pushSupported, unsupportedReason, subscribed, loading: pushLoading, error: pushError, subscribe, unsubscribe } = usePushNotifications(session?.roomCode ?? null)
   const [activeCatId, setActiveCatId] = useState<string | null>(null)
   const [showNewCat, setShowNewCat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -144,15 +144,15 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
           </div>
         </div>
 
-        {pushSupported && (
-          <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
-            <div className="flex-1">
-              <span className="block text-[15px] text-primary font-medium">🔔 Middagsnotis kl 16:30</span>
-              <span className="block text-secondary text-sm mt-0.5">
-                {subscribed ? 'Du får en notis varje dag med vad som är planerat.' : 'Påminnelse varje dag om vad som är på matsedeln.'}
-              </span>
-              {pushError && <span className="block text-error text-xs mt-1">{pushError}</span>}
-            </div>
+        <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+          <div className="flex-1">
+            <span className="block text-[15px] text-primary font-medium">🔔 Middagsnotis kl 16:30</span>
+            <span className="block text-secondary text-sm mt-0.5">
+              {unsupportedReason ?? (subscribed ? 'Du får en notis varje dag med vad som är planerat.' : 'Påminnelse varje dag om vad som är på matsedeln.')}
+            </span>
+            {pushError && <span className="block text-error text-xs mt-1">{pushError}</span>}
+          </div>
+          {pushSupported && (
             <button
               onClick={subscribed ? unsubscribe : subscribe}
               disabled={pushLoading}
@@ -160,8 +160,8 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
             >
               {pushLoading ? '...' : subscribed ? 'Stäng av' : 'Aktivera'}
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         <p className="text-secondary text-xs mb-2 mt-4">Läge</p>
         <button
