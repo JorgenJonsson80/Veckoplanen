@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { Session } from '../types'
 
@@ -11,11 +12,21 @@ interface HeaderProps {
 }
 
 export default function Header({ session, user, onHome, onShowActivity, onSwitchRoom, onSignOut }: HeaderProps) {
+  const [copied, setCopied] = useState(false)
+
   function handleShareRoom() {
     const url = `${window.location.origin}/join/${session.roomCode}`
-    if (navigator.share) navigator.share({ title: 'Gå med i Veckoplanen', url })
-    else navigator.clipboard.writeText(url)
+    if (navigator.share) {
+      navigator.share({ title: 'Gå med i Veckoplanen', text: 'Klicka för att gå med i vår matplanering!', url })
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2500)
+      })
+    }
   }
+
+  const canInvite = session.roomCode && session.mode !== 'solo'
 
   return (
     <header className="bg-primary text-white px-4 flex items-center justify-between h-14 sticky top-0 z-10">
@@ -33,13 +44,13 @@ export default function Header({ session, user, onHome, onShowActivity, onSwitch
         )}
       </button>
       <div className="flex items-center gap-2.5">
-        {session.roomCode && (
+        {canInvite && (
           <button
             onClick={handleShareRoom}
             title="Bjud in familjen – tryck för att dela länk"
             className="bg-white/20 border-0 cursor-pointer text-white px-2.5 py-1 rounded-xl flex flex-col items-center leading-snug gap-px"
           >
-            <span className="text-[9px] opacity-75 tracking-[0.5px] uppercase">Bjud in</span>
+            <span className="text-[9px] opacity-75 tracking-[0.5px] uppercase">{copied ? '✅ Kopierad!' : 'Bjud in'}</span>
             <span className="font-mono text-sm tracking-[1px]">{session.roomCode}</span>
           </button>
         )}
