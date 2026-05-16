@@ -35,6 +35,8 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   const [newExtraItem, setNewExtraItem] = useState('')
   const [newExtraCat, setNewExtraCat] = useState('')
   const [extraSuggestions, setExtraSuggestions] = useState<string[]>([])
+  const [quickInput, setQuickInput] = useState('')
+  const [quickSuggestions, setQuickSuggestions] = useState<string[]>([])
   const [openListKey, setOpenListKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showBudgetEdit, setShowBudgetEdit] = useState(false)
@@ -88,12 +90,35 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   }
 
   const isDuplicate = newExtraItem.trim().length > 0 && allItemNames.includes(newExtraItem.trim().toLowerCase())
+  const isQuickDuplicate = quickInput.trim().length > 0 && allItemNames.includes(quickInput.trim().toLowerCase())
 
   function handleAddExtraItem() {
     if (!newExtraItem.trim()) return
     onAddExtraItem(newExtraItem.trim(), newExtraCat || (categories[0]?.id || 'ovrigt'))
     setNewExtraItem('')
     setExtraSuggestions([])
+  }
+
+  function handleQuickInput(value: string) {
+    setQuickInput(value)
+    if (value.length >= 1) {
+      const suggestions = Object.keys(history)
+        .filter(n => n.toLowerCase().startsWith(value.toLowerCase()))
+        .sort((a, b) => (history[b].count || 0) - (history[a].count || 0))
+        .slice(0, 5)
+      setQuickSuggestions(suggestions)
+    } else {
+      setQuickSuggestions([])
+    }
+  }
+
+  function handleQuickAdd(name = quickInput) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const catId = history[trimmed]?.cat ?? categories[0]?.id ?? 'ovrigt'
+    onAddExtraItem(trimmed, catId)
+    setQuickInput('')
+    setQuickSuggestions([])
   }
 
   const storeBtnCls = (active: boolean) =>
@@ -374,6 +399,48 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           })}
         </div>
       )}
+
+      {/* Quick-add bar — fixed at bottom, always visible */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-border shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
+        <div className="max-w-150 mx-auto px-3 py-2.5">
+          <div className="relative flex gap-2 items-center">
+            <div className="flex-1 relative">
+              <input
+                className={`w-full px-3 py-2.5 border rounded-xl text-[15px] font-[inherit] box-border ${isQuickDuplicate ? 'border-[#ffb300]' : 'border-border'}`}
+                value={quickInput}
+                onChange={e => handleQuickInput(e.target.value)}
+                onBlur={() => setTimeout(() => setQuickSuggestions([]), 150)}
+                placeholder="Lägg till vara snabbt..."
+                onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
+              />
+              {isQuickDuplicate && (
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#f57f17]">finns redan</span>
+              )}
+              {quickSuggestions.length > 0 && (
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-border rounded-xl z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] overflow-hidden">
+                  {quickSuggestions.map(name => (
+                    <div
+                      key={name}
+                      className="px-3 py-2.5 cursor-pointer text-[15px] border-b border-bg flex justify-between items-center last:border-0"
+                      onMouseDown={() => handleQuickAdd(name)}
+                    >
+                      <span>{name}</span>
+                      <span className="text-[11px] text-[#aaa]">{history[name]?.count || 0}×</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => handleQuickAdd()}
+              disabled={!quickInput.trim()}
+              className={`shrink-0 px-4 py-2.5 border-0 rounded-xl text-white text-[15px] font-semibold ${quickInput.trim() ? 'bg-primary cursor-pointer' : 'bg-[#ccc] cursor-default'}`}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

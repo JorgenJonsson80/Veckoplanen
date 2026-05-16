@@ -132,7 +132,7 @@ export default function App() {
       ) : (
         <>
           <Tabs activeTab={activeTab} onChange={setActiveTab} />
-          <main className="p-4 pb-20">
+          <main className={`p-4 ${activeTab === 'handlingslista' ? 'pb-36' : 'pb-20'}`}>
             <ErrorBoundary>
               <Suspense fallback={<p className="text-secondary p-6 text-center">Laddar...</p>}>
                 {activeTab === 'matsedel' && (
