@@ -57,6 +57,11 @@ function pruneState(state: RoomState): RoomState {
       result.budgetHistory = Object.fromEntries(entries.slice(0, MAX_BUDGET_WEEKS))
   }
 
+  if (result.ateOut?.length) {
+    const cutoff = now - 365 * 86400000
+    result.ateOut = result.ateOut.filter(e => new Date(e.date).getTime() > cutoff)
+  }
+
   return result
 }
 

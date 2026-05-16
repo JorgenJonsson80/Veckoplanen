@@ -28,12 +28,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const today = todaySwedish()
 
-  const { data: rooms, error: roomsError } = await supabase
-    .from('rooms')
-    .select('code, state')
-
-  if (roomsError || !rooms) {
-    return res.status(500).json({ error: roomsError?.message ?? 'Inga rum' })
+  const PAGE_SIZE = 200
+  const rooms: Array<{ code: string; state: { meals?: Record<string, string> } }> = []
+  let offset = 0
+  while (true) {
+    const { data, error } = await supabase
+      .from('rooms')
+      .select('code, state')
+      .range(offset, offset + PAGE_SIZE - 1)
+    if (error) return res.status(500).json({ error: error.message })
+    if (data?.length) rooms.push(...data)
+    if (!data?.length || data.length < PAGE_SIZE) break
+    offset += PAGE_SIZE
   }
 
   let sent = 0

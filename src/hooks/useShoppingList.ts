@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { getISOWeek, getMonthKey } from '../utils/date'
 import type { RoomState, Category, ShoppingListItem, UpdateStateFn } from '../types'
 
@@ -20,23 +20,21 @@ export function useShoppingList(
   ingredientMap: Record<string, IngredientInfo>,
   categories: Category[]
 ) {
-  const [likelyEmptyItems, setLikelyEmptyItems] = useState<ShoppingListItem[]>([])
   const budgetHistory = state?.budgetHistory ?? {}
 
-  useEffect(() => {
+  const likelyEmptyItems = useMemo<ShoppingListItem[]>(() => {
     const now = Date.now()
     const history = state?.purchaseHistory ?? {}
-    const items: ShoppingListItem[] = []
-    Object.entries(ingredientMap).forEach(([name, info]) => {
+    return Object.entries(ingredientMap).flatMap(([name, info]) => {
       const cat = categories.find(c => c.id === (info.category || 'ovrigt'))
-      if (!cat) return
+      if (!cat) return []
       const record = history[name]
-      if (!record?.lastBought) return
+      if (!record?.lastBought) return []
       if ((now - new Date(record.lastBought).getTime()) / 86400000 > cat.shelfLife) {
-        items.push({ name, amount: info.amount, isExtra: false })
+        return [{ name, amount: info.amount, isExtra: false }]
       }
+      return []
     })
-    setLikelyEmptyItems(items)
   }, [ingredientMap, categories, state?.purchaseHistory])
 
   const suggestedRebuys = useMemo(() => {
@@ -86,8 +84,8 @@ export function useShoppingList(
   }, [budgetHistory])
 
   const toggleItem = useCallback((itemName: string, category: string) => {
-    const isChecked = !!(state?.checkedItems?.[itemName])
     updateState(prev => {
+      const isChecked = !!(prev.checkedItems?.[itemName])
       const next = { ...prev, checkedItems: { ...prev.checkedItems, [itemName]: !isChecked } }
       const hist = prev.purchaseHistory ?? {}
       if (!isChecked) {
@@ -109,7 +107,7 @@ export function useShoppingList(
         }
       }
       return next
-    }, isChecked ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`)
+    }, !!(state?.checkedItems?.[itemName]) ? `ångrade "${itemName}"` : `lade "${itemName}" i korgen`)
   }, [updateState, state?.checkedItems])
 
   const saveWeeklyList = useCallback((allItems: ShoppingListItem[], meals: Record<string, string>) => {
