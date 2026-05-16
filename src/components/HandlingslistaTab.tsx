@@ -27,6 +27,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
     setWeeklySpend: onSetWeeklySpend,
     suggestedRebuys,
     meals,
+    monthlySummary,
   } = useAppContext()
   const hiddenCount = hiddenIngredients.length
   function onSaveWeeklyList() {
@@ -116,7 +117,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
     const trimmed = name.trim()
     if (!trimmed) return
     const catId = history[trimmed]?.cat ?? categories[0]?.id ?? 'ovrigt'
-    onAddExtraItem(trimmed, catId)
+    onAddExtraItem(trimmed, catId, true)
     setQuickInput('')
     setQuickSuggestions([])
   }
@@ -316,6 +317,40 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {(monthlySummary.ateOutCount > 0 || monthlySummary.impulseCount > 0) && (
+        <div className="mt-3 bg-white rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+          <h3 className="text-sm font-bold text-primary mb-2">📊 Den här månaden</h3>
+          <div className="flex flex-col gap-1.5 text-sm text-[#444]">
+            {monthlySummary.ateOutCount > 0 && (
+              <div className="flex justify-between items-center">
+                <span>🍕 Åt ute</span>
+                <span className="font-bold">
+                  {monthlySummary.ateOutCount}×{monthlySummary.ateOutSpend > 0 ? ` (${monthlySummary.ateOutSpend} kr)` : ''}
+                  {monthlySummary.prev.ateOutCount > 0 && (
+                    <span className={`ml-2 text-xs font-normal ${monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? 'text-error' : 'text-primary'}`}>
+                      {monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? '▲' : '▼'} vs förra månaden
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+            {monthlySummary.impulseCount > 0 && (
+              <div className="flex justify-between items-center">
+                <span>🛒 Spontanköp</span>
+                <span className="font-bold">
+                  {monthlySummary.impulseCount} varor
+                  {monthlySummary.prev.impulseCount > 0 && (
+                    <span className={`ml-2 text-xs font-normal ${monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? 'text-error' : 'text-primary'}`}>
+                      {monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? '▲' : '▼'} vs förra månaden
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getISOWeek } from '../utils/date'
+import { getISOWeek, getMonthKey } from '../utils/date'
 import type { RoomState, Category, ShoppingListItem, UpdateStateFn } from '../types'
 
 interface IngredientInfo {
@@ -120,8 +120,8 @@ export function useShoppingList(
     )
   }, [updateState])
 
-  const addExtraItem = useCallback((name: string, catId: string) => {
-    const item = { name, category: catId, id: crypto.randomUUID() }
+  const addExtraItem = useCallback((name: string, catId: string, addedDuringShopping = false) => {
+    const item = { name, category: catId, id: crypto.randomUUID(), addedDuringShopping }
     updateState(prev => ({ ...prev, extraItems: [...(prev.extraItems ?? []), item] }), `lade till extra vara "${name}"`)
   }, [updateState])
 
@@ -138,8 +138,82 @@ export function useShoppingList(
   }, [updateState])
 
   const clearChecked = useCallback(() => {
-    updateState(prev => ({ ...prev, checkedItems: {}, extraItems: [], weeklySpend: null }), 'rensade handlingslistan')
+    updateState(prev => {
+      const weekKey = getISOWeek()
+      const impulseCount = (prev.extraItems ?? []).filter(i =>
+        i.addedDuringShopping && prev.checkedItems?.[i.name]
+      ).length
+      const next: typeof prev = { ...prev, checkedItems: {}, extraItems: [], weeklySpend: null }
+      if (impulseCount > 0) {
+        const existing = prev.budgetHistory?.[weekKey] ?? { budget: prev.budget ?? null, spend: null, savedAt: new Date().toISOString() }
+        next.budgetHistory = {
+          ...(prev.budgetHistory ?? {}),
+          [weekKey]: { ...existing, impulseCount: (existing.impulseCount ?? 0) + impulseCount },
+        }
+      }
+      return next
+    }, 'rensade handlingslistan')
   }, [updateState])
+
+  const logAteOut = useCallback((date: string, amount?: number) => {
+    updateState(prev => {
+      const existing = (prev.ateOut ?? []).filter(e => e.date !== date)
+      return { ...prev, ateOut: [...existing, { date, amount }] }
+    }, `loggade "åt ute" ${date}`)
+  }, [updateState])
+
+  const removeAteOut = useCallback((date: string) => {
+    updateState(prev => ({ ...prev, ateOut: (prev.ateOut ?? []).filter(e => e.date !== date) }))
+  }, [updateState])
+
+  const monthlySummary = useMemo(() => {
+    const currentMonth = getMonthKey()
+    const prevMonth = getMonthKey(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1))
+
+    const ateOut = state?.ateOut ?? []
+    const currentAteOut = ateOut.filter(e => e.date.startsWith(currentMonth))
+    const prevAteOut = ateOut.filter(e => e.date.startsWith(prevMonth))
+
+    const ateOutCount = currentAteOut.length
+    const ateOutSpend = currentAteOut.reduce((sum, e) => sum + (e.amount ?? 0), 0)
+    const prevAteOutCount = prevAteOut.length
+    const prevAteOutSpend = prevAteOut.reduce((sum, e) => sum + (e.amount ?? 0), 0)
+
+    const budgetHist = state?.budgetHistory ?? {}
+    const currentMonthWeeks = Object.entries(budgetHist).filter(([k]) => {
+      const match = k.match(/^(\d{4})-v(\d+)$/)
+      if (!match) return false
+      const weekNum = parseInt(match[2], 10)
+      const year = parseInt(match[1], 10)
+      const jan4 = new Date(year, 0, 4)
+      const dayOfWeek = (jan4.getDay() + 6) % 7
+      const monday = new Date(jan4)
+      monday.setDate(jan4.getDate() - dayOfWeek + (weekNum - 1) * 7)
+      return monday.toISOString().slice(0, 7) === currentMonth
+    })
+    const prevMonthWeeks = Object.entries(budgetHist).filter(([k]) => {
+      const match = k.match(/^(\d{4})-v(\d+)$/)
+      if (!match) return false
+      const weekNum = parseInt(match[2], 10)
+      const year = parseInt(match[1], 10)
+      const jan4 = new Date(year, 0, 4)
+      const dayOfWeek = (jan4.getDay() + 6) % 7
+      const monday = new Date(jan4)
+      monday.setDate(jan4.getDate() - dayOfWeek + (weekNum - 1) * 7)
+      return monday.toISOString().slice(0, 7) === prevMonth
+    })
+
+    const impulseCount = currentMonthWeeks.reduce((sum, [, r]) => sum + (r.impulseCount ?? 0), 0)
+    const prevImpulseCount = prevMonthWeeks.reduce((sum, [, r]) => sum + (r.impulseCount ?? 0), 0)
+
+    return {
+      month: currentMonth,
+      ateOutCount,
+      ateOutSpend,
+      impulseCount,
+      prev: { ateOutCount: prevAteOutCount, ateOutSpend: prevAteOutSpend, impulseCount: prevImpulseCount },
+    }
+  }, [state?.ateOut, state?.budgetHistory])
 
   const setBudget = useCallback((value: number | null) => {
     const weekKey = getISOWeek()
@@ -186,6 +260,7 @@ export function useShoppingList(
     suggestedRebuys,
     budgetHistory,
     budgetSummary,
+    monthlySummary,
     toggleItem,
     saveWeeklyList,
     addExtraItem,
@@ -195,5 +270,7 @@ export function useShoppingList(
     clearChecked,
     setBudget,
     setWeeklySpend,
+    logAteOut,
+    removeAteOut,
   }
 }

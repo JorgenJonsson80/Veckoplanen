@@ -35,6 +35,12 @@ export interface ExtraItem {
   id: string
   name: string
   category: string
+  addedDuringShopping?: boolean
+}
+
+export interface AteOutEntry {
+  date: string    // YYYY-MM-DD
+  amount?: number
 }
 
 export interface SavedWeekPlan {
@@ -54,6 +60,7 @@ export interface BudgetWeekRecord {
   budget: number | null
   spend: number | null
   savedAt: string
+  impulseCount?: number
 }
 
 export interface ShoppingListItem {
@@ -90,6 +97,7 @@ export interface RoomState {
   stores?: Store[]
   activeStoreId?: string | null
   householdSize?: number
+  ateOut?: AteOutEntry[]
 }
 
 export interface Store {

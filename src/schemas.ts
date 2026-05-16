@@ -37,6 +37,7 @@ const ExtraItemSchema = z.object({
   id: z.string().max(64),
   name: z.string().min(1).max(100),
   category: z.string().max(64),
+  addedDuringShopping: z.boolean().optional(),
 })
 
 const SavedWeekPlanSchema = z.object({
@@ -56,6 +57,12 @@ const BudgetWeekRecordSchema = z.object({
   budget: z.number().nullable(),
   spend: z.number().nullable(),
   savedAt: z.string().max(30),
+  impulseCount: z.number().int().min(0).optional(),
+})
+
+const AteOutEntrySchema = z.object({
+  date: z.string().max(10),
+  amount: z.number().min(0).optional(),
 })
 
 const ShoppingListItemSchema = z.object({
@@ -99,6 +106,7 @@ export const RoomStateSchema = z.object({
   stores: z.array(StoreSchema).optional(),
   activeStoreId: z.string().nullable().optional(),
   householdSize: z.number().int().min(1).max(20).optional(),
+  ateOut: z.array(AteOutEntrySchema).optional(),
 })
 
 export type RoomStateFromSchema = z.infer<typeof RoomStateSchema>

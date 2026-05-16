@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
-import { getWeekLabel } from '../utils/date'
+import { getWeekLabel, getDateForWeekday } from '../utils/date'
 import { useAppContext } from '../context/AppContext'
 import type { Recipe, RecipeDraft } from '../types'
 
@@ -25,8 +25,12 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
     deleteFavoriteWeek: onDeleteFavoriteWeek,
     toggleFavoriteRecipe: onToggleFavoriteRecipe,
     clearMeals: onClearMeals,
+    logAteOut: onLogAteOut,
+    removeAteOut: onRemoveAteOut,
+    ateOut,
   } = useAppContext()
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
+  const [ateOutInput, setAteOutInput] = useState<{ day: string; amount: string } | null>(null)
   const [copyingDay, setCopyingDay] = useState<string | null>(null)
   const [openMealKey, setOpenMealKey] = useState<string | null>(null)
   const [showRecipes, setShowRecipes] = useState(false)
@@ -199,6 +203,9 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
         const isOpen = autocomplete.day === day && autocomplete.results.length > 0
         const recipe = allRecipes.find(r => r.name.toLowerCase() === mealValue.toLowerCase())
         const isCopying = copyingDay === day
+        const date = getDateForWeekday(day)
+        const ateOutEntry = ateOut.find(e => e.date === date)
+        const isAteOutOpen = ateOutInput?.day === day
 
         return (
           <div key={day} className="bg-white rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
@@ -257,8 +264,48 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   </button>
                 </>
               )}
+              <button
+                className={`border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none shrink-0 ${ateOutEntry ? 'bg-warning/10 border-warning text-warning' : 'bg-bg border-border text-secondary'}`}
+                onClick={() => {
+                  if (ateOutEntry) { onRemoveAteOut(date); setAteOutInput(null) }
+                  else setAteOutInput(isAteOutOpen ? null : { day, amount: '' })
+                }}
+                title={ateOutEntry ? 'Ta bort "åt ute"' : 'Logga att ni åt ute'}
+              >
+                <span className="text-sm">🍕</span>
+                <span className="text-[9px] font-semibold tracking-[0.3px]">{ateOutEntry ? 'Åt ute' : 'Ute?'}</span>
+              </button>
             </div>
-            {recipe && (
+            {isAteOutOpen && !ateOutEntry && (
+              <div className="mt-2 flex gap-2 items-center pl-22.5">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Kostnad (valfritt)"
+                  className="flex-1 px-2.5 py-1.5 border border-border rounded-lg text-sm font-[inherit] box-border"
+                  value={ateOutInput?.amount ?? ''}
+                  onChange={e => setAteOutInput(prev => prev ? { ...prev, amount: e.target.value } : null)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="px-3 py-1.5 bg-primary text-white border-0 rounded-lg text-sm cursor-pointer"
+                  onClick={() => {
+                    const amt = ateOutInput?.amount ? parseFloat(ateOutInput.amount) : undefined
+                    onLogAteOut(date, amt)
+                    setAteOutInput(null)
+                  }}
+                >
+                  Logga
+                </button>
+              </div>
+            )}
+            {ateOutEntry && (
+              <div className="mt-1 pl-22.5 text-xs text-warning">
+                Åt ute{ateOutEntry.amount ? ` — ${ateOutEntry.amount} kr` : ''}
+              </div>
+            )}
+            {recipe && !isAteOutOpen && !ateOutEntry && (
               <div className="mt-2 pl-22.5">
                 <div className="text-xs text-[#888] flex flex-wrap gap-1">
                   {(recipe.ingredients || []).slice(0, 5).map((ing, i) => (

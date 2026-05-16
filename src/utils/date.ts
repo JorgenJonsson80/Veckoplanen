@@ -1,3 +1,21 @@
+const WEEKDAY_NAMES = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
+
+export function getDateForWeekday(day: string): string {
+  const idx = WEEKDAY_NAMES.indexOf(day.toLowerCase())
+  if (idx === -1) return new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - daysFromMonday)
+  const target = new Date(monday)
+  target.setDate(monday.getDate() + idx)
+  return target.toISOString().slice(0, 10)
+}
+
+export function getMonthKey(date: Date = new Date()): string {
+  return date.toISOString().slice(0, 7)
+}
+
 export function getISOWeek(date: Date = new Date()): string {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
