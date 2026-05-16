@@ -166,7 +166,8 @@ export function useShoppingList(
 
   const monthlySummary = useMemo(() => {
     const currentMonth = getMonthKey()
-    const prevMonth = getMonthKey(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1))
+    const [cy, cm] = currentMonth.split('-').map(Number)
+    const prevMonth = cm === 1 ? `${cy - 1}-12` : `${cy}-${String(cm - 1).padStart(2, '0')}`
 
     const ateOut = state?.ateOut ?? []
     const currentAteOut = ateOut.filter(e => e.date.startsWith(currentMonth))

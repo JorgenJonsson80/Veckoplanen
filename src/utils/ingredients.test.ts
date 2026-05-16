@@ -36,9 +36,9 @@ describe('buildIngredientMap', () => {
     expect(map['Köttfärs'].sources).toEqual(['Tacos', 'Pasta'])
   })
 
-  it('keeps first amount for shared ingredients', () => {
+  it('combines amounts when same ingredient appears in different meals', () => {
     const map = buildIngredientMap({ måndag: 'Tacos', tisdag: 'Pasta' }, [tacos, pasta])
-    expect(map['Köttfärs'].amount).toBe('500g')
+    expect(map['Köttfärs'].amount).toBe('900 g')
   })
 
   it('ignores meal entries with no matching recipe', () => {
@@ -56,8 +56,33 @@ describe('buildIngredientMap', () => {
     expect(map['Köttfärs']).toBeDefined()
   })
 
-  it('does not add the same source twice', () => {
+  it('does not add the same source twice when same recipe appears on two days', () => {
     const map = buildIngredientMap({ måndag: 'Tacos', tisdag: 'Tacos' }, [tacos])
     expect(map['Köttfärs'].sources).toEqual(['Tacos'])
+  })
+
+  it('doubles the amount when same recipe appears on two days', () => {
+    const map = buildIngredientMap({ måndag: 'Tacos', tisdag: 'Tacos' }, [tacos])
+    expect(map['Köttfärs'].amount).toBe('1000 g')
+    expect(map['Tortilla'].amount).toBe('16 st')
+  })
+
+  it('keeps first amount when units differ between recipes', () => {
+    const recipeA: Recipe = { id: 'a', name: 'A', ingredients: [{ name: 'Mjölk', amount: '2 dl', category: 'mejeri' }] }
+    const recipeB: Recipe = { id: 'b', name: 'B', ingredients: [{ name: 'Mjölk', amount: '500 ml', category: 'mejeri' }] }
+    const map = buildIngredientMap({ måndag: 'A', tisdag: 'B' }, [recipeA, recipeB])
+    expect(map['Mjölk'].amount).toBe('2 dl')
+  })
+
+  it('handles amounts with no unit', () => {
+    const recipe: Recipe = { id: 'a', name: 'A', ingredients: [{ name: 'Ägg', amount: '2', category: 'mejeri' }] }
+    const map = buildIngredientMap({ måndag: 'A', tisdag: 'A' }, [recipe])
+    expect(map['Ägg'].amount).toBe('4')
+  })
+
+  it('scales amounts by household size', () => {
+    const recipe: Recipe = { id: 'a', name: 'A', portions: 4, ingredients: [{ name: 'Köttfärs', amount: '400 g', category: 'kott' }] }
+    const map = buildIngredientMap({ måndag: 'A' }, [recipe], 8)
+    expect(map['Köttfärs'].amount).toBe('800 g')
   })
 })

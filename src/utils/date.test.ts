@@ -1,5 +1,47 @@
-import { describe, it, expect } from 'vitest'
-import { getISOWeek } from './date'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import { getISOWeek, getDateForWeekday, getMonthKey } from './date'
+
+// 2026-05-14 = Thursday
+const THURSDAY = new Date('2026-05-14T12:00:00Z')
+
+describe('getDateForWeekday', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(THURSDAY) })
+  afterEach(() => vi.useRealTimers())
+
+  it('returns monday of current week', () => {
+    expect(getDateForWeekday('måndag')).toBe('2026-05-11')
+  })
+
+  it('returns thursday (today) correctly', () => {
+    expect(getDateForWeekday('torsdag')).toBe('2026-05-14')
+  })
+
+  it('returns sunday of current week', () => {
+    expect(getDateForWeekday('söndag')).toBe('2026-05-17')
+  })
+
+  it('is case-insensitive', () => {
+    expect(getDateForWeekday('Måndag')).toBe('2026-05-11')
+  })
+
+  it('returns today for unknown day name', () => {
+    expect(getDateForWeekday('okänd')).toBe('2026-05-14')
+  })
+})
+
+describe('getMonthKey', () => {
+  it('returns YYYY-MM format', () => {
+    expect(getMonthKey(new Date('2026-01-15'))).toBe('2026-01')
+    expect(getMonthKey(new Date('2026-12-31'))).toBe('2026-12')
+  })
+
+  it('uses current date when no argument given', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'))
+    expect(getMonthKey()).toBe('2026-05')
+    vi.useRealTimers()
+  })
+})
 
 describe('getISOWeek', () => {
   it('returns correct week for a mid-year Monday', () => {
