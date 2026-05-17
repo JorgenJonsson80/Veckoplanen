@@ -264,17 +264,19 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   </button>
                 </>
               )}
-              <button
-                className={`border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none shrink-0 ${ateOutEntry ? 'bg-warning/10 border-warning text-warning' : 'bg-bg border-border text-secondary'}`}
-                onClick={() => {
-                  if (ateOutEntry) { onRemoveAteOut(date); setAteOutInput(null) }
-                  else setAteOutInput(isAteOutOpen ? null : { day, amount: '' })
-                }}
-                title={ateOutEntry ? 'Ta bort "åt ute"' : 'Logga att ni åt ute'}
-              >
-                <span className="text-sm">🍕</span>
-                <span className="text-[9px] font-semibold tracking-[0.3px]">{ateOutEntry ? 'Åt ute' : 'Ute?'}</span>
-              </button>
+              {(mealValue || ateOutEntry) && (
+                <button
+                  className={`border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none shrink-0 ${ateOutEntry ? 'bg-warning/10 border-warning text-warning' : 'bg-bg border-border text-secondary'}`}
+                  onClick={() => {
+                    if (ateOutEntry) { onRemoveAteOut(date); setAteOutInput(null) }
+                    else setAteOutInput(isAteOutOpen ? null : { day, amount: '' })
+                  }}
+                  title={ateOutEntry ? 'Ta bort "åt ute"' : 'Logga att ni åt ute'}
+                >
+                  <span className="text-sm">🍕</span>
+                  <span className="text-[9px] font-semibold tracking-[0.3px]">{ateOutEntry ? 'Åt ute' : 'Ute?'}</span>
+                </button>
+              )}
             </div>
             {isAteOutOpen && !ateOutEntry && (
               <div className="mt-2 flex gap-2 items-center pl-22.5">
