@@ -54,9 +54,13 @@ export default function App() {
     setJustGenerated(false)
     const mealCount = Object.values(mealsRef.current).filter(Boolean).length
     setGeneratedToast(`Veckan är klar — ${mealCount} middagar och ${totalItemsRef.current} varor i listan.`)
+  }, [justGenerated])
+
+  useEffect(() => {
+    if (!generatedToast) return
     const t = setTimeout(() => setGeneratedToast(null), 4000)
     return () => clearTimeout(t)
-  }, [justGenerated])
+  }, [generatedToast])
 
   if (authLoading) return <Loading />
   if (isRecovery) return <ResetPasswordScreen onUpdatePassword={updatePassword} />
@@ -169,8 +173,9 @@ export default function App() {
       </ErrorBoundary>
 
       {generatedToast && (
-        <div className="fixed top-14 left-0 right-0 z-50 bg-primary text-white text-center px-4 py-3.5 text-[15px] font-semibold shadow-lg">
-          ✅ {generatedToast}
+        <div className="fixed top-14 left-0 right-0 z-50 bg-primary text-white px-4 py-3.5 text-[15px] font-semibold shadow-lg flex items-center justify-between gap-3">
+          <span>✅ {generatedToast}</span>
+          <button onClick={() => setGeneratedToast(null)} className="bg-transparent border-0 text-white/70 cursor-pointer text-xl leading-none p-0 shrink-0">×</button>
         </div>
       )}
 
