@@ -45,6 +45,26 @@ export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) 
     }
   }, [updateState])
 
+  const deleteRecipe = useCallback((recipeId: string) => {
+    const isBuiltin = DEFAULT_RECIPES.some(r => r.id === recipeId)
+    if (isBuiltin) {
+      // Hide built-in recipe + remove any override
+      updateState(prev => ({
+        ...prev,
+        hiddenBuiltin: [...(prev.hiddenBuiltin ?? []), recipeId],
+        recipeOverrides: Object.fromEntries(
+          Object.entries(prev.recipeOverrides ?? {}).filter(([id]) => id !== recipeId)
+        ),
+      }), 'raderade recept')
+    } else {
+      updateState(prev => ({
+        ...prev,
+        customRecipes: (prev.customRecipes ?? []).filter(r => r.id !== recipeId),
+        favoriteRecipes: (prev.favoriteRecipes ?? []).filter(id => id !== recipeId),
+      }), 'raderade recept')
+    }
+  }, [updateState])
+
   const toggleFavoriteRecipe = useCallback((recipeId: string) => {
     const isFavorite = favoriteRecipes.includes(recipeId)
     updateState(
@@ -58,5 +78,5 @@ export function useRecipes(state: RoomState | null, updateState: UpdateStateFn) 
     )
   }, [favoriteRecipes, updateState])
 
-  return { allRecipes, favoriteRecipes, saveRecipe, toggleFavoriteRecipe }
+  return { allRecipes, favoriteRecipes, saveRecipe, deleteRecipe, toggleFavoriteRecipe }
 }

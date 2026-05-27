@@ -102,6 +102,7 @@ export default function App() {
   function handleSaveStore(store: Store) { app.saveStore(store); setEditingStore(null) }
   function handleDeleteStore(storeId: string) { app.deleteStore(storeId); setEditingStore(null) }
   function handleSaveRecipe(recipe: RecipeDraft) { app.saveRecipe(recipe); setEditingRecipe(null) }
+  function handleDeleteRecipe(recipeId: string) { app.deleteRecipe(recipeId); setEditingRecipe(null) }
   return (
     <AppContext.Provider value={app}>
     <div className="min-h-screen bg-bg font-sans max-w-150 mx-auto relative">
@@ -166,7 +167,7 @@ export default function App() {
 
       <ErrorBoundary>
         <Suspense fallback={null}>
-          {editingRecipe && <RecipeEditor recipe={editingRecipe} categories={app.categories} onSave={handleSaveRecipe} onClose={() => setEditingRecipe(null)} />}
+          {editingRecipe && <RecipeEditor recipe={editingRecipe} categories={app.categories} onSave={handleSaveRecipe} onDelete={handleDeleteRecipe} onClose={() => setEditingRecipe(null)} />}
           {showActivity && <ActivityDrawer log={app.activityLog} onClose={() => setShowActivity(false)} />}
           {editingStore && <StoreEditor store={editingStore} allCategories={app.categories} onSave={handleSaveStore} onDelete={handleDeleteStore} onClose={() => setEditingStore(null)} />}
         </Suspense>

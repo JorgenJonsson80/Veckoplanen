@@ -9,6 +9,7 @@ interface Props {
   recipe: RecipeDraft
   categories: Category[]
   onSave: (recipe: RecipeDraft) => void
+  onDelete?: (recipeId: string) => void
   onClose: () => void
 }
 
@@ -16,7 +17,7 @@ function withIds(ings: Ingredient[]): IngredientWithId[] {
   return (ings || []).map(i => ({ ...i, _id: (i as IngredientWithId)._id || crypto.randomUUID() }))
 }
 
-export default function RecipeEditor({ recipe, categories, onSave, onClose }: Props) {
+export default function RecipeEditor({ recipe, categories, onSave, onDelete, onClose }: Props) {
   const [name, setName] = useState(recipe?.name || '')
   const [portions, setPortions] = useState(recipe?.portions ?? 4)
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl || '')
@@ -24,6 +25,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
     recipe?.ingredients?.length ? withIds(recipe.ingredients) : [{ name: '', amount: '', category: categories[0]?.id || '', _id: crypto.randomUUID() }]
   )
   const [nameErr, setNameErr] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [importUrl, setImportUrl] = useState('')
   const [importStatus, setImportStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [importError, setImportError] = useState('')
@@ -180,6 +182,20 @@ export default function RecipeEditor({ recipe, categories, onSave, onClose }: Pr
           <button className="flex-1 py-3 bg-bg text-primary border border-border rounded-xl text-base cursor-pointer" onClick={onClose}>Avbryt</button>
           <button className="flex-1 py-3 bg-primary text-white border-0 rounded-xl text-base cursor-pointer font-serif" onClick={handleSave}>Spara</button>
         </div>
+
+        {onDelete && recipe.id && (
+          <button
+            type="button"
+            onClick={() => {
+              if (!confirmDelete) { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 3000); return }
+              onDelete(recipe.id!)
+              onClose()
+            }}
+            className={`w-full mt-2 py-2.5 border-0 rounded-xl text-sm cursor-pointer transition-colors duration-150 ${confirmDelete ? 'bg-error text-white' : 'bg-transparent text-error'}`}
+          >
+            {confirmDelete ? '⚠️ Tryck igen för att radera receptet' : '🗑 Radera recept'}
+          </button>
+        )}
       </div>
     </div>
   )

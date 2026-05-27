@@ -84,7 +84,7 @@ export function useAppState(user: User | null) {
     setSession(null)
   }
 
-  const { allRecipes, favoriteRecipes, saveRecipe: saveRecipeData, toggleFavoriteRecipe } = useRecipes(state, updateState)
+  const { allRecipes, favoriteRecipes, saveRecipe: saveRecipeData, deleteRecipe, toggleFavoriteRecipe } = useRecipes(state, updateState)
   const categories = useMemo((): Category[] => state?.categories ?? DEFAULT_CATEGORIES, [state])
 
   const householdSize = state?.householdSize ?? 4
@@ -182,6 +182,10 @@ export function useAppState(user: User | null) {
     return saveRecipeData(updatedRecipe)
   }
 
+  function handleDeleteRecipe(recipeId: string) {
+    deleteRecipe(recipeId)
+  }
+
   function handleCatReorder(newCategories: Category[]) {
     updateState(prev => ({ ...prev, categories: newCategories }))
   }
@@ -234,6 +238,7 @@ export function useAppState(user: User | null) {
     allRecipes,
     favoriteRecipes,
     toggleFavoriteRecipe,
+    deleteRecipe: handleDeleteRecipe,
     categories,
     ingredientMap,
     meals,
