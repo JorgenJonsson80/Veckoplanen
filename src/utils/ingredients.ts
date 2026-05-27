@@ -35,14 +35,16 @@ function scaleAmount(amount: string, scale: number): string {
 export function buildIngredientMap(
   meals: Record<string, string>,
   recipes: Recipe[],
-  householdSize = 4
+  householdSize = 4,
+  mealPortions?: Record<string, number>
 ): IngredientMap {
   const map: IngredientMap = {}
-  Object.values(meals).forEach(mealName => {
+  Object.entries(meals).forEach(([day, mealName]) => {
     if (!mealName) return
     const recipe = recipes.find(r => r.name.toLowerCase() === mealName.toLowerCase())
     if (!recipe) return
-    const scale = householdSize / (recipe.portions ?? 4)
+    const servings = mealPortions?.[day] ?? householdSize
+    const scale = servings / (recipe.portions ?? 4)
     recipe.ingredients.forEach(ing => {
       if (!ing.name.trim()) return
       const scaledAmount = scaleAmount(ing.amount, scale)

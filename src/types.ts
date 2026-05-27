@@ -16,6 +16,7 @@ export interface Recipe {
   name: string
   ingredients: Ingredient[]
   portions?: number
+  imageUrl?: string
 }
 
 export interface ActivityLogEntry {
@@ -97,6 +98,7 @@ export interface RoomState {
   stores?: Store[]
   activeStoreId?: string | null
   householdSize?: number
+  mealPortions?: Record<string, number>
   ateOut?: AteOutEntry[]
 }
 

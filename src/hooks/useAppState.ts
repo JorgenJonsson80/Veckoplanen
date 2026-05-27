@@ -99,9 +99,11 @@ export function useAppState(user: User | null) {
     return result
   }, [state?.meals, state?.ateOut])
 
+  const mealPortions = state?.mealPortions ?? {}
+
   const ingredientMap = useMemo(
-    () => buildIngredientMap(mealsForShopping, allRecipes, householdSize),
-    [mealsForShopping, allRecipes, householdSize]
+    () => buildIngredientMap(mealsForShopping, allRecipes, householdSize, mealPortions),
+    [mealsForShopping, allRecipes, householdSize, mealPortions]
   )
 
   const {
@@ -116,7 +118,23 @@ export function useAppState(user: User | null) {
     deleteFavoriteWeek,
     generateWeekFromMeals,
     clearMeals,
+    mealRotationSuggestions,
   } = useMealPlan(state, updateState)
+
+  function setMealPortion(day: string, portions: number) {
+    updateState(prev => ({
+      ...prev,
+      mealPortions: { ...(prev.mealPortions ?? {}), [day]: Math.max(1, portions) },
+    }))
+  }
+
+  function resetMealPortion(day: string) {
+    updateState(prev => {
+      const next = { ...(prev.mealPortions ?? {}) }
+      delete next[day]
+      return { ...prev, mealPortions: next }
+    })
+  }
 
   const checkedItems = state?.checkedItems ?? {}
   const extraItems = state?.extraItems ?? []
@@ -229,6 +247,10 @@ export function useAppState(user: User | null) {
     deleteFavoriteWeek,
     generateWeekFromMeals,
     clearMeals,
+    mealRotationSuggestions,
+    mealPortions,
+    setMealPortion,
+    resetMealPortion,
     checkedItems,
     extraItems,
     hiddenIngredients,

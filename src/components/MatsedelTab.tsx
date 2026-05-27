@@ -19,6 +19,11 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
     favoriteRecipes: favoriteRecipeIds,
     favoriteWeeks, savedMeals, currentWeek,
     budget, weeklySpend, budgetSummary,
+    householdSize,
+    mealPortions,
+    setMealPortion: onSetMealPortion,
+    resetMealPortion: onResetMealPortion,
+    mealRotationSuggestions,
     setMeal: onSetMeal,
     saveMealPlan: onSaveMealPlan,
     loadMealPlan: onLoadMealPlan,
@@ -225,6 +230,8 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
         const date = getDateForWeekday(day)
         const ateOutEntry = ateOut.find(e => e.date === date)
         const isAteOutOpen = ateOutInput?.day === day
+        const dayPortions = mealPortions[day] ?? householdSize
+        const portionsCustomized = mealPortions[day] != null && mealPortions[day] !== householdSize
 
         return (
           <div key={day} className="bg-white rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
@@ -339,19 +346,76 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                 Åt ute{ateOutEntry.amount ? ` — ${ateOutEntry.amount} kr` : ''}
               </div>
             )}
-            {recipe && !isAteOutOpen && !ateOutEntry && (
-              <div className="mt-2 pl-22.5">
-                <div className="text-xs text-[#888] flex flex-wrap gap-1">
-                  {(recipe.ingredients || []).slice(0, 5).map((ing, i) => (
-                    <span key={i} className="bg-bg rounded px-1.5 py-px">{ing.name}</span>
-                  ))}
-                  {(recipe.ingredients || []).length > 5 && <span className="text-[#aaa]">+{recipe.ingredients.length - 5} till</span>}
+            {mealValue && !ateOutEntry && !isAteOutOpen && (
+              <div className="mt-1.5 pl-22.5 flex items-center gap-2 flex-wrap">
+                {recipe?.imageUrl && (
+                  <img
+                    src={recipe.imageUrl}
+                    alt={recipe.name}
+                    className="w-8 h-8 rounded object-cover shrink-0"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                )}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-secondary">👥</span>
+                  <button
+                    aria-label="Färre portioner"
+                    onClick={() => onSetMealPortion(day, dayPortions - 1)}
+                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded text-xs cursor-pointer leading-none"
+                  >−</button>
+                  <span className={`text-xs font-semibold w-5 text-center ${portionsCustomized ? 'text-primary' : 'text-secondary'}`}>{dayPortions}</span>
+                  <button
+                    aria-label="Fler portioner"
+                    onClick={() => onSetMealPortion(day, dayPortions + 1)}
+                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded text-xs cursor-pointer leading-none"
+                  >+</button>
+                  <span className="text-xs text-secondary">port.</span>
+                  {portionsCustomized && (
+                    <button
+                      onClick={() => onResetMealPortion(day)}
+                      className="text-xs text-secondary bg-transparent border-0 cursor-pointer ml-0.5 p-0 underline"
+                      title={`Återställ till ${householdSize}`}
+                    >↺</button>
+                  )}
                 </div>
+                {recipe && (
+                  <div className="text-xs text-[#aaa] flex flex-wrap gap-1">
+                    {(recipe.ingredients || []).slice(0, 4).map((ing, i) => (
+                      <span key={i} className="bg-bg rounded px-1.5 py-px">{ing.name}</span>
+                    ))}
+                    {(recipe.ingredients || []).length > 4 && <span>+{recipe.ingredients.length - 4}</span>}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )
       })}
+
+      {mealRotationSuggestions.length > 0 && (
+        <div className="mt-3 bg-bg-subtle rounded-xl px-3.5 py-3 border border-border">
+          <h3 className="text-sm font-bold text-primary mb-2.5">🔄 Dags att laga igen?</h3>
+          <div className="flex flex-col gap-2">
+            {mealRotationSuggestions.map(({ mealName, weeksAgo }) => (
+              <div key={mealName} className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-sm text-[#222] font-medium">{mealName}</span>
+                  <span className="text-xs text-[#aaa] ml-2">{weeksAgo} veckor sedan</span>
+                </div>
+                <button
+                  onClick={() => {
+                    const firstEmpty = WEEKDAYS.find(d => !meals[d])
+                    if (firstEmpty) onSetMeal(firstEmpty, mealName)
+                  }}
+                  className="shrink-0 px-3 py-1 bg-primary text-white border-0 rounded-lg text-xs cursor-pointer font-medium"
+                >
+                  + Lägg till
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <button
         className="block w-full py-3 mt-2 bg-bg border border-dashed border-secondary rounded-xl text-primary text-[15px] cursor-pointer"
@@ -479,6 +543,14 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                 className={`flex items-center px-3.5 py-3 gap-2.5 cursor-pointer ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
                 onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}
               >
+                {recipe.imageUrl && (
+                  <img
+                    src={recipe.imageUrl}
+                    alt={recipe.name}
+                    className="w-9 h-9 rounded-lg object-cover shrink-0"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                )}
                 <span className="flex-1 font-bold text-primary text-[15px]">{recipe.name}</span>
                 <span className="text-xs text-[#aaa]">{recipe.ingredients?.length || 0} ingredienser</span>
                 <button

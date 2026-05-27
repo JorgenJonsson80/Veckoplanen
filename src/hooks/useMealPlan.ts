@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { WEEKDAYS } from './useSharedState'
 import { getISOWeek } from '../utils/date'
 import type { RoomState, UpdateStateFn } from '../types'
@@ -97,6 +97,36 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     updateState(prev => ({ ...prev, meals: empty }), 'rensade matsedeln')
   }, [updateState])
 
+  // Rätter som inte lagats på 3+ veckor och inte är i veckans plan
+  const mealRotationSuggestions = useMemo(() => {
+    const currentMeals = new Set(
+      Object.values(meals).filter(Boolean).map(m => m.toLowerCase())
+    )
+    const mealLastUsed: Record<string, number> = {}
+    Object.values(savedMeals).forEach(weekPlan => {
+      const ts = new Date(weekPlan.savedAt).getTime()
+      if (!isFinite(ts)) return
+      Object.values(weekPlan.meals).forEach(mealName => {
+        if (!mealName) return
+        if (!mealLastUsed[mealName] || ts > mealLastUsed[mealName]) {
+          mealLastUsed[mealName] = ts
+        }
+      })
+    })
+    const now = Date.now()
+    const THREE_WEEKS = 21 * 86400000
+    return Object.entries(mealLastUsed)
+      .filter(([mealName, lastUsed]) =>
+        !currentMeals.has(mealName.toLowerCase()) && (now - lastUsed) >= THREE_WEEKS
+      )
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 4)
+      .map(([mealName, lastUsed]) => ({
+        mealName,
+        weeksAgo: Math.floor((now - lastUsed) / (7 * 86400000)),
+      }))
+  }, [savedMeals, meals])
+
   return {
     meals,
     savedMeals,
@@ -109,5 +139,6 @@ export function useMealPlan(state: RoomState | null, updateState: UpdateStateFn)
     deleteFavoriteWeek,
     generateWeekFromMeals,
     clearMeals,
+    mealRotationSuggestions,
   }
 }
