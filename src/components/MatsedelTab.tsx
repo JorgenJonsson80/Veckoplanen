@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { WEEKDAYS } from '../hooks/useSharedState'
 import { getWeekLabel, getDateForWeekday } from '../utils/date'
 import { useAppContext } from '../context/AppContext'
+import { useVoiceDictation } from '../hooks/useVoiceDictation'
 import type { Recipe, RecipeDraft } from '../types'
 
 const QUICK_START_MEALS = ['Tacos', 'Spagetti Bolognese', 'Kycklinggryta', 'Pannkakor', 'Laxpasta']
@@ -32,6 +33,24 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
   const [autocomplete, setAutocomplete] = useState<{ day: string | null; results: string[] }>({ day: null, results: [] })
   const [ateOutInput, setAteOutInput] = useState<{ day: string; amount: string } | null>(null)
   const [copyingDay, setCopyingDay] = useState<string | null>(null)
+  const [listeningDay, setListeningDay] = useState<string | null>(null)
+  const listeningDayRef = useRef<string | null>(null)
+
+  const { isListening, isSupported: voiceSupported, toggle: toggleVoice } = useVoiceDictation({
+    onResult: (text: string) => {
+      if (listeningDayRef.current) {
+        handleMealInput(listeningDayRef.current, text)
+      }
+      listeningDayRef.current = null
+      setListeningDay(null)
+    },
+  })
+
+  function startVoiceForDay(day: string) {
+    listeningDayRef.current = day
+    setListeningDay(day)
+    if (!isListening) toggleVoice()
+  }
   const [openMealKey, setOpenMealKey] = useState<string | null>(null)
   const [showRecipes, setShowRecipes] = useState(false)
   const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
@@ -217,7 +236,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   value={mealValue}
                   onChange={e => handleMealInput(day, e.target.value)}
                   onBlur={() => setTimeout(() => setAutocomplete({ day: null, results: [] }), 150)}
-                  placeholder="Välj rätt..."
+                  placeholder={listeningDay === day ? 'Lyssnar...' : 'Välj rätt...'}
                 />
                 {isOpen && (
                   <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
@@ -227,6 +246,19 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   </div>
                 )}
               </div>
+              {voiceSupported && (
+                <button
+                  aria-label={listeningDay === day ? 'Stoppa röstinmatning' : `Diktera rätt för ${dayLabel}`}
+                  onClick={() => startVoiceForDay(day)}
+                  className={`shrink-0 px-2 py-1 border-0 rounded-lg text-base transition-colors duration-150 ${
+                    listeningDay === day
+                      ? 'bg-error text-white animate-pulse cursor-pointer'
+                      : 'bg-bg border border-border text-primary cursor-pointer'
+                  }`}
+                >
+                  🎤
+                </button>
+              )}
               {mealValue && (
                 <>
                   <div className="relative">
