@@ -41,7 +41,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
   const [listeningDay, setListeningDay] = useState<string | null>(null)
   const listeningDayRef = useRef<string | null>(null)
 
-  const { isListening, isSupported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceDictation({
+  const { isListening, isSupported: voiceSupported, error: voiceError, start: startVoice, stop: stopVoice } = useVoiceDictation({
     onResult: (text: string) => {
       if (listeningDayRef.current) {
         handleMealInput(listeningDayRef.current, text)
@@ -227,6 +227,10 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
             })}
           </div>
         </div>
+      )}
+
+      {voiceError && (
+        <p className="text-xs text-error bg-error/5 border border-error/20 rounded-lg px-3 py-2 mb-3">{voiceError}</p>
       )}
 
       {WEEKDAYS.map(day => {

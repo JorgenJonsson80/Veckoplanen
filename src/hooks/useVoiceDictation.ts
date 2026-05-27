@@ -7,9 +7,28 @@ interface UseVoiceDictationOptions {
 
 const AUTO_STOP_MS = 8000
 
+function friendlyError(code: string): string {
+  switch (code) {
+    case 'not-allowed':
+    case 'service-not-allowed':
+      return 'Mikrofonen är blockerad. Gå till telefonens inställningar → webbläsare → tillåt mikrofon, och ladda om sidan.'
+    case 'network':
+      return 'Nätverksfel — röstinmatning kräver internetuppkoppling.'
+    case 'audio-capture':
+      return 'Ingen mikrofon hittades på enheten.'
+    case 'aborted':
+    case 'no-speech':
+      return ''
+    default:
+      return `Röstinmatning fungerade inte (${code}).`
+  }
+}
+
 export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictationOptions) {
   const [isListening, setIsListening] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // After a permission/service block the button should hide — no point retrying
+  const [blocked, setBlocked] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -61,8 +80,10 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       clearAutoStop()
-      if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        setError(`Röstfel: ${event.error}`)
+      const msg = friendlyError(event.error as string)
+      if (msg) setError(msg)
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setBlocked(true)
       }
       setIsListening(false)
     }
@@ -89,5 +110,6 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
     else start()
   }, [isListening, start, stop])
 
-  return { isListening, isSupported, error, toggle, start, stop }
+  // isSupported becomes false after a permission block so the button hides
+  return { isListening, isSupported: isSupported && !blocked, error, blocked, toggle, start, stop }
 }
