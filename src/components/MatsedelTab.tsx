@@ -235,9 +235,10 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
 
         return (
           <div key={day} className="bg-white rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
-            <div className="flex items-center gap-2.5">
-              <span className="min-w-20 font-bold text-primary text-sm">{dayLabel}</span>
-              <div className="flex-1 relative">
+            {/* Rad 1: dag-label + input + mikrofon */}
+            <div className="flex items-center gap-2">
+              <span className="w-18 shrink-0 font-bold text-primary text-sm">{dayLabel}</span>
+              <div className="flex-1 relative min-w-0">
                 <input
                   className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] font-[inherit] box-border"
                   value={mealValue}
@@ -257,7 +258,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                 <button
                   aria-label={listeningDay === day ? 'Stoppa röstinmatning' : `Diktera rätt för ${dayLabel}`}
                   onClick={() => startVoiceForDay(day)}
-                  className={`shrink-0 px-2 py-1 border-0 rounded-lg text-base transition-colors duration-150 ${
+                  className={`shrink-0 w-9 h-9 flex items-center justify-center border-0 rounded-lg text-base transition-colors duration-150 ${
                     listeningDay === day
                       ? 'bg-error text-white animate-pulse cursor-pointer'
                       : 'bg-bg border border-border text-primary cursor-pointer'
@@ -266,19 +267,21 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   🎤
                 </button>
               )}
-              {mealValue && (
-                <>
+            </div>
+
+            {/* Rad 2: åtgärdsknappar (visas när rätt eller åt-ute finns) */}
+            {(mealValue || ateOutEntry) && (
+              <div className="mt-2 pl-20 flex items-center gap-1.5 flex-wrap">
+                {mealValue && (
                   <div className="relative">
                     <button
-                      className={`border border-border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none ${isCopying ? 'bg-primary text-white' : 'bg-bg text-primary'}`}
+                      className={`border border-border rounded-md cursor-pointer px-2.5 py-1 flex items-center gap-1 text-xs ${isCopying ? 'bg-primary text-white border-primary' : 'bg-bg text-primary'}`}
                       onClick={() => setCopyingDay(isCopying ? null : day)}
-                      title="Kopiera till annan dag"
                     >
-                      <span className="text-sm">⧉</span>
-                      <span className="text-[9px] font-semibold tracking-[0.3px]">Kopiera</span>
+                      <span>⧉</span><span>Kopiera</span>
                     </button>
                     {isCopying && (
-                      <div className="absolute top-full right-0 mt-1.5 bg-white border border-border rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-30 p-2 min-w-35">
+                      <div className="absolute top-full left-0 mt-1.5 bg-white border border-border rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-30 p-2 min-w-35">
                         <div className="text-[11px] text-[#aaa] mb-1.5 pl-1">Kopiera till:</div>
                         {WEEKDAYS.filter(d => d !== day).map(d => (
                           <button
@@ -293,30 +296,26 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                       </div>
                     )}
                   </div>
+                )}
+                {mealValue && (
                   <button
-                    className="bg-bg border border-border rounded-md cursor-pointer text-primary px-2 py-1 flex flex-col items-center gap-px leading-none"
+                    className="bg-bg border border-border rounded-md cursor-pointer text-primary px-2.5 py-1 flex items-center gap-1 text-xs"
                     onClick={() => onEditRecipe(recipe ?? { id: null, name: mealValue, ingredients: [] })}
-                    title="Öppna recepteditor"
                   >
-                    <span className="text-sm">✏️</span>
-                    <span className="text-[9px] font-semibold tracking-[0.3px]">Recept</span>
+                    <span>✏️</span><span>Recept</span>
                   </button>
-                </>
-              )}
-              {(mealValue || ateOutEntry) && (
+                )}
                 <button
-                  className={`border rounded-md cursor-pointer px-2 py-1 flex flex-col items-center gap-px leading-none shrink-0 ${ateOutEntry ? 'bg-warning/10 border-warning text-warning' : 'bg-bg border-border text-secondary'}`}
+                  className={`border rounded-md cursor-pointer px-2.5 py-1 flex items-center gap-1 text-xs ${ateOutEntry ? 'bg-warning/10 border-warning text-warning' : 'bg-bg border-border text-secondary'}`}
                   onClick={() => {
                     if (ateOutEntry) { onRemoveAteOut(date); setAteOutInput(null) }
                     else setAteOutInput(isAteOutOpen ? null : { day, amount: '' })
                   }}
-                  title={ateOutEntry ? 'Ta bort "åt ute"' : 'Logga att ni åt ute'}
                 >
-                  <span className="text-sm">🍕</span>
-                  <span className="text-[9px] font-semibold tracking-[0.3px]">{ateOutEntry ? 'Åt ute' : 'Ute?'}</span>
+                  <span>🍕</span><span>{ateOutEntry ? 'Åt ute' : 'Ute?'}</span>
                 </button>
-              )}
-            </div>
+              </div>
+            )}
             {isAteOutOpen && !ateOutEntry && (
               <div className="mt-2 flex gap-2 items-center pl-22.5">
                 <input
