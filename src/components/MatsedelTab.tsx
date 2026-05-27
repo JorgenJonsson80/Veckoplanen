@@ -41,7 +41,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
   const [listeningDay, setListeningDay] = useState<string | null>(null)
   const listeningDayRef = useRef<string | null>(null)
 
-  const { isListening, isSupported: voiceSupported, toggle: toggleVoice } = useVoiceDictation({
+  const { isListening, isSupported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceDictation({
     onResult: (text: string) => {
       if (listeningDayRef.current) {
         handleMealInput(listeningDayRef.current, text)
@@ -52,9 +52,17 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
   })
 
   function startVoiceForDay(day: string) {
+    if (isListening) stopVoice()
     listeningDayRef.current = day
     setListeningDay(day)
-    if (!isListening) toggleVoice()
+    // Small delay when switching days so previous recognition closes cleanly
+    setTimeout(startVoice, 50)
+  }
+
+  function cancelVoice() {
+    listeningDayRef.current = null
+    setListeningDay(null)
+    stopVoice()
   }
   const [openMealKey, setOpenMealKey] = useState<string | null>(null)
   const [showRecipes, setShowRecipes] = useState(false)
@@ -255,23 +263,29 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                 )}
               </div>
               {voiceSupported && (
-                <button
-                  aria-label={listeningDay === day ? 'Stoppa röstinmatning' : `Diktera rätt för ${dayLabel}`}
-                  onClick={() => startVoiceForDay(day)}
-                  className={`shrink-0 w-9 h-9 flex items-center justify-center border-0 rounded-lg text-base transition-colors duration-150 ${
-                    listeningDay === day
-                      ? 'bg-error text-white animate-pulse cursor-pointer'
-                      : 'bg-bg border border-border text-primary cursor-pointer'
-                  }`}
-                >
-                  🎤
-                </button>
+                listeningDay === day ? (
+                  <button
+                    aria-label="Avbryt röstinmatning"
+                    onClick={cancelVoice}
+                    className="shrink-0 px-3 h-9 flex items-center gap-1.5 bg-error text-white border-0 rounded-lg text-sm font-semibold cursor-pointer"
+                  >
+                    <span>✕</span><span>Avbryta</span>
+                  </button>
+                ) : (
+                  <button
+                    aria-label={`Diktera rätt för ${dayLabel}`}
+                    onClick={() => startVoiceForDay(day)}
+                    className="shrink-0 w-9 h-9 flex items-center justify-center bg-bg border border-border rounded-lg text-base cursor-pointer"
+                  >
+                    🎤
+                  </button>
+                )
               )}
             </div>
 
             {/* Rad 2: åtgärdsknappar (visas när rätt eller åt-ute finns) */}
             {(mealValue || ateOutEntry) && (
-              <div className="mt-2 pl-20 flex items-center gap-1.5 flex-wrap">
+              <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                 {mealValue && (
                   <div className="relative">
                     <button

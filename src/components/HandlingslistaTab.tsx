@@ -478,13 +478,13 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               <button
                 onClick={toggleVoice}
                 aria-label={isListening ? 'Stoppa röstinmatning' : 'Starta röstinmatning'}
-                className={`shrink-0 px-3 py-2.5 border-0 rounded-xl text-[18px] transition-colors duration-150 ${
+                className={`shrink-0 py-2.5 border-0 rounded-xl transition-colors duration-150 font-semibold ${
                   isListening
-                    ? 'bg-error text-white cursor-pointer animate-pulse'
-                    : 'bg-bg border border-border cursor-pointer text-primary'
+                    ? 'px-3 bg-error text-white cursor-pointer text-sm'
+                    : 'px-3 bg-bg border border-border cursor-pointer text-[18px] text-primary'
                 }`}
               >
-                🎤
+                {isListening ? '✕ Avbryta' : '🎤'}
               </button>
             )}
             <button

@@ -5,11 +5,14 @@ interface UseVoiceDictationOptions {
   lang?: string
 }
 
+const AUTO_STOP_MS = 8000
+
 export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictationOptions) {
   const [isListening, setIsListening] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Always call the latest version of onResult without needing to restart recognition
   const onResultRef = useRef(onResult)
@@ -18,6 +21,20 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
   const isSupported =
     typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+
+  function clearAutoStop() {
+    if (timeoutRef.current != null) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+  }
+
+  const stop = useCallback(() => {
+    clearAutoStop()
+    recognitionRef.current?.stop()
+    recognitionRef.current = null
+    setIsListening(false)
+  }, [])
 
   const start = useCallback(() => {
     if (!isSupported) {
@@ -35,6 +52,7 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
+      clearAutoStop()
       const transcript = (event.results[0][0].transcript as string).trim()
       onResultRef.current(transcript)
       setIsListening(false)
@@ -42,6 +60,7 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
+      clearAutoStop()
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         setError(`Röstfel: ${event.error}`)
       }
@@ -49,6 +68,7 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
     }
 
     recognition.onend = () => {
+      clearAutoStop()
       setIsListening(false)
     }
 
@@ -56,17 +76,18 @@ export function useVoiceDictation({ onResult, lang = 'sv-SE' }: UseVoiceDictatio
     recognition.start()
     setIsListening(true)
     setError(null)
-  }, [isSupported, lang])
 
-  const stop = useCallback(() => {
-    recognitionRef.current?.stop()
-    setIsListening(false)
-  }, [])
+    // Auto-stop after 8 s so the user is never stuck in listening mode
+    timeoutRef.current = setTimeout(() => {
+      recognition.stop()
+      setIsListening(false)
+    }, AUTO_STOP_MS)
+  }, [isSupported, lang])
 
   const toggle = useCallback(() => {
     if (isListening) stop()
     else start()
   }, [isListening, start, stop])
 
-  return { isListening, isSupported, error, toggle }
+  return { isListening, isSupported, error, toggle, start, stop }
 }
