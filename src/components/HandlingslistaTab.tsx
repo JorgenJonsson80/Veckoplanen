@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { getWeekLabel } from '../utils/date'
 import { useAppContext } from '../context/AppContext'
+import { useVoiceDictation } from '../hooks/useVoiceDictation'
 import type { Store } from '../types'
 
 interface Props {
@@ -46,6 +47,10 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   const [confirmClear, setConfirmClear] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)
   const prevCheckedCount = useRef(0)
+
+  const { isListening, isSupported: voiceSupported, error: voiceError, toggle: toggleVoice } = useVoiceDictation({
+    onResult: handleQuickInput,
+  })
 
   useEffect(() => {
     if (totalItems > 0 && checkedCount === totalItems && prevCheckedCount.current < totalItems) {
@@ -438,6 +443,9 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       {/* Quick-add bar — fixed at bottom, always visible */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-border shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
         <div className="max-w-150 mx-auto px-3 py-2.5">
+          {voiceError && (
+            <p className="text-xs text-error text-center mb-1">{voiceError}</p>
+          )}
           <div className="relative flex gap-2 items-center">
             <div className="flex-1 relative">
               <input
@@ -445,7 +453,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                 value={quickInput}
                 onChange={e => handleQuickInput(e.target.value)}
                 onBlur={() => setTimeout(() => setQuickSuggestions([]), 150)}
-                placeholder="Lägg till vara snabbt..."
+                placeholder={isListening ? 'Lyssnar...' : 'Lägg till vara snabbt...'}
                 onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
               />
               {isQuickDuplicate && (
@@ -466,6 +474,19 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                 </div>
               )}
             </div>
+            {voiceSupported && (
+              <button
+                onClick={toggleVoice}
+                aria-label={isListening ? 'Stoppa röstinmatning' : 'Starta röstinmatning'}
+                className={`shrink-0 px-3 py-2.5 border-0 rounded-xl text-[18px] transition-colors duration-150 ${
+                  isListening
+                    ? 'bg-error text-white cursor-pointer animate-pulse'
+                    : 'bg-bg border border-border cursor-pointer text-primary'
+                }`}
+              >
+                🎤
+              </button>
+            )}
             <button
               onClick={() => handleQuickAdd()}
               disabled={!quickInput.trim()}
