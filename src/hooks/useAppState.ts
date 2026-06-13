@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useSharedState } from './useSharedState'
 import { useRecipes } from './useRecipes'
 import { useMealPlan } from './useMealPlan'
@@ -135,6 +135,21 @@ export function useAppState(user: User | null) {
       return { ...prev, mealPortions: next }
     })
   }
+
+  const autoCleared = useRef(false)
+  useEffect(() => {
+    if (loading || !state || autoCleared.current) return
+    autoCleared.current = true
+    const lastWeek = state.lastShoppingWeek
+    if (lastWeek !== currentWeek) {
+      updateState(prev => ({
+        ...prev,
+        lastShoppingWeek: currentWeek,
+        ...(lastWeek != null ? { checkedItems: {}, extraItems: [], weeklySpend: null } : {}),
+      }))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.lastShoppingWeek, loading])
 
   const checkedItems = state?.checkedItems ?? {}
   const extraItems = state?.extraItems ?? []

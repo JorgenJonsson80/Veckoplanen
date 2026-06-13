@@ -100,6 +100,7 @@ export interface RoomState {
   householdSize?: number
   mealPortions?: Record<string, number>
   ateOut?: AteOutEntry[]
+  lastShoppingWeek?: string
 }
 
 export interface Store {
