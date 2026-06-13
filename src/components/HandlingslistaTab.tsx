@@ -63,6 +63,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   function handleClearChecked() {
     if (!confirmClear) { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); return }
     setConfirmClear(false)
+    onSaveWeeklyList()
     onClearChecked()
   }
 
@@ -99,7 +100,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   const isQuickDuplicate = quickInput.trim().length > 0 && allItemNames.includes(quickInput.trim().toLowerCase())
 
   function handleAddExtraItem() {
-    if (!newExtraItem.trim()) return
+    if (!newExtraItem.trim() || isDuplicate) return
     onAddExtraItem(newExtraItem.trim(), newExtraCat || (categories[0]?.id || 'ovrigt'))
     setNewExtraItem('')
     setExtraSuggestions([])
@@ -121,6 +122,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   function handleQuickAdd(name = quickInput) {
     const trimmed = name.trim()
     if (!trimmed) return
+    if (allItemNames.includes(trimmed.toLowerCase())) return
     const catId = history[trimmed]?.cat ?? categories[0]?.id ?? 'ovrigt'
     onAddExtraItem(trimmed, catId, true)
     setQuickInput('')
@@ -171,7 +173,6 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             <div className="flex items-center gap-2.5">
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
               <button onClick={handleShare} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer">{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
-              <button onClick={onSaveWeeklyList} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer">💾 {getWeekLabel(currentWeek)}</button>
             </div>
           </div>
           <div className="h-2 bg-border rounded-full overflow-hidden">
@@ -397,7 +398,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
           </select>
         </div>
-        <button className="w-full py-2.5 bg-primary text-white border-0 rounded-lg text-[15px] cursor-pointer" onClick={handleAddExtraItem}>Lägg till</button>
+        <button className={`w-full py-2.5 border-0 rounded-lg text-[15px] ${isDuplicate ? 'bg-[#ccc] cursor-default text-white' : 'bg-primary text-white cursor-pointer'}`} onClick={handleAddExtraItem} disabled={isDuplicate}>Lägg till</button>
       </div>
 
       {/* Arkiverade handlingslistor */}

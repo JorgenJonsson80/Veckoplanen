@@ -141,7 +141,7 @@ export function useShoppingList(
       const impulseCount = (prev.extraItems ?? []).filter(i =>
         i.addedDuringShopping && prev.checkedItems?.[i.name]
       ).length
-      const next: typeof prev = { ...prev, checkedItems: {}, extraItems: [], weeklySpend: null }
+      const next: typeof prev = { ...prev, checkedItems: {}, extraItems: [], weeklySpend: null, lastShoppingWeek: weekKey }
       if (impulseCount > 0) {
         const existing = prev.budgetHistory?.[weekKey] ?? { budget: prev.budget ?? null, spend: null, savedAt: new Date().toISOString() }
         next.budgetHistory = {

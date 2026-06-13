@@ -107,6 +107,7 @@ export const RoomStateSchema = z.object({
   activeStoreId: z.string().nullable().optional(),
   householdSize: z.number().int().min(1).max(20).optional(),
   ateOut: z.array(AteOutEntrySchema).optional(),
+  lastShoppingWeek: z.string().max(20).optional(),
 })
 
 export type RoomStateFromSchema = z.infer<typeof RoomStateSchema>
