@@ -284,7 +284,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   <button
                     aria-label={`Diktera rätt för ${dayLabel}`}
                     onClick={() => startVoiceForDay(day)}
-                    className="shrink-0 w-9 h-9 flex items-center justify-center bg-bg border border-border rounded-lg cursor-pointer"
+                    className="shrink-0 w-9 h-9 flex items-center justify-center bg-bg border border-border rounded-lg text-primary cursor-pointer"
                   >
                     <Mic size={16} />
                   </button>
@@ -383,13 +383,13 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   <button
                     aria-label="Färre portioner"
                     onClick={() => onSetMealPortion(day, dayPortions - 1)}
-                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded cursor-pointer leading-none"
+                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded text-primary cursor-pointer leading-none"
                   ><Minus size={11} /></button>
                   <span className={`text-xs font-semibold w-5 text-center ${portionsCustomized ? 'text-primary' : 'text-secondary'}`}>{dayPortions}</span>
                   <button
                     aria-label="Fler portioner"
                     onClick={() => onSetMealPortion(day, dayPortions + 1)}
-                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded cursor-pointer leading-none"
+                    className="w-5 h-5 flex items-center justify-center bg-bg border border-border rounded text-primary cursor-pointer leading-none"
                   ><Plus size={11} /></button>
                   <span className="text-xs text-secondary">port.</span>
                   {portionsCustomized && (
