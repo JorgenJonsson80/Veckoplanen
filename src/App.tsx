@@ -158,6 +158,7 @@ export default function App() {
                   <KategorierTab
                     onDeleteRoom={() => app.handleDeleteRoom(signOut)}
                     onEnableSimpleMode={() => { localStorage.setItem('veckoplanen_simple_mode', '1'); setSimpleMode(true) }}
+                    onHome={() => setActiveTab('matsedel')}
                   />
                 )}
               </Suspense>

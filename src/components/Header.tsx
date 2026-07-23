@@ -90,6 +90,12 @@ export default function Header({ session, roomName, user, onHome, onShowActivity
           {menuOpen && (
             <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden min-w-36 z-50">
               <button
+                onClick={() => { setMenuOpen(false); onHome() }}
+                className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-[#f0f0f0] font-[inherit]"
+              >
+                🏠 Till startsidan
+              </button>
+              <button
                 onClick={() => { setMenuOpen(false); onSwitchRoom() }}
                 className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-[#f0f0f0] font-[inherit]"
               >

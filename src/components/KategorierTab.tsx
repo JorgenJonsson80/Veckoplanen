@@ -18,6 +18,7 @@ import type { Category } from '../types'
 interface Props {
   onDeleteRoom: () => void
   onEnableSimpleMode: () => void
+  onHome: () => void
 }
 
 function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: string) => void }) {
@@ -61,12 +62,13 @@ function CatDragGhost({ cat }: { cat: Category }) {
   )
 }
 
-export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Props) {
+export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome }: Props) {
   const {
     categories,
     session,
     roomName,
     renameRoom,
+    convertToFamilyRoom,
     householdSize,
     setHouseholdSize,
     handleCatReorder: onReorder,
@@ -145,6 +147,13 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
       {session?.roomCode && (
         <div className="mt-8 pt-5 border-t border-border">
           <p className="text-secondary text-xs mb-2">Rum</p>
+          <button
+            type="button"
+            onClick={onHome}
+            className="w-full py-2.5 mb-3 bg-bg border border-border rounded-xl text-primary text-sm font-semibold cursor-pointer"
+          >
+            🏠 Till startsidan
+          </button>
           <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-3">
             <span className="block text-[15px] text-primary font-medium mb-2">🏠 Rummets namn</span>
             <div className="flex items-center gap-2">
@@ -166,6 +175,22 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
             </div>
             <span className="block text-secondary text-xs mt-2">Rumskod: <span className="font-mono">{session.roomCode}</span></span>
           </div>
+
+          {session.mode === 'solo' && (
+            <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+              <div className="flex-1">
+                <span className="block text-[15px] text-primary font-medium">👨‍👩‍👧 Gör om till familjerum</span>
+                <span className="block text-secondary text-sm mt-0.5">Bjud in andra att dela det här rummet med dig.</span>
+              </div>
+              <button
+                type="button"
+                onClick={convertToFamilyRoom}
+                className="shrink-0 px-3.5 py-1.5 rounded-xl border-0 text-sm font-semibold cursor-pointer bg-primary text-white"
+              >
+                Gör om
+              </button>
+            </div>
+          )}
         </div>
       )}
 
