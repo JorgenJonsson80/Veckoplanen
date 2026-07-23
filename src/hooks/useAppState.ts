@@ -38,6 +38,7 @@ export function useAppState(user: User | null) {
   })
 
   const [appError, setAppError] = useState<string | null>(null)
+  const [switchingRoom, setSwitchingRoom] = useState(false)
 
   const { state, loading, error, syncError, clearSyncError, roomNotFound, roomName, renameRoom, updateState, deleteRoom } = useSharedState(
     session?.roomCode ?? null,
@@ -52,11 +53,15 @@ export function useAppState(user: User | null) {
     localStorage.setItem(SESSION_KEY, JSON.stringify(sess))
     if (user?.id) saveRecentRoom(user.id, sess)
     setSession(sess)
+    setSwitchingRoom(false)
   }
 
   function handleSwitchRoom() {
-    localStorage.removeItem(SESSION_KEY)
-    setSession(null)
+    setSwitchingRoom(true)
+  }
+
+  function cancelSwitchRoom() {
+    setSwitchingRoom(false)
   }
 
   function convertToFamilyRoom() {
@@ -252,8 +257,10 @@ export function useAppState(user: User | null) {
     roomNotFound,
     roomName,
     renameRoom,
+    switchingRoom,
     handleStart,
     handleSwitchRoom,
+    cancelSwitchRoom,
     convertToFamilyRoom,
     handleDeleteRoom,
     handleSignOut,

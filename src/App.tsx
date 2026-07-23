@@ -85,6 +85,18 @@ export default function App() {
       />
     )
   }
+  if (app.switchingRoom) {
+    return (
+      <RoomSetup
+        onStart={app.handleStart}
+        onCancel={app.cancelSwitchRoom}
+        initialJoinCode={null}
+        recentRooms={getRecentRooms(user.id)}
+        recentRoomsKey={`veckoplanen_recent_rooms_${user.id}`}
+        userId={user.id}
+      />
+    )
+  }
   if (app.roomNotFound) return (
     <div className="min-h-screen bg-bg max-w-150 mx-auto flex items-center justify-center">
       <div className="text-center px-6 py-8 max-w-85">

@@ -12,6 +12,7 @@ interface SupabaseRoom {
 
 interface Props {
   onStart: (sess: Session) => void
+  onCancel?: () => void
   initialJoinCode: string | null
   recentRooms?: Session[]
   recentRoomsKey?: string | null
@@ -34,7 +35,7 @@ const MODE_OPTIONS = [
   { key: 'join', label: '🔑 Gå med i rum', desc: 'Du har fått en kod av en familjemedlem.' },
 ] as const
 
-export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], recentRoomsKey = null, userId }: Props) {
+export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRooms = [], recentRoomsKey = null, userId }: Props) {
   const [mode, setMode] = useState<'solo' | 'create' | 'join' | null>(initialJoinCode ? 'join' : null)
   const [recent, setRecent] = useState(recentRooms)
   const [name, setName] = useState('')
@@ -170,6 +171,14 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+        {onCancel && (
+          <button
+            className="bg-transparent border-0 text-secondary text-sm cursor-pointer underline mb-4"
+            onClick={onCancel}
+          >
+            ← Tillbaka
+          </button>
+        )}
         <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
         <p className="text-secondary text-center mb-7 text-[15px]">Din familjens matsedel och handlingslista</p>
 
