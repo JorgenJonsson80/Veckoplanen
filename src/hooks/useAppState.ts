@@ -59,6 +59,10 @@ export function useAppState(user: User | null) {
     setSession(null)
   }
 
+  function convertToFamilyRoom() {
+    if (session && session.mode === 'solo') handleStart({ ...session, mode: 'create' })
+  }
+
   async function handleDeleteRoom(signOut: () => Promise<void>) {
     const { error: delErr } = await deleteRoom()
     if (delErr) { setAppError('Kunde inte radera rummet: ' + errMsg(delErr)); return }
@@ -250,6 +254,7 @@ export function useAppState(user: User | null) {
     renameRoom,
     handleStart,
     handleSwitchRoom,
+    convertToFamilyRoom,
     handleDeleteRoom,
     handleSignOut,
     clearRoomNotFound,
