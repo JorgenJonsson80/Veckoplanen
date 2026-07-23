@@ -7,6 +7,7 @@ interface SupabaseRoom {
   id: string
   code: string
   created_by: string | null
+  name: string | null
 }
 
 interface Props {
@@ -37,6 +38,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
   const [mode, setMode] = useState<'solo' | 'create' | 'join' | null>(initialJoinCode ? 'join' : null)
   const [recent, setRecent] = useState(recentRooms)
   const [name, setName] = useState('')
+  const [roomName, setRoomName] = useState('')
   const [joinCode, setJoinCode] = useState(initialJoinCode || '')
   const [generatedCode, setGeneratedCode] = useState('')
   const [codeChecking, setCodeChecking] = useState(false)
@@ -47,12 +49,14 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
   const [roomsLoading, setRoomsLoading] = useState(true)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [openingRoom, setOpeningRoom] = useState<SupabaseRoom | null>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
 
   useEffect(() => {
     if (!supabase) { setRoomsLoading(false); return }
     supabase
       .from('rooms')
-      .select('id, code, created_by')
+      .select('id, code, created_by, name')
       .then(({ data }) => { setAllRooms(data ?? []); setRoomsLoading(false) })
   }, [])
 
@@ -68,7 +72,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
 
   function handleSelectRoom(room: SupabaseRoom) {
     const cached = recent.find(r => r.roomCode === room.code)
-    if (cached) { onStart(cached); return }
+    if (cached) { onStart({ ...cached, roomName: room.name }); return }
     setOpeningRoom(room)
     setErr('')
   }
@@ -77,7 +81,7 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
     if (!openingRoom) return
     if (!name.trim()) { setErr('Ange ditt namn.'); return }
     const isCreator = openingRoom.created_by === userId
-    onStart({ name: name.trim(), roomCode: openingRoom.code, mode: isCreator ? 'create' : 'join' })
+    onStart({ name: name.trim(), roomCode: openingRoom.code, roomName: openingRoom.name, mode: isCreator ? 'create' : 'join' })
   }
 
   async function handleDeleteRoom(room: SupabaseRoom) {
@@ -91,6 +95,20 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
     setConfirmDeleteId(null)
   }
 
+  function startRename(room: SupabaseRoom) {
+    setRenamingId(room.id)
+    setRenameValue(room.name ?? '')
+  }
+
+  async function handleSaveRename(room: SupabaseRoom) {
+    const trimmed = renameValue.trim()
+    setRenamingId(null)
+    if (trimmed === (room.name ?? '')) return
+    setAllRooms(prev => prev.map(r => r.id === room.id ? { ...r, name: trimmed || null } : r))
+    if (!supabase) return
+    await supabase.from('rooms').update({ name: trimmed || null }).eq('id', room.id)
+  }
+
   function handleStart() {
     setErr('')
     if (!name.trim()) { setErr('Ange ditt namn.'); return }
@@ -100,9 +118,11 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
       onStart({ name: name.trim(), roomCode: code, mode })
     } else if (mode === 'create') {
       if (!generatedCode) { setErr('Väntar på rumskod...'); return }
-      onStart({ name: name.trim(), roomCode: generatedCode, mode })
+      if (!roomName.trim()) { setErr('Ange ett namn för rummet.'); return }
+      onStart({ name: name.trim(), roomCode: generatedCode, roomName: roomName.trim(), mode })
     } else {
-      onStart({ name: name.trim(), roomCode: generateRoomCode(), mode: 'solo' })
+      if (!roomName.trim()) { setErr('Ange ett namn för rummet.'); return }
+      onStart({ name: name.trim(), roomCode: generateRoomCode(), roomName: roomName.trim(), mode: 'solo' })
     }
   }
 
@@ -117,7 +137,8 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
         <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
           <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
           <p className="text-secondary text-center mb-6 text-[15px]">
-            {isCreator ? '🏠' : '🔑'} Öppnar rum <span className="font-mono font-bold">{openingRoom.code}</span>
+            {isCreator ? '🏠' : '🔑'} Öppnar rummet{' '}
+            <span className="font-bold text-primary">{openingRoom.name || openingRoom.code}</span>
           </p>
           <label className={labelCls}>Ditt namn</label>
           <input
@@ -160,16 +181,47 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
             ) : (
               allRooms.map(room => {
                 const isOwner = room.created_by === userId
-                const cached = recent.find(r => r.roomCode === room.code)
                 const isConfirming = confirmDeleteId === room.id
+                const isRenaming = renamingId === room.id
+
+                if (isRenaming) {
+                  return (
+                    <div key={room.id} className="flex items-center gap-1.5 mb-1.5">
+                      <input
+                        className="flex-1 px-3.5 py-2.5 bg-white border-2 border-primary rounded-xl text-[15px] box-border font-[inherit]"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        placeholder="t.ex. Familjen Andersson"
+                        autoFocus
+                        onKeyDown={e => e.key === 'Enter' && handleSaveRename(room)}
+                      />
+                      <button
+                        onClick={() => handleSaveRename(room)}
+                        className="shrink-0 h-9 px-3 bg-primary text-white border-0 rounded-lg text-sm cursor-pointer font-semibold"
+                      >Spara</button>
+                      <button
+                        onClick={() => setRenamingId(null)}
+                        className="shrink-0 w-9 h-9 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
+                      >×</button>
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={room.id} className="flex items-center gap-1.5 mb-1.5">
                     <button className={roomRowCls} onClick={() => { setConfirmDeleteId(null); handleSelectRoom(room) }}>
                       <span className="text-xl">{isOwner ? '🏠' : '🔑'}</span>
-                      <span className="flex-1 font-mono text-primary font-semibold text-[15px] tracking-[1px]">{room.code}</span>
-                      {cached && <span className="text-xs text-secondary">{cached.name}</span>}
-                      <span className="text-xs text-[#aaa]">{isOwner ? 'Ditt rum' : 'Gick med'}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-primary font-semibold text-[15px] truncate">{room.name || room.code}</span>
+                        {room.name && <span className="block font-mono text-secondary text-xs tracking-[0.5px]">{room.code}</span>}
+                      </span>
+                      <span className="text-xs text-[#aaa] shrink-0">{isOwner ? 'Ditt rum' : 'Gick med'}</span>
                     </button>
+                    <button
+                      onClick={() => startRename(room)}
+                      className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-sm cursor-pointer flex items-center justify-center"
+                      title="Namnge rum"
+                    >✏️</button>
                     {isOwner && (
                       isConfirming ? (
                         <>
@@ -215,6 +267,19 @@ export default function RoomSetup({ onStart, initialJoinCode, recentRooms = [], 
           <>
             <label className={labelCls}>Ditt namn</label>
             <input className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="t.ex. Erik" onKeyDown={e => e.key === 'Enter' && handleStart()} autoFocus />
+
+            {(mode === 'create' || mode === 'solo') && (
+              <>
+                <label className={labelCls}>Rummets namn</label>
+                <input
+                  className={inputCls}
+                  value={roomName}
+                  onChange={e => setRoomName(e.target.value)}
+                  placeholder={mode === 'create' ? 't.ex. Familjen Andersson' : 't.ex. Mina veckor'}
+                  onKeyDown={e => e.key === 'Enter' && handleStart()}
+                />
+              </>
+            )}
 
             {mode === 'create' && (
               <>

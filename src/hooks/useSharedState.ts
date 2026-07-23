@@ -115,7 +115,8 @@ export function useSharedState(
   userName: string,
   defaultCategories: Category[],
   userId: string | null | undefined,
-  shouldCreate = true
+  shouldCreate = true,
+  initialRoomName: string | null = null
 ) {
   const [state, setState] = useState<RoomState | null>(() => {
     if (!roomCode) return null
@@ -126,6 +127,7 @@ export function useSharedState(
   const [error, setError] = useState<string | null>(null)
   const [syncError, setSyncError] = useState<string | null>(null)
   const [roomNotFound, setRoomNotFound] = useState(false)
+  const [roomName, setRoomName] = useState<string | null>(initialRoomName)
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
   const roomIdRef = useRef<string | null>(null)
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -135,10 +137,12 @@ export function useSharedState(
   const defaultCategoriesRef = useRef(defaultCategories)
   const userIdRef = useRef(userId)
   const shouldCreateRef = useRef(shouldCreate)
+  const initialRoomNameRef = useRef(initialRoomName)
   userNameRef.current = userName
   defaultCategoriesRef.current = defaultCategories
   userIdRef.current = userId
   shouldCreateRef.current = shouldCreate
+  initialRoomNameRef.current = initialRoomName
 
   function applyState(newState: RoomState, code = roomCode): void {
     if (code) writeCache(code, newState)
@@ -182,6 +186,7 @@ export function useSharedState(
           }
 
           roomIdRef.current = joined.joined_room_id as string
+          setRoomName((joined.room_name as string | null) ?? null)
           applyState(parseRoomState(joined.room_state) ?? defaultState(defaultCategoriesRef.current))
           return
         }
@@ -197,13 +202,14 @@ export function useSharedState(
 
         if (data) {
           roomIdRef.current = data.id as string
+          setRoomName((data.name as string | null) ?? null)
           applyState(parseRoomState(data.state) ?? defaultState(defaultCategoriesRef.current))
           ensureMembership(data.id as string)
         } else if (shouldCreateRef.current) {
           const fresh = readCache(roomCode!) ?? defaultState(defaultCategoriesRef.current)
           const { data: created, error: createError } = await supabase!
             .from('rooms')
-            .insert({ code: roomCode, state: fresh, created_by: userIdRef.current ?? null })
+            .insert({ code: roomCode, state: fresh, created_by: userIdRef.current ?? null, name: initialRoomNameRef.current })
             .select()
             .single()
           if (cancelled) return
@@ -216,6 +222,7 @@ export function useSharedState(
             throw createError
           }
           roomIdRef.current = (created as { id: string }).id
+          setRoomName((created as { name: string | null }).name ?? null)
           applyState(fresh)
           ensureMembership((created as { id: string }).id)
         } else {
@@ -271,8 +278,10 @@ export function useSharedState(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${code}` },
         (payload) => {
-          const parsed = parseRoomState((payload.new as { state: unknown }).state)
+          const row = payload.new as { state: unknown; name?: string | null }
+          const parsed = parseRoomState(row.state)
           if (parsed) applyState(parsed, code)
+          if ('name' in row) setRoomName(row.name ?? null)
         }
       )
       .subscribe()
@@ -342,6 +351,14 @@ export function useSharedState(
     })
   }, [roomCode, userName])
 
+  async function renameRoom(newName: string): Promise<{ error: unknown }> {
+    const trimmed = newName.trim() || null
+    setRoomName(trimmed)
+    if (!supabase || !roomIdRef.current) return { error: null }
+    const { error: renameError } = await supabase.from('rooms').update({ name: trimmed }).eq('id', roomIdRef.current)
+    return { error: renameError }
+  }
+
   async function deleteRoom(): Promise<{ error: unknown }> {
     if (roomCode) localStorage.removeItem(cacheKey(roomCode))
     if (!supabase || !roomIdRef.current) return { error: null }
@@ -355,7 +372,7 @@ export function useSharedState(
     }
   }
 
-  return { state, loading, error, syncError, clearSyncError: () => setSyncError(null), roomNotFound, updateState, deleteRoom }
+  return { state, loading, error, syncError, clearSyncError: () => setSyncError(null), roomNotFound, roomName, renameRoom, updateState, deleteRoom }
 }
 
 export { WEEKDAYS }

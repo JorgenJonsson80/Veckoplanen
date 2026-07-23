@@ -113,6 +113,7 @@ export interface Store {
 export interface Session {
   name: string
   roomCode: string | null
+  roomName?: string | null
   mode: 'solo' | 'create' | 'join'
   lastUsed?: number
 }

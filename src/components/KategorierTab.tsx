@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext, closestCenter, PointerSensor,
   KeyboardSensor, useSensor, useSensors, DragOverlay,
@@ -65,6 +65,8 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
   const {
     categories,
     session,
+    roomName,
+    renameRoom,
     householdSize,
     setHouseholdSize,
     handleCatReorder: onReorder,
@@ -75,6 +77,16 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
   const [activeCatId, setActiveCatId] = useState<string | null>(null)
   const [showNewCat, setShowNewCat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [roomNameDraft, setRoomNameDraft] = useState(roomName ?? '')
+  const [roomNameSaved, setRoomNameSaved] = useState(false)
+
+  useEffect(() => { setRoomNameDraft(roomName ?? '') }, [roomName])
+
+  function handleSaveRoomName() {
+    renameRoom(roomNameDraft)
+    setRoomNameSaved(true)
+    setTimeout(() => setRoomNameSaved(false), 2000)
+  }
 
   function handleDeleteRoom() {
     if (!confirmDelete) { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 3000); return }
@@ -129,6 +141,33 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode }: Prop
         {showNewCat ? 'Avbryt' : '+ Lägg till kategori'}
       </button>
       {showNewCat && <NewCategoryForm onAdd={handleAddCategory} />}
+
+      {session?.roomCode && (
+        <div className="mt-8 pt-5 border-t border-border">
+          <p className="text-secondary text-xs mb-2">Rum</p>
+          <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-3">
+            <span className="block text-[15px] text-primary font-medium mb-2">🏠 Rummets namn</span>
+            <div className="flex items-center gap-2">
+              <input
+                className="flex-1 px-3 py-2 border-2 border-border rounded-lg text-[15px] box-border font-[inherit]"
+                value={roomNameDraft}
+                onChange={e => setRoomNameDraft(e.target.value)}
+                placeholder="t.ex. Familjen Andersson"
+                onKeyDown={e => e.key === 'Enter' && handleSaveRoomName()}
+              />
+              <button
+                type="button"
+                onClick={handleSaveRoomName}
+                disabled={roomNameDraft.trim() === (roomName ?? '')}
+                className="shrink-0 px-3.5 py-2 rounded-lg border-0 text-sm font-semibold cursor-pointer bg-primary text-white disabled:opacity-40 disabled:cursor-default"
+              >
+                {roomNameSaved ? '✅' : 'Spara'}
+              </button>
+            </div>
+            <span className="block text-secondary text-xs mt-2">Rumskod: <span className="font-mono">{session.roomCode}</span></span>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 pt-5 border-t border-border">
         <p className="text-secondary text-xs mb-2">Hushåll</p>

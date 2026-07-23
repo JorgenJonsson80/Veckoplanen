@@ -39,12 +39,13 @@ export function useAppState(user: User | null) {
 
   const [appError, setAppError] = useState<string | null>(null)
 
-  const { state, loading, error, syncError, clearSyncError, roomNotFound, updateState, deleteRoom } = useSharedState(
+  const { state, loading, error, syncError, clearSyncError, roomNotFound, roomName, renameRoom, updateState, deleteRoom } = useSharedState(
     session?.roomCode ?? null,
     session?.name ?? 'Användare',
     DEFAULT_CATEGORIES,
     user?.id ?? null,
-    session?.mode !== 'join'
+    session?.mode !== 'join',
+    session?.roomName ?? null
   )
 
   function handleStart(sess: Session) {
@@ -245,6 +246,8 @@ export function useAppState(user: User | null) {
     appError,
     clearAppError: () => setAppError(null),
     roomNotFound,
+    roomName,
+    renameRoom,
     handleStart,
     handleSwitchRoom,
     handleDeleteRoom,
