@@ -95,7 +95,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
 
   return (
     <div className="fixed inset-0 bg-black/45 z-100 flex items-end" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-t-[20px] w-full max-w-150 mx-auto px-4 pt-5 pb-8 max-h-[85vh] overflow-y-auto">
+      <div className="bg-surface rounded-t-[20px] w-full max-w-150 mx-auto px-4 pt-5 pb-8 max-h-[85vh] overflow-y-auto">
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
         <h2 className="font-serif text-primary text-xl mb-4">Redigera recept</h2>
 
@@ -116,7 +116,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
               type="button"
               onClick={handleImportUrl}
               disabled={!importUrl.trim() || importStatus === 'loading'}
-              className={`shrink-0 px-3 py-2 border-0 rounded-lg text-sm text-white ${importUrl.trim() && importStatus !== 'loading' ? 'bg-primary cursor-pointer' : 'bg-[#ccc] cursor-default'}`}
+              className={`shrink-0 px-3 py-2 border-0 rounded-lg text-sm ${importUrl.trim() && importStatus !== 'loading' ? 'bg-primary text-white cursor-pointer' : 'bg-surface-muted text-text-muted cursor-default'}`}
             >
               {importStatus === 'loading' ? '...' : 'Hämta'}
             </button>
@@ -124,7 +124,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
           {importStatus === 'error' && <p className="text-xs text-error mt-1">{importError}</p>}
         </div>
 
-        <label className="text-sm text-[#555] block mb-1">Rättens namn</label>
+        <label className="text-sm text-text block mb-1">Rättens namn</label>
         <input
           className={`${inputCls} text-base mb-4 ${nameErr ? 'border-error mb-1' : ''}`}
           value={name}
@@ -133,7 +133,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
         />
         {nameErr && <p className="text-error text-sm mb-3">{nameErr}</p>}
 
-        <label className="text-sm text-[#555] block mb-1">Portioner (receptet räcker till)</label>
+        <label className="text-sm text-text block mb-1">Portioner (receptet räcker till)</label>
         <div className="flex items-center gap-3 mb-4">
           <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary cursor-pointer flex-none flex items-center justify-center" onClick={() => setPortions(p => Math.max(1, p - 1))}><Minus size={16} /></button>
           <span className="text-base font-semibold text-primary w-8 text-center">{portions}</span>
@@ -141,7 +141,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
           <span className="text-sm text-secondary">pers — mängderna skalas automatiskt</span>
         </div>
 
-        <label className="text-sm text-[#555] block mb-1">Bild (URL, valfritt)</label>
+        <label className="text-sm text-text block mb-1">Bild (URL, valfritt)</label>
         <div className="flex gap-2 items-center mb-4">
           <input
             className={`${inputCls} flex-1`}
@@ -160,9 +160,9 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
         </div>
 
         <div className="grid grid-cols-[1fr_80px_110px_32px] gap-1.5 mb-1 items-center">
-          <span className="text-[11px] text-[#888] font-semibold uppercase">Ingrediens</span>
-          <span className="text-[11px] text-[#888] font-semibold uppercase">Mängd</span>
-          <span className="text-[11px] text-[#888] font-semibold uppercase">Kategori</span>
+          <span className="text-[11px] text-text-muted font-semibold uppercase">Ingrediens</span>
+          <span className="text-[11px] text-text-muted font-semibold uppercase">Mängd</span>
+          <span className="text-[11px] text-text-muted font-semibold uppercase">Kategori</span>
           <span />
         </div>
 
@@ -170,7 +170,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
           <div key={ing._id} className="grid grid-cols-[1fr_80px_110px_32px] gap-1.5 mb-2 items-center">
             <input className={inputCls} value={ing.name} onChange={e => updateIngredient(idx, 'name', e.target.value)} placeholder="Vara" />
             <input className={inputCls} value={ing.amount} onChange={e => updateIngredient(idx, 'amount', e.target.value)} placeholder="Mängd" />
-            <select className="px-1 py-1.5 border border-border rounded-lg text-sm font-[inherit] w-full bg-white" value={ing.category} onChange={e => updateIngredient(idx, 'category', e.target.value)}>
+            <select className="px-1 py-1.5 border border-border rounded-lg text-sm font-[inherit] w-full bg-surface" value={ing.category} onChange={e => updateIngredient(idx, 'category', e.target.value)}>
               {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>)}
             </select>
             <button aria-label="Ta bort ingrediens" className="bg-transparent border-0 text-error cursor-pointer p-0 leading-none flex items-center justify-center" onClick={() => removeIngredient(idx)}><X size={16} /></button>

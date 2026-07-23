@@ -26,7 +26,7 @@ export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
 
   if (done) return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+      <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         <h1 className="font-serif text-primary text-2xl text-center mb-4">Veckoplanen</h1>
         <div className="flex justify-center mb-4 text-primary"><CircleCheck size={44} /></div>
         <p className="text-primary font-semibold text-center text-sm mb-1">Lösenordet är uppdaterat!</p>
@@ -37,7 +37,7 @@ export default function ResetPasswordScreen({ onUpdatePassword }: Props) {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+      <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         <h1 className="font-serif text-primary text-2xl text-center mb-2">Veckoplanen</h1>
         <p className="text-secondary text-center text-sm leading-relaxed mb-6">Välj ett nytt lösenord för ditt konto.</p>
 

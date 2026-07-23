@@ -27,7 +27,7 @@ export default function YouthView({ onSwitchToFull }: Props) {
     <div className="p-4 pb-20">
       <section className="mb-8">
         <h2 className="font-serif text-primary text-xl mb-3 flex items-center gap-2"><UtensilsCrossed size={20} /> Önska mat</h2>
-        <div className="bg-white rounded-2xl overflow-hidden border border-border">
+        <div className="bg-surface rounded-2xl overflow-hidden border border-border">
           {WEEKDAYS.map((day, i) => (
             <div
               key={day}
@@ -35,7 +35,7 @@ export default function YouthView({ onSwitchToFull }: Props) {
             >
               <span className="text-secondary text-sm w-16 shrink-0">{DAY_LABELS[day]}</span>
               <input
-                className="flex-1 text-base border-0 outline-none bg-transparent font-[inherit] text-primary placeholder:text-[#ccc]"
+                className="flex-1 text-base border-0 outline-none bg-transparent font-[inherit] text-primary placeholder:text-text-muted"
                 value={meals[day] ?? ''}
                 onChange={e => setMeal(day, e.target.value)}
                 placeholder="Vad vill du äta?"
@@ -47,10 +47,10 @@ export default function YouthView({ onSwitchToFull }: Props) {
 
       <section className="mb-8">
         <h2 className="font-serif text-primary text-xl mb-3 flex items-center gap-2"><ShoppingCart size={20} /> Handla det här</h2>
-        <div className="bg-white rounded-2xl overflow-hidden border border-border">
+        <div className="bg-surface rounded-2xl overflow-hidden border border-border">
           <div className="flex items-center px-4 py-3 border-b border-border">
             <input
-              className="flex-1 text-base border-0 outline-none bg-transparent font-[inherit] text-primary placeholder:text-[#ccc]"
+              className="flex-1 text-base border-0 outline-none bg-transparent font-[inherit] text-primary placeholder:text-text-muted"
               value={newItem}
               onChange={e => setNewItem(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}

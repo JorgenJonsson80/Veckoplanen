@@ -1,28 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary:    #2d5016;
-  --color-secondary:  #6b8f5e;
-  --color-border:     #c8e6c9;
-  --color-bg:         #f0f7ef;
-  --color-bg-subtle:  #e8f5e9;
-  --color-bg-card:    #fafff9;
-  --color-error:      #c62828;
-  --color-warning:    #e65100;
-  --font-serif:       Georgia, serif;
+  --color-primary:       #2d5016;
+  --color-secondary:     #6b8f5e;
+  --color-border:        #c8e6c9;
+  --color-border-muted:  #e5e5e5;
+  --color-bg:            #f0f7ef;
+  --color-bg-subtle:     #e8f5e9;
+  --color-bg-card:       #fafff9;
+  --color-surface:       #ffffff;
+  --color-surface-muted: #f5f5f5;
+  --color-text:          #222222;
+  --color-text-muted:    #888888;
+  --color-error:         #c62828;
+  --color-warning:       #e65100;
+  --font-serif:          Georgia, serif;
 }
 
-/* Keep CSS vars for components not yet migrated to Tailwind */
-:root {
-  --clr-primary:    #2d5016;
-  --clr-secondary:  #6b8f5e;
-  --clr-border:     #c8e6c9;
-  --clr-bg:         #f0f7ef;
-  --clr-bg-subtle:  #e8f5e9;
-  --clr-bg-card:    #fafff9;
-  --clr-error:      #c62828;
-  --clr-warning:    #e65100;
-  --font-serif:     Georgia, serif;
+/* Dark mode: follows the system/browser preference. Overriding the
+   theme custom properties (rather than adding dark: variants everywhere)
+   means every component that already uses the semantic color tokens
+   picks this up automatically — unlayered rules beat Tailwind's
+   @layer theme regardless of source order, so this is safe here. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary:       #4f9d5c;
+    --color-secondary:     #9bbf90;
+    --color-border:        #2f3d2c;
+    --color-border-muted:  #33362f;
+    --color-bg:            #14170f;
+    --color-bg-subtle:     #191d15;
+    --color-bg-card:       #1d2218;
+    --color-surface:       #212720;
+    --color-surface-muted: #2b2b28;
+    --color-text:          #e8e6e1;
+    --color-text-muted:    #9a9a92;
+    --color-error:         #ef5350;
+    --color-warning:       #ffa726;
+  }
 }
 
 @keyframes celebrate-in {
@@ -39,7 +54,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: var(--clr-bg);
+  background: var(--color-bg);
 }
 
 #root {

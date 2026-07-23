@@ -29,7 +29,7 @@ function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: stri
     <div
       ref={setNodeRef}
       {...attributes}
-      className="flex items-center bg-white rounded-xl px-3 py-2.5 mb-2 gap-2.5 select-none border-2 border-transparent"
+      className="flex items-center bg-surface rounded-xl px-3 py-2.5 mb-2 gap-2.5 select-none border-2 border-transparent"
       style={{
         boxShadow: isDragging ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
         transform: CSS.Transform.toString(transform),
@@ -37,13 +37,13 @@ function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: stri
         opacity: isDragging ? 0.3 : 1,
       }}
     >
-      <span {...listeners} className="text-[#bbb] leading-none px-1.5 py-1 cursor-grab touch-none"><GripVertical size={18} /></span>
+      <span {...listeners} className="text-text-muted leading-none px-1.5 py-1 cursor-grab touch-none"><GripVertical size={18} /></span>
       <span className="text-[22px]">{cat.emoji}</span>
-      <span className="flex-1 text-[15px] text-[#222]">{cat.name}</span>
+      <span className="flex-1 text-[15px] text-text">{cat.name}</span>
       {isCustom && (
         <button
           aria-label="Ta bort kategori"
-          className="bg-[#ffebee] border-0 rounded-md px-2 py-1 cursor-pointer text-error flex items-center"
+          className="bg-error/10 border-0 rounded-md px-2 py-1 cursor-pointer text-error flex items-center"
           onClick={() => onRemove(cat.id)}
         ><X size={14} /></button>
       )}
@@ -54,10 +54,10 @@ function SortableCatItem({ cat, onRemove }: { cat: Category; onRemove: (id: stri
 function CatDragGhost({ cat }: { cat: Category }) {
   const isCustom = cat.id.startsWith('custom_')
   return (
-    <div className="flex items-center bg-white rounded-xl px-3 py-2.5 gap-2.5 cursor-grabbing select-none border-2 border-primary shadow-[0_12px_32px_rgba(45,80,22,0.25)]">
-      <span className="text-[#bbb] leading-none"><GripVertical size={18} /></span>
+    <div className="flex items-center bg-surface rounded-xl px-3 py-2.5 gap-2.5 cursor-grabbing select-none border-2 border-primary shadow-[0_12px_32px_rgba(45,80,22,0.25)]">
+      <span className="text-text-muted leading-none"><GripVertical size={18} /></span>
       <span className="text-[22px]">{cat.emoji}</span>
-      <span className="flex-1 text-[15px] text-[#222]">{cat.name}</span>
+      <span className="flex-1 text-[15px] text-text">{cat.name}</span>
       {isCustom && <span className="w-7.75" />}
     </div>
   )
@@ -155,7 +155,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
           >
             <Home size={16} /> Till startsidan
           </button>
-          <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-3">
+          <div className="bg-surface rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-3">
             <span className="flex items-center gap-1.5 text-[15px] text-primary font-medium mb-2"><Home size={16} /> Rummets namn</span>
             <div className="flex items-center gap-2">
               <input
@@ -178,7 +178,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
           </div>
 
           {session.mode === 'solo' && (
-            <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+            <div className="bg-surface rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
               <div className="flex-1">
                 <span className="flex items-center gap-1.5 text-[15px] text-primary font-medium"><Users size={16} /> Gör om till familjerum</span>
                 <span className="block text-secondary text-sm mt-0.5">Bjud in andra att dela det här rummet med dig.</span>
@@ -197,7 +197,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
 
       <div className="mt-8 pt-5 border-t border-border">
         <p className="text-secondary text-xs mb-2">Hushåll</p>
-        <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+        <div className="bg-surface rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
           <div className="flex-1">
             <span className="flex items-center gap-1.5 text-[15px] text-primary font-medium"><Users size={16} /> Antal i hushållet</span>
             <span className="block text-secondary text-sm mt-0.5">Mängderna i handlingslistan skalas automatiskt</span>
@@ -209,7 +209,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
           </div>
         </div>
 
-        <div className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
+        <div className="bg-surface rounded-xl px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4 mb-3">
           <div className="flex-1">
             <span className="flex items-center gap-1.5 text-[15px] text-primary font-medium"><Bell size={16} /> Middagsnotis kl 16:30</span>
             <span className="block text-secondary text-sm mt-0.5">
@@ -221,7 +221,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
             <button
               onClick={subscribed ? unsubscribe : subscribe}
               disabled={pushLoading}
-              className={`shrink-0 px-3.5 py-1.5 rounded-xl border-0 text-sm font-semibold cursor-pointer transition-colors ${subscribed ? 'bg-[#f5f5f5] text-[#888]' : 'bg-primary text-white'} ${pushLoading ? 'opacity-50 cursor-default' : ''}`}
+              className={`shrink-0 px-3.5 py-1.5 rounded-xl border-0 text-sm font-semibold cursor-pointer transition-colors ${subscribed ? 'bg-surface-muted text-text-muted' : 'bg-primary text-white'} ${pushLoading ? 'opacity-50 cursor-default' : ''}`}
             >
               {pushLoading ? '...' : subscribed ? 'Stäng av' : 'Aktivera'}
             </button>
@@ -239,11 +239,11 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
       </div>
 
       {session?.roomCode && (
-        <div className="mt-6 pt-5 border-t border-[#ffcdd2]">
-          <p className="text-[#aaa] text-xs mb-2">Farozon</p>
+        <div className="mt-6 pt-5 border-t border-error/25">
+          <p className="text-text-muted text-xs mb-2">Farozon</p>
           <button
             onClick={handleDeleteRoom}
-            className={`w-full py-3 border border-[#ef9a9a] rounded-xl text-[15px] cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1.5 ${confirmDelete ? 'bg-error text-white' : 'bg-white text-error'}`}
+            className={`w-full py-3 border border-error/40 rounded-xl text-[15px] cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1.5 ${confirmDelete ? 'bg-error text-white' : 'bg-surface text-error'}`}
           >
             {confirmDelete ? <><TriangleAlert size={16} /> Tryck igen — detta går inte att ångra</> : <><Trash2 size={16} /> Radera rummet {session?.roomCode}</>}
           </button>

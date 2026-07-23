@@ -31,7 +31,7 @@ function SortableStoreRow({ cat }: { cat: Category }) {
     <div
       ref={setNodeRef}
       {...attributes}
-      className="flex items-center bg-white rounded-xl px-3 py-2.5 mb-2 gap-2.5 select-none border-2 border-transparent"
+      className="flex items-center bg-surface rounded-xl px-3 py-2.5 mb-2 gap-2.5 select-none border-2 border-transparent"
       style={{
         boxShadow: isDragging ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
         transform: CSS.Transform.toString(transform),
@@ -39,7 +39,7 @@ function SortableStoreRow({ cat }: { cat: Category }) {
         opacity: isDragging ? 0.3 : 1,
       }}
     >
-      <span {...listeners} className="text-[#bbb] px-1.5 py-1 cursor-grab touch-none"><GripVertical size={18} /></span>
+      <span {...listeners} className="text-text-muted px-1.5 py-1 cursor-grab touch-none"><GripVertical size={18} /></span>
       <span className="text-xl">{cat.emoji}</span>
       <span className="flex-1 text-[15px]">{cat.name}</span>
     </div>
@@ -48,8 +48,8 @@ function SortableStoreRow({ cat }: { cat: Category }) {
 
 function StoreRowGhost({ cat }: { cat: Category }) {
   return (
-    <div className="flex items-center bg-white rounded-xl px-3 py-2.5 gap-2.5 cursor-grabbing select-none border-2 border-primary shadow-[0_12px_32px_rgba(45,80,22,0.25)]">
-      <span className="text-[#bbb]"><GripVertical size={18} /></span>
+    <div className="flex items-center bg-surface rounded-xl px-3 py-2.5 gap-2.5 cursor-grabbing select-none border-2 border-primary shadow-[0_12px_32px_rgba(45,80,22,0.25)]">
+      <span className="text-text-muted"><GripVertical size={18} /></span>
       <span className="text-xl">{cat.emoji}</span>
       <span className="flex-1 text-[15px]">{cat.name}</span>
     </div>
@@ -93,7 +93,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
 
   return (
     <div className="fixed inset-0 bg-black/45 z-100 flex items-end" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-t-[20px] w-full max-w-150 mx-auto px-4 pt-5 pb-8 max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-t-[20px] w-full max-w-150 mx-auto px-4 pt-5 pb-8 max-h-[90vh] overflow-y-auto">
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
         <h2 className="font-serif text-primary text-xl mb-4">{isNew ? 'Lägg till butik' : 'Redigera butik'}</h2>
 
@@ -113,7 +113,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         </div>
 
         <label className="block font-semibold text-primary text-sm mb-1.5">Kategoriordning i den här butiken</label>
-        <p className="text-xs text-[#888] mb-2.5">Dra för att sätta butikens ordning</p>
+        <p className="text-xs text-text-muted mb-2.5">Dra för att sätta butikens ordning</p>
 
         <DndContext
           sensors={storeSensors}
@@ -133,7 +133,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         <div className="flex gap-2.5 mt-4">
           <button className="flex-1 py-3 bg-bg text-primary border border-border rounded-xl text-base cursor-pointer" onClick={onClose}>Avbryt</button>
           {!isNew && store?.id && (
-            <button aria-label="Radera butik" className="px-4 py-3 bg-[#ffebee] text-error border-0 rounded-xl cursor-pointer flex items-center" onClick={() => onDelete(store.id!)}><Trash2 size={18} /></button>
+            <button aria-label="Radera butik" className="px-4 py-3 bg-error/10 text-error border-0 rounded-xl cursor-pointer flex items-center" onClick={() => onDelete(store.id!)}><Trash2 size={18} /></button>
           )}
           <button className="flex-1 py-3 bg-primary text-white border-0 rounded-xl text-base cursor-pointer font-serif" onClick={handleSave}>Spara</button>
         </div>

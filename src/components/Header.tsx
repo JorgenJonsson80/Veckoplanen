@@ -87,22 +87,22 @@ export default function Header({ session, roomName, user, onHome, onShowActivity
           </button>
 
           {menuOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden min-w-36 z-50">
+            <div className="absolute top-full right-0 mt-2 bg-surface rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden min-w-36 z-50">
               <button
                 onClick={() => { setMenuOpen(false); onHome() }}
-                className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-[#f0f0f0] font-[inherit] flex items-center gap-2"
+                className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-border-muted font-[inherit] flex items-center gap-2"
               >
                 <Home size={16} /> Till startsidan
               </button>
               <button
                 onClick={() => { setMenuOpen(false); onSwitchRoom() }}
-                className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-[#f0f0f0] font-[inherit] flex items-center gap-2"
+                className="w-full px-4 py-3 text-left text-primary text-sm border-0 bg-transparent cursor-pointer border-b border-border-muted font-[inherit] flex items-center gap-2"
               >
                 <ArrowLeftRight size={16} /> Byt rum
               </button>
               <button
                 onClick={() => { setMenuOpen(false); onSignOut() }}
-                className="w-full px-4 py-3 text-left text-[#d32f2f] text-sm border-0 bg-transparent cursor-pointer font-[inherit]"
+                className="w-full px-4 py-3 text-left text-error text-sm border-0 bg-transparent cursor-pointer font-[inherit]"
               >
                 Logga ut
               </button>

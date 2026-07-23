@@ -135,7 +135,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
   }
 
   const storeBtnCls = (active: boolean) =>
-    `shrink-0 px-3.5 py-1.5 rounded-full text-sm cursor-pointer border font-[inherit] whitespace-nowrap ${active ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-border'}`
+    `shrink-0 px-3.5 py-1.5 rounded-full text-sm cursor-pointer border font-[inherit] whitespace-nowrap ${active ? 'bg-primary text-white border-primary' : 'bg-surface text-primary border-border'}`
   const budgetDelta = budget != null && weeklySpend != null ? weeklySpend - budget : null
   const previousDelta = budgetSummary.previous?.spend != null && weeklySpend != null ? weeklySpend - budgetSummary.previous.spend : null
 
@@ -186,7 +186,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           {checkedCount > 0 && (
             <button
               onClick={handleClearChecked}
-              className={`mt-2.5 w-full py-2.5 border-0 rounded-lg text-sm cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1.5 ${confirmClear ? 'bg-error text-white' : checkedCount === totalItems ? 'bg-primary text-white' : 'bg-[#f5f5f5] text-[#888]'}`}
+              className={`mt-2.5 w-full py-2.5 border-0 rounded-lg text-sm cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1.5 ${confirmClear ? 'bg-error text-white' : checkedCount === totalItems ? 'bg-primary text-white' : 'bg-surface-muted text-text-muted'}`}
             >
               {confirmClear
                 ? <><TriangleAlert size={14} /> Tryck igen för att bekräfta</>
@@ -200,19 +200,19 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
 
       {/* Budget-widget */}
       {!showBudgetEdit && !budget && (
-        <button onClick={() => { setShowBudgetEdit(true); setBudgetInput(''); setSpendInput('') }} className="bg-transparent border-0 text-[#aaa] text-xs cursor-pointer p-0 pb-3 block">
+        <button onClick={() => { setShowBudgetEdit(true); setBudgetInput(''); setSpendInput('') }} className="bg-transparent border-0 text-text-muted text-xs cursor-pointer p-0 pb-3 block">
           + Lägg till budget (valfritt)
         </button>
       )}
       {!showBudgetEdit && budget != null && (
-        <div className="flex items-center gap-2.5 mb-3.5 bg-white rounded-xl px-3.5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center gap-2.5 mb-3.5 bg-surface rounded-xl px-3.5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <Wallet size={18} className="text-primary" />
           <div className="flex-1">
             {weeklySpend != null ? (
               <>
                 <div className="flex justify-between text-sm mb-1">
                   <span className={`font-bold ${weeklySpend > budget ? 'text-error' : 'text-primary'}`}>{weeklySpend} kr</span>
-                  <span className="text-[#aaa]">av {budget} kr</span>
+                  <span className="text-text-muted">av {budget} kr</span>
                 </div>
                 <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
                   <div
@@ -238,25 +238,25 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               <span className="text-sm text-secondary">Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
             )}
           </div>
-          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} className="bg-transparent border-0 text-[#aaa] cursor-pointer p-1 flex items-center"><Pencil size={14} /></button>
+          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center"><Pencil size={14} /></button>
         </div>
       )}
       {showBudgetEdit && (
-        <div className="bg-white rounded-xl p-3.5 mb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <div className="bg-surface rounded-xl p-3.5 mb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <p className="m-0 mb-2.5 font-bold text-primary text-sm flex items-center gap-1.5"><Wallet size={14} /> Budget (valfritt)</p>
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
-              <label className="text-xs text-[#888] block mb-0.5">Budgetmål (kr)</label>
+              <label className="text-xs text-text-muted block mb-0.5">Budgetmål (kr)</label>
               <input type="number" inputMode="numeric" placeholder="t.ex. 800" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] box-border" />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-[#888] block mb-0.5">Vad kostade det? (kr)</label>
+              <label className="text-xs text-text-muted block mb-0.5">Vad kostade det? (kr)</label>
               <input type="number" inputMode="numeric" placeholder="t.ex. 650" value={spendInput} onChange={e => setSpendInput(e.target.value)} className="w-full px-2.5 py-2 border border-border rounded-lg text-[15px] box-border" />
             </div>
           </div>
           <div className="flex gap-2">
             <button onClick={() => { onSetBudget(budgetInput.trim() ? Number(budgetInput) : null); onSetWeeklySpend(spendInput.trim() ? Number(spendInput) : null); setShowBudgetEdit(false) }} className="flex-1 py-2 bg-primary text-white border-0 rounded-lg text-sm cursor-pointer">Spara</button>
-            <button onClick={() => setShowBudgetEdit(false)} className="px-3.5 py-2 bg-[#f5f5f5] border-0 rounded-lg text-sm cursor-pointer text-[#888]">Avbryt</button>
+            <button onClick={() => setShowBudgetEdit(false)} className="px-3.5 py-2 bg-surface-muted border-0 rounded-lg text-sm cursor-pointer text-text-muted">Avbryt</button>
           </div>
         </div>
       )}
@@ -271,13 +271,13 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             {items.map((item, idx) => {
               const checked = !!checkedItems[item.name]
               return (
-                <div key={idx} className={`flex items-center px-3 py-2.5 rounded-lg mb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] gap-2.5 ${checked ? 'bg-[#f5f5f5]' : 'bg-white'}`}>
+                <div key={idx} className={`flex items-center px-3 py-2.5 rounded-lg mb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] gap-2.5 ${checked ? 'bg-surface-muted' : 'bg-surface'}`}>
                   <input type="checkbox" checked={checked} onChange={() => onToggleItem(item.name, cat.id)} className="w-4.5 h-4.5 cursor-pointer accent-primary" />
-                  <span className={`flex-1 text-[15px] ${checked ? 'line-through text-[#aaa]' : 'text-[#222]'}`}>{item.name}</span>
-                  {item.amount && <span className="text-xs text-[#888]">{item.amount}</span>}
+                  <span className={`flex-1 text-[15px] ${checked ? 'line-through text-text-muted' : 'text-text'}`}>{item.name}</span>
+                  {item.amount && <span className="text-xs text-text-muted">{item.amount}</span>}
                   {item.isExtra
                     ? <button aria-label="Ta bort vara" className="bg-transparent border-0 text-error cursor-pointer p-0 leading-none flex items-center" onClick={() => onRemoveExtraItem(item.id!)}><X size={16} /></button>
-                    : <button aria-label="Dölj — har hemma" className="bg-transparent border-0 text-[#ccc] cursor-pointer p-0 leading-none flex items-center" title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}><X size={16} /></button>
+                    : <button aria-label="Dölj — har hemma" className="bg-transparent border-0 text-text-muted cursor-pointer p-0 leading-none flex items-center" title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}><X size={16} /></button>
                   }
                 </div>
               )
@@ -287,13 +287,13 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       })}
 
       {hiddenCount > 0 && (
-        <button onClick={onRestoreIngredients} className="block w-full text-center bg-transparent border-0 text-[#aaa] text-sm cursor-pointer py-1 pb-3">
+        <button onClick={onRestoreIngredients} className="block w-full text-center bg-transparent border-0 text-text-muted text-sm cursor-pointer py-1 pb-3">
           + Visa {hiddenCount} dolda {hiddenCount === 1 ? 'vara' : 'varor'} (har hemma)
         </button>
       )}
 
       {totalItems === 0 && (
-        <div className="text-center py-7 pb-4 text-[#888]">
+        <div className="text-center py-7 pb-4 text-text-muted">
           <p className="mb-1.5 text-[15px]">Listan är tom.</p>
           <p className="m-0 text-sm leading-relaxed">
             Lägg till varor manuellt med formuläret nedan — eller välj rätter i Matsedeln för att fylla listan automatiskt.
@@ -302,9 +302,9 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       )}
 
       {likelyEmptyItems.length > 0 && (
-        <div className="mt-2 bg-[#fff8e1] rounded-xl px-3.5 py-3 border border-[#ffe082]">
-          <h3 className="text-sm font-bold text-[#f57f17] mb-2 flex items-center gap-1.5"><TriangleAlert size={14} /> Borde vara slut hemma</h3>
-          {likelyEmptyItems.map((item, idx) => <div key={idx} className="text-sm text-[#555] py-0.5">• {item.name}</div>)}
+        <div className="mt-2 bg-warning/10 rounded-xl px-3.5 py-3 border border-warning/30">
+          <h3 className="text-sm font-bold text-warning mb-2 flex items-center gap-1.5"><TriangleAlert size={14} /> Borde vara slut hemma</h3>
+          {likelyEmptyItems.map((item, idx) => <div key={idx} className="text-sm text-text py-0.5">• {item.name}</div>)}
         </div>
       )}
 
@@ -315,8 +315,8 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             {suggestedRebuys.map(item => (
               <div key={item.name} className="flex items-center justify-between gap-3">
                 <div>
-                  <span className="text-sm text-[#222] font-medium">{item.name}</span>
-                  <span className="text-xs text-[#aaa] ml-2">
+                  <span className="text-sm text-text font-medium">{item.name}</span>
+                  <span className="text-xs text-text-muted ml-2">
                     {item.intervalDays
                       ? `brukar köpas var ${item.intervalDays < 14 ? `${Math.round(item.intervalDays)} dagar` : `${Math.round(item.intervalDays / 7)} veckor`}`
                       : item.daysSince < 30
@@ -337,9 +337,9 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       )}
 
       {(monthlySummary.ateOutCount > 0 || monthlySummary.impulseCount > 0) && (
-        <div className="mt-3 bg-white rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+        <div className="mt-3 bg-surface rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
           <h3 className="text-sm font-bold text-primary mb-2 flex items-center gap-1.5"><BarChart3 size={14} /> Den här månaden</h3>
-          <div className="flex flex-col gap-1.5 text-sm text-[#444]">
+          <div className="flex flex-col gap-1.5 text-sm text-text">
             {monthlySummary.ateOutCount > 0 && (
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5"><UtensilsCrossed size={14} /> Åt ute</span>
@@ -371,21 +371,21 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       )}
 
       {/* Lägg till extra vara */}
-      <div className="bg-white rounded-xl p-3.5 mt-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+      <div className="bg-surface rounded-xl p-3.5 mt-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
         <p className="m-0 mb-2.5 font-bold text-primary text-sm">Lägg till extra vara</p>
         <div className="flex gap-2 mb-2">
           <div className="flex-1 relative">
             <input
-              className={`w-full px-2.5 py-2 border rounded-lg text-[15px] font-[inherit] box-border ${isDuplicate ? 'border-[#ffb300]' : 'border-border'}`}
+              className={`w-full px-2.5 py-2 border rounded-lg text-[15px] font-[inherit] box-border ${isDuplicate ? 'border-warning/60' : 'border-border'}`}
               value={newExtraItem}
               onChange={e => handleExtraItemInput(e.target.value)}
               onBlur={() => setTimeout(() => setExtraSuggestions([]), 150)}
               placeholder="Varunamn"
               onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()}
             />
-            {isDuplicate && <p className="m-0 mt-1 text-xs text-[#f57f17] flex items-center gap-1"><TriangleAlert size={12} /> Finns redan i listan</p>}
+            {isDuplicate && <p className="m-0 mt-1 text-xs text-warning flex items-center gap-1"><TriangleAlert size={12} /> Finns redan i listan</p>}
             {extraSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+              <div className="absolute top-full left-0 right-0 bg-surface border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                 {extraSuggestions.map(name => (
                   <div
                     key={name}
@@ -393,21 +393,21 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                     onMouseDown={() => { setNewExtraItem(name); setExtraSuggestions([]) }}
                   >
                     <span>{name}</span>
-                    <span className="text-[11px] text-[#aaa]">köpt {history[name]?.count || 0}×</span>
+                    <span className="text-[11px] text-text-muted">köpt {history[name]?.count || 0}×</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
           <select
-            className="px-1.5 py-2 border border-border rounded-lg text-sm bg-white font-[inherit]"
+            className="px-1.5 py-2 border border-border rounded-lg text-sm bg-surface font-[inherit]"
             value={newExtraCat}
             onChange={e => setNewExtraCat(e.target.value)}
           >
             {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
           </select>
         </div>
-        <button className={`w-full py-2.5 border-0 rounded-lg text-[15px] ${isDuplicate ? 'bg-[#ccc] cursor-default text-white' : 'bg-primary text-white cursor-pointer'}`} onClick={handleAddExtraItem} disabled={isDuplicate}>Lägg till</button>
+        <button className={`w-full py-2.5 border-0 rounded-lg text-[15px] ${isDuplicate ? 'bg-surface-muted cursor-default text-text-muted' : 'bg-primary text-white cursor-pointer'}`} onClick={handleAddExtraItem} disabled={isDuplicate}>Lägg till</button>
       </div>
 
       {/* Arkiverade handlingslistor */}
@@ -420,7 +420,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               <div key={week} className="rounded-xl border border-border mb-2 overflow-hidden">
                 <button
                   onClick={() => setOpenListKey(isOpen ? null : week)}
-                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-surface'}`}
                 >
                   <span className="font-bold text-primary text-[15px]">{getWeekLabel(week)}</span>
                   <div className="flex gap-2.5 items-center">
@@ -439,7 +439,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                     )}
                     <div className="flex flex-wrap gap-1.5">
                       {(data.items || []).map((item, i) => (
-                        <span key={i} className="text-sm bg-white border border-border rounded-md px-2 py-0.5 text-[#444]">{item.amount ? `${item.amount} ` : ''}{item.name}</span>
+                        <span key={i} className="text-sm bg-surface border border-border rounded-md px-2 py-0.5 text-text">{item.amount ? `${item.amount} ` : ''}{item.name}</span>
                       ))}
                     </div>
                   </div>
@@ -451,7 +451,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       )}
 
       {/* Quick-add bar — fixed at bottom, always visible */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-border shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
         <div className="max-w-150 mx-auto px-3 py-2.5">
           {voiceError && (
             <p className="text-xs text-error text-center mb-1">{voiceError}</p>
@@ -459,7 +459,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           <div className="relative flex gap-2 items-center">
             <div className="flex-1 relative">
               <input
-                className={`w-full px-3 py-2.5 border rounded-xl text-[15px] font-[inherit] box-border ${isQuickDuplicate ? 'border-[#ffb300]' : 'border-border'}`}
+                className={`w-full px-3 py-2.5 border rounded-xl text-[15px] font-[inherit] box-border ${isQuickDuplicate ? 'border-warning/60' : 'border-border'}`}
                 value={quickInput}
                 onChange={e => handleQuickInput(e.target.value)}
                 onBlur={() => setTimeout(() => setQuickSuggestions([]), 150)}
@@ -467,10 +467,10 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                 onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
               />
               {isQuickDuplicate && (
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#f57f17]">finns redan</span>
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-warning">finns redan</span>
               )}
               {quickSuggestions.length > 0 && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-border rounded-xl z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] overflow-hidden">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-surface border border-border rounded-xl z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] overflow-hidden">
                   {quickSuggestions.map(name => (
                     <div
                       key={name}
@@ -478,7 +478,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                       onMouseDown={() => handleQuickAdd(name)}
                     >
                       <span>{name}</span>
-                      <span className="text-[11px] text-[#aaa]">{history[name]?.count || 0}×</span>
+                      <span className="text-[11px] text-text-muted">{history[name]?.count || 0}×</span>
                     </div>
                   ))}
                 </div>
@@ -500,7 +500,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             <button
               onClick={() => handleQuickAdd()}
               disabled={!quickInput.trim()}
-              className={`shrink-0 px-4 py-2.5 border-0 rounded-xl text-white text-[15px] font-semibold ${quickInput.trim() ? 'bg-primary cursor-pointer' : 'bg-[#ccc] cursor-default'}`}
+              className={`shrink-0 px-4 py-2.5 border-0 rounded-xl text-[15px] font-semibold ${quickInput.trim() ? 'bg-primary text-white cursor-pointer' : 'bg-surface-muted text-text-muted cursor-default'}`}
             >
               +
             </button>

@@ -136,7 +136,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
     const isCreator = openingRoom.created_by === userId
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
-        <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+        <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
           <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
           <p className="text-secondary text-center mb-6 text-[15px] flex items-center justify-center gap-1.5">
             {isCreator ? <Home size={16} /> : <Key size={16} />} Öppnar rummet{' '}
@@ -171,7 +171,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+      <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         {onCancel && (
           <button
             className="bg-transparent border-0 text-secondary text-sm cursor-pointer underline mb-4 flex items-center gap-1"
@@ -198,7 +198,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                   return (
                     <div key={room.id} className="flex items-center gap-1.5 mb-1.5">
                       <input
-                        className="flex-1 px-3.5 py-2.5 bg-white border-2 border-primary rounded-xl text-[15px] box-border font-[inherit]"
+                        className="flex-1 px-3.5 py-2.5 bg-surface border-2 border-primary rounded-xl text-[15px] box-border font-[inherit]"
                         value={renameValue}
                         onChange={e => setRenameValue(e.target.value)}
                         placeholder="t.ex. Familjen Andersson"
@@ -211,7 +211,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                       >Spara</button>
                       <button
                         onClick={() => setRenamingId(null)}
-                        className="shrink-0 w-9 h-9 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                        className="shrink-0 w-9 h-9 bg-surface border border-border-muted rounded-lg text-text-muted cursor-pointer flex items-center justify-center"
                       ><X size={16} /></button>
                     </div>
                   )
@@ -225,11 +225,11 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                         <span className="block text-primary font-semibold text-[15px] truncate">{room.name || room.code}</span>
                         {room.name && <span className="block font-mono text-secondary text-xs tracking-[0.5px]">{room.code}</span>}
                       </span>
-                      <span className="text-xs text-[#aaa] shrink-0">{isOwner ? 'Ditt rum' : 'Gick med'}</span>
+                      <span className="text-xs text-text-muted shrink-0">{isOwner ? 'Ditt rum' : 'Gick med'}</span>
                     </button>
                     <button
                       onClick={() => startRename(room)}
-                      className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                      className="shrink-0 w-8 h-8 bg-surface border border-border-muted rounded-lg text-text-muted cursor-pointer flex items-center justify-center"
                       title="Namnge rum"
                     ><Pencil size={14} /></button>
                     {isOwner && (
@@ -241,13 +241,13 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                           >Radera</button>
                           <button
                             onClick={() => setConfirmDeleteId(null)}
-                            className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                            className="shrink-0 w-8 h-8 bg-surface border border-border-muted rounded-lg text-text-muted cursor-pointer flex items-center justify-center"
                           ><X size={16} /></button>
                         </>
                       ) : (
                         <button
                           onClick={() => setConfirmDeleteId(room.id)}
-                          className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                          className="shrink-0 w-8 h-8 bg-surface border border-border-muted rounded-lg text-text-muted cursor-pointer flex items-center justify-center"
                           title="Radera rum"
                         ><Trash2 size={14} /></button>
                       )
@@ -256,7 +256,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                 )
               })
             )}
-            <div className="border-t border-[#f0f0f0] my-4" />
+            <div className="border-t border-border-muted my-4" />
           </div>
         )}
 
@@ -265,7 +265,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
             <button
               key={key}
               onClick={() => { setMode(key); setErr(''); setConfirmDeleteId(null) }}
-              className={`flex flex-col gap-0.5 w-full px-4 py-3.5 mb-2.5 border-2 border-primary rounded-xl text-base cursor-pointer text-left ${mode === key ? 'bg-primary text-white' : 'bg-white text-primary'}`}
+              className={`flex flex-col gap-0.5 w-full px-4 py-3.5 mb-2.5 border-2 border-primary rounded-xl text-base cursor-pointer text-left ${mode === key ? 'bg-primary text-white' : 'bg-surface text-primary'}`}
             >
               <span className="flex items-center gap-2"><Icon size={18} /> {label}</span>
               <span className={`text-xs font-normal ${mode === key ? 'opacity-80' : 'opacity-55'}`}>{desc}</span>
@@ -293,7 +293,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
 
             {mode === 'create' && (
               <>
-                <p className="text-[#555] text-sm mb-2">Dela den här koden med din familj:</p>
+                <p className="text-text text-sm mb-2">Dela den här koden med din familj:</p>
                 {codeChecking ? (
                   <p className="text-secondary text-sm mb-2">Skapar rumskod...</p>
                 ) : (

@@ -69,12 +69,12 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
 
   const inputCls = 'w-full px-3 py-3 border-2 border-border rounded-xl text-base mb-1 box-border font-[inherit]'
   const primaryBtn = 'w-full py-3.5 bg-primary text-white border-0 rounded-xl text-[17px] font-semibold cursor-pointer font-serif mt-3 flex items-center justify-center gap-1.5'
-  const choiceBtn = 'flex flex-col gap-1 w-full px-4 py-4 mb-3 border-2 border-primary rounded-xl text-left cursor-pointer bg-white text-primary font-[inherit]'
+  const choiceBtn = 'flex flex-col gap-1 w-full px-4 py-4 mb-3 border-2 border-primary rounded-xl text-left cursor-pointer bg-surface text-primary font-[inherit]'
   const backLink = 'bg-transparent border-0 text-secondary text-sm cursor-pointer underline mt-4 flex items-center justify-center gap-1 w-full'
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
+      <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         <h1 className="font-serif text-primary text-[28px] text-center mb-7">Veckoplanen 🌿</h1>
 
         {step === 'name' && (

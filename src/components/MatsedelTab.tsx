@@ -150,7 +150,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
     <div>
       <h2 className="font-serif text-primary text-[22px] mb-4">Veckans matsedel</h2>
 
-      <div className="bg-white rounded-xl px-3.5 py-3.5 mb-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+      <div className="bg-surface rounded-xl px-3.5 py-3.5 mb-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <h3 className="font-serif text-primary text-lg m-0">Snabbstart</h3>
@@ -187,7 +187,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
           type="button"
           onClick={() => onGenerateWeek(quickMeals)}
           disabled={!canGenerateWeek}
-          className={`block w-full py-3 border-0 rounded-xl text-white text-[15px] font-serif ${canGenerateWeek ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+          className={`block w-full py-3 border-0 rounded-xl text-[15px] font-serif ${canGenerateWeek ? 'bg-primary text-white cursor-pointer' : 'bg-surface-muted text-text-muted cursor-default'}`}
         >
           Generera vecka
         </button>
@@ -203,7 +203,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
             {favoriteWeeks.map(week => {
               const mealCount = WEEKDAYS.filter(day => week.meals?.[day]).length
               return (
-                <div key={week.id} className="bg-white rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+                <div key={week.id} className="bg-surface rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
                   <div className="flex items-center gap-2.5">
                     <button
                       type="button"
@@ -251,7 +251,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
         const portionsCustomized = mealPortions[day] != null && mealPortions[day] !== householdSize
 
         return (
-          <div key={day} className="bg-white rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
+          <div key={day} className="bg-surface rounded-xl px-3.5 py-3 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
             {/* Rad 1: dag-label + input + mikrofon */}
             <div className="flex items-center gap-2">
               <span className="w-18 shrink-0 font-bold text-primary text-sm">{dayLabel}</span>
@@ -264,7 +264,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   placeholder={listeningDay === day ? 'Lyssnar...' : 'Välj rätt...'}
                 />
                 {isOpen && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                  <div className="absolute top-full left-0 right-0 bg-surface border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                     {autocomplete.results.map(name => (
                       <div key={name} className="px-3 py-2.5 cursor-pointer text-[15px] border-b border-bg" onMouseDown={() => selectAutocomplete(day, name)}>{name}</div>
                     ))}
@@ -304,16 +304,16 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                       <Copy size={12} /><span>Kopiera</span>
                     </button>
                     {isCopying && (
-                      <div className="absolute top-full left-0 mt-1.5 bg-white border border-border rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-30 p-2 min-w-35">
-                        <div className="text-[11px] text-[#aaa] mb-1.5 pl-1">Kopiera till:</div>
+                      <div className="absolute top-full left-0 mt-1.5 bg-surface border border-border rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-30 p-2 min-w-35">
+                        <div className="text-[11px] text-text-muted mb-1.5 pl-1">Kopiera till:</div>
                         {WEEKDAYS.filter(d => d !== day).map(d => (
                           <button
                             key={d}
                             onMouseDown={() => copyMealToDay(day, d)}
-                            className={`block w-full text-left px-2.5 py-1.5 border-0 rounded-md cursor-pointer text-sm text-[#333] ${meals[d] ? 'bg-[#fff8e1]' : 'bg-white'}`}
+                            className={`block w-full text-left px-2.5 py-1.5 border-0 rounded-md cursor-pointer text-sm text-text ${meals[d] ? 'bg-warning/10' : 'bg-surface'}`}
                           >
                             {d.charAt(0).toUpperCase() + d.slice(1)}
-                            {meals[d] && <span className="text-[11px] text-[#aaa] ml-1.5">({meals[d].slice(0, 12)}{meals[d].length > 12 ? '…' : ''})</span>}
+                            {meals[d] && <span className="text-[11px] text-text-muted ml-1.5">({meals[d].slice(0, 12)}{meals[d].length > 12 ? '…' : ''})</span>}
                           </button>
                         ))}
                       </div>
@@ -401,7 +401,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   )}
                 </div>
                 {recipe && (
-                  <div className="text-xs text-[#aaa] flex flex-wrap gap-1">
+                  <div className="text-xs text-text-muted flex flex-wrap gap-1">
                     {(recipe.ingredients || []).slice(0, 4).map((ing, i) => (
                       <span key={i} className="bg-bg rounded px-1.5 py-px">{ing.name}</span>
                     ))}
@@ -421,8 +421,8 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
             {mealRotationSuggestions.map(({ mealName, weeksAgo }) => (
               <div key={mealName} className="flex items-center justify-between gap-3">
                 <div>
-                  <span className="text-sm text-[#222] font-medium">{mealName}</span>
-                  <span className="text-xs text-[#aaa] ml-2">{weeksAgo} veckor sedan</span>
+                  <span className="text-sm text-text font-medium">{mealName}</span>
+                  <span className="text-xs text-text-muted ml-2">{weeksAgo} veckor sedan</span>
                 </div>
                 <button
                   onClick={() => {
@@ -449,7 +449,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
       <button
         onClick={onSaveMealPlan}
         disabled={!hasMeal}
-        className={`block w-full py-3 mt-2 border-0 rounded-xl text-white text-[15px] font-serif ${hasMeal ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+        className={`block w-full py-3 mt-2 border-0 rounded-xl text-[15px] font-serif ${hasMeal ? 'bg-primary text-white cursor-pointer' : 'bg-surface-muted text-text-muted cursor-default'}`}
       >
         <span className="inline-flex items-center gap-1.5"><Save size={16} /> Spara matsedeln ({getWeekLabel(currentWeek)})</span>
       </button>
@@ -460,12 +460,12 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
             <button
               type="button"
               onClick={() => setShowFavoriteWeekForm(true)}
-              className="w-full py-2.5 bg-white border border-border rounded-xl text-primary text-sm cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 bg-surface border border-border rounded-xl text-primary text-sm cursor-pointer flex items-center justify-center gap-1.5"
             >
               <Star size={14} /> Spara som favoritvecka
             </button>
           ) : (
-            <div className="bg-white border border-border rounded-xl p-3">
+            <div className="bg-surface border border-border rounded-xl p-3">
               <label className="block text-xs text-secondary mb-1">Namn på favoritveckan</label>
               <div className="flex gap-2">
                 <input
@@ -479,7 +479,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   type="button"
                   onClick={handleSaveFavoriteWeek}
                   disabled={!favoriteWeekName.trim()}
-                  className={`px-3 py-2 border-0 rounded-lg text-sm text-white ${favoriteWeekName.trim() ? 'bg-primary cursor-pointer' : 'bg-[#e0e0e0] cursor-default'}`}
+                  className={`px-3 py-2 border-0 rounded-lg text-sm ${favoriteWeekName.trim() ? 'bg-primary text-white cursor-pointer' : 'bg-surface-muted text-text-muted cursor-default'}`}
                 >
                   Spara
                 </button>
@@ -502,7 +502,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
             if (confirmClear) { onClearMeals(); setConfirmClear(false) }
             else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000) }
           }}
-          className={`w-full py-2.5 mt-1.5 rounded-xl text-sm cursor-pointer border flex items-center justify-center gap-1.5 ${confirmClear ? 'bg-[#fff3e0] border-warning text-warning' : 'bg-transparent border-border text-secondary'}`}
+          className={`w-full py-2.5 mt-1.5 rounded-xl text-sm cursor-pointer border flex items-center justify-center gap-1.5 ${confirmClear ? 'bg-warning/10 border-warning text-warning' : 'bg-transparent border-border text-secondary'}`}
         >
           {confirmClear ? <><TriangleAlert size={14} /> Tryck igen för att rensa hela veckan</> : <><Trash2 size={14} /> Rensa matsedeln</>}
         </button>
@@ -518,7 +518,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
               <div key={week} className="rounded-xl border border-border mb-2 overflow-hidden">
                 <button
                   onClick={() => setOpenMealKey(isOpen ? null : week)}
-                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                  className={`w-full px-3.5 py-3 border-0 cursor-pointer flex justify-between items-center text-left ${isOpen ? 'bg-bg-subtle' : 'bg-surface'}`}
                 >
                   <span className="font-bold text-primary text-[15px]">{getWeekLabel(week)}</span>
                   <div className="flex gap-2.5 items-center">
@@ -530,8 +530,8 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   <div className="px-3.5 pt-1 pb-3.5 bg-bg-card">
                     {WEEKDAYS.filter(d => data.meals?.[d]).map(d => (
                       <div key={d} className="flex gap-3 py-1.5 border-b border-bg text-sm">
-                        <span className="min-w-18 text-[#888] capitalize">{d}</span>
-                        <span className="text-[#222]">{data.meals[d]}</span>
+                        <span className="min-w-18 text-text-muted capitalize">{d}</span>
+                        <span className="text-text">{data.meals[d]}</span>
                       </div>
                     ))}
                     <button
@@ -562,7 +562,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
           return (
             <div key={recipe.id || recipe.name} className="rounded-xl border border-border mb-2 overflow-hidden">
               <div
-                className={`flex items-center px-3.5 py-3 gap-2.5 cursor-pointer ${isOpen ? 'bg-bg-subtle' : 'bg-white'}`}
+                className={`flex items-center px-3.5 py-3 gap-2.5 cursor-pointer ${isOpen ? 'bg-bg-subtle' : 'bg-surface'}`}
                 onClick={() => setOpenRecipeId(isOpen ? null : (recipe.id || recipe.name))}
               >
                 {recipe.imageUrl && (
@@ -574,12 +574,12 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                   />
                 )}
                 <span className="flex-1 font-bold text-primary text-[15px]">{recipe.name}</span>
-                <span className="text-xs text-[#aaa]">{recipe.ingredients?.length || 0} ingredienser</span>
+                <span className="text-xs text-text-muted">{recipe.ingredients?.length || 0} ingredienser</span>
                 <button
                   aria-label={isFavorite ? `Ta bort ${recipe.name} från favoriter` : `Lägg ${recipe.name} som favorit`}
                   title={isFavorite ? 'Ta bort favorit' : 'Lägg till favorit'}
                   onClick={e => { e.stopPropagation(); onToggleFavoriteRecipe(recipe.id) }}
-                  className={`bg-transparent border-0 cursor-pointer px-1 py-0 leading-none flex items-center ${isFavorite ? 'text-[#d89100]' : 'text-[#c8c0b5]'}`}
+                  className={`bg-transparent border-0 cursor-pointer px-1 py-0 leading-none flex items-center ${isFavorite ? 'text-[#d89100]' : 'text-text-muted'}`}
                 ><Star size={16} fill={isFavorite ? 'currentColor' : 'none'} /></button>
                 <button
                   aria-label={`Redigera recept ${recipe.name}`}
@@ -592,7 +592,7 @@ export default function MatsedelTab({ onEditRecipe, onLoadFavoriteWeek, onGenera
                 <div className="px-3.5 pt-2 pb-3.5 bg-bg-card">
                   <div className="flex flex-wrap gap-1.5">
                     {(recipe.ingredients || []).map((ing, i) => (
-                      <span key={i} className="text-sm bg-white border border-border rounded-md px-2 py-0.5 text-[#444]">
+                      <span key={i} className="text-sm bg-surface border border-border rounded-md px-2 py-0.5 text-text">
                         {ing.amount ? `${ing.amount} ` : ''}{ing.name}
                       </span>
                     ))}

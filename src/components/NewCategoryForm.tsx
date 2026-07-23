@@ -34,7 +34,7 @@ export default function NewCategoryForm({ onAdd }: Props) {
             key={emoji}
             onClick={() => setSelectedEmoji(emoji)}
             title={emoji}
-            className={`w-9 h-9 border-2 rounded-lg text-xl cursor-pointer flex items-center justify-center transition-colors ${selectedEmoji === emoji ? 'border-primary bg-bg-subtle' : 'border-transparent bg-white'}`}
+            className={`w-9 h-9 border-2 rounded-lg text-xl cursor-pointer flex items-center justify-center transition-colors ${selectedEmoji === emoji ? 'border-primary bg-bg-subtle' : 'border-transparent bg-surface'}`}
           >{emoji}</button>
         ))}
       </div>

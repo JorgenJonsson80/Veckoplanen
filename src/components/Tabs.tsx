@@ -16,7 +16,7 @@ interface TabsProps {
 
 export default function Tabs({ activeTab, onChange }: TabsProps) {
   return (
-    <nav className="flex bg-white border-b-2 border-bg-subtle sticky top-14 z-9">
+    <nav className="flex bg-surface border-b-2 border-bg-subtle sticky top-14 z-9">
       {TABS.map(({ key, label, icon: Icon }) => (
         <button
           key={key}
