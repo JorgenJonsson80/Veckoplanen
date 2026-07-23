@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { DoorOpen, TriangleAlert, CircleCheck } from 'lucide-react'
 import RoomSetup from './components/RoomSetup'
 import AuthScreen from './components/AuthScreen'
 import ResetPasswordScreen from './components/ResetPasswordScreen'
@@ -100,7 +101,7 @@ export default function App() {
   if (app.roomNotFound) return (
     <div className="min-h-screen bg-bg max-w-150 mx-auto flex items-center justify-center">
       <div className="text-center px-6 py-8 max-w-85">
-        <div className="text-5xl mb-4">🚪</div>
+        <div className="flex justify-center mb-4 text-secondary"><DoorOpen size={44} /></div>
         <h2 className="font-serif text-primary mb-2">Rummet hittades inte</h2>
         <p className="text-secondary mb-6">Rummet <strong>{app.session.roomCode}</strong> verkar inte längre finnas.</p>
         <button className="px-6 py-3 bg-primary text-white border-0 rounded-xl text-base cursor-pointer font-serif" onClick={app.clearRoomNotFound}>
@@ -130,13 +131,13 @@ export default function App() {
 
       {(app.error || app.syncError) && (
         <div className="bg-[#fff3e0] border-b border-[#ffcc02] px-4 py-2 text-sm text-warning flex items-center gap-2">
-          <span className="flex-1">⚠️ {app.syncError || app.error || 'Kunde inte synka med servern – ändringar sparas lokalt.'}</span>
+          <span className="flex-1 flex items-center gap-1.5"><TriangleAlert size={14} className="shrink-0" /> {app.syncError || app.error || 'Kunde inte synka med servern – ändringar sparas lokalt.'}</span>
           <button onClick={app.clearSyncError} className="bg-transparent border-0 text-warning cursor-pointer text-base px-1 leading-none" title="Stäng">×</button>
         </div>
       )}
       {app.appError && (
         <div className="bg-[#fff3e0] border-b border-[#ffcc02] px-4 py-2 text-sm text-warning flex items-center gap-2">
-          <span className="flex-1">⚠️ {app.appError}</span>
+          <span className="flex-1 flex items-center gap-1.5"><TriangleAlert size={14} className="shrink-0" /> {app.appError}</span>
           <button onClick={app.clearAppError} className="bg-transparent border-0 text-warning cursor-pointer text-base px-1 leading-none" title="Stäng">×</button>
         </div>
       )}
@@ -189,7 +190,7 @@ export default function App() {
 
       {generatedToast && (
         <div className="fixed top-14 left-0 right-0 z-50 bg-primary text-white px-4 py-3.5 text-[15px] font-semibold shadow-lg flex items-center justify-between gap-3">
-          <span>✅ {generatedToast}</span>
+          <span className="flex items-center gap-1.5"><CircleCheck size={16} className="shrink-0" /> {generatedToast}</span>
           <button onClick={() => setGeneratedToast(null)} className="bg-transparent border-0 text-white/70 cursor-pointer text-xl leading-none p-0 shrink-0">×</button>
         </div>
       )}

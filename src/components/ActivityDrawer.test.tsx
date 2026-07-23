@@ -11,7 +11,7 @@ const entries: ActivityLogEntry[] = [
 describe('ActivityDrawer', () => {
   it('renders heading', () => {
     render(<ActivityDrawer log={[]} onClose={vi.fn()} />)
-    expect(screen.getByText('📋 Aktivitet')).toBeTruthy()
+    expect(screen.getByText('Aktivitet')).toBeTruthy()
   })
 
   it('shows empty state when log is empty', () => {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link, Minus, Plus, X, TriangleAlert, Trash2 } from 'lucide-react'
 import type { Ingredient, Category, RecipeDraft } from '../types'
 
 interface IngredientWithId extends Ingredient {
@@ -100,7 +101,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
 
         {/* URL-import */}
         <div className="mb-4 bg-bg rounded-xl p-3 border border-border">
-          <p className="text-xs font-semibold text-secondary mb-2">🔗 Importera från webbadress</p>
+          <p className="text-xs font-semibold text-secondary mb-2 flex items-center gap-1.5"><Link size={14} /> Importera från webbadress</p>
           <div className="flex gap-2">
             <input
               ref={importInputRef}
@@ -134,9 +135,9 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
 
         <label className="text-sm text-[#555] block mb-1">Portioner (receptet räcker till)</label>
         <div className="flex items-center gap-3 mb-4">
-          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer flex-none" onClick={() => setPortions(p => Math.max(1, p - 1))}>−</button>
+          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary cursor-pointer flex-none flex items-center justify-center" onClick={() => setPortions(p => Math.max(1, p - 1))}><Minus size={16} /></button>
           <span className="text-base font-semibold text-primary w-8 text-center">{portions}</span>
-          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary text-lg cursor-pointer flex-none" onClick={() => setPortions(p => Math.min(20, p + 1))}>+</button>
+          <button type="button" className="w-8 h-8 bg-bg border border-border rounded-lg text-primary cursor-pointer flex-none flex items-center justify-center" onClick={() => setPortions(p => Math.min(20, p + 1))}><Plus size={16} /></button>
           <span className="text-sm text-secondary">pers — mängderna skalas automatiskt</span>
         </div>
 
@@ -172,7 +173,7 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
             <select className="px-1 py-1.5 border border-border rounded-lg text-sm font-[inherit] w-full bg-white" value={ing.category} onChange={e => updateIngredient(idx, 'category', e.target.value)}>
               {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>)}
             </select>
-            <button aria-label="Ta bort ingrediens" className="bg-transparent border-0 text-error text-lg cursor-pointer p-0 leading-none" onClick={() => removeIngredient(idx)}>×</button>
+            <button aria-label="Ta bort ingrediens" className="bg-transparent border-0 text-error cursor-pointer p-0 leading-none flex items-center justify-center" onClick={() => removeIngredient(idx)}><X size={16} /></button>
           </div>
         ))}
 
@@ -191,9 +192,9 @@ export default function RecipeEditor({ recipe, categories, onSave, onDelete, onC
               onDelete(recipe.id!)
               onClose()
             }}
-            className={`w-full mt-2 py-2.5 border-0 rounded-xl text-sm cursor-pointer transition-colors duration-150 ${confirmDelete ? 'bg-error text-white' : 'bg-transparent text-error'}`}
+            className={`w-full mt-2 py-2.5 border-0 rounded-xl text-sm cursor-pointer transition-colors duration-150 flex items-center justify-center gap-1.5 ${confirmDelete ? 'bg-error text-white' : 'bg-transparent text-error'}`}
           >
-            {confirmDelete ? '⚠️ Tryck igen för att radera receptet' : '🗑 Radera recept'}
+            {confirmDelete ? <><TriangleAlert size={14} /> Tryck igen för att radera receptet</> : <><Trash2 size={14} /> Radera recept</>}
           </button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { ArrowRight, ArrowLeft, User, Users, Check, Copy } from 'lucide-react'
 import { generateRoomCode, isValidRoomCode, normalizeRoomCode, ROOM_CODE_LENGTH } from '../utils/roomCode'
 import type { Session } from '../types'
 
@@ -67,9 +68,9 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
   }
 
   const inputCls = 'w-full px-3 py-3 border-2 border-border rounded-xl text-base mb-1 box-border font-[inherit]'
-  const primaryBtn = 'w-full py-3.5 bg-primary text-white border-0 rounded-xl text-[17px] font-semibold cursor-pointer font-serif mt-3'
+  const primaryBtn = 'w-full py-3.5 bg-primary text-white border-0 rounded-xl text-[17px] font-semibold cursor-pointer font-serif mt-3 flex items-center justify-center gap-1.5'
   const choiceBtn = 'flex flex-col gap-1 w-full px-4 py-4 mb-3 border-2 border-primary rounded-xl text-left cursor-pointer bg-white text-primary font-[inherit]'
-  const backLink = 'bg-transparent border-0 text-secondary text-sm cursor-pointer underline mt-4 block text-center'
+  const backLink = 'bg-transparent border-0 text-secondary text-sm cursor-pointer underline mt-4 flex items-center justify-center gap-1 w-full'
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
@@ -89,7 +90,7 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
               onKeyDown={e => e.key === 'Enter' && handleNameNext()}
             />
             {err && <p className="text-error text-sm mt-1 mb-0">{err}</p>}
-            <button className={primaryBtn} onClick={handleNameNext}>Nästa →</button>
+            <button className={primaryBtn} onClick={handleNameNext}>Nästa <ArrowRight size={16} /></button>
           </>
         )}
 
@@ -98,14 +99,14 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
             <h2 className="font-serif text-primary text-[22px] mb-2">Hej {name}!</h2>
             <p className="text-secondary text-[15px] mb-5">Hur vill du använda appen?</p>
             <button className={choiceBtn} onClick={handleSolo}>
-              <span className="text-[17px] font-semibold">👤 Bara jag</span>
+              <span className="text-[17px] font-semibold flex items-center gap-2"><User size={18} /> Bara jag</span>
               <span className="text-sm text-secondary">Jag planerar ensam, ingen delning.</span>
             </button>
             <button className={choiceBtn} onClick={() => setStep('family-create')}>
-              <span className="text-[17px] font-semibold">👨‍👩‍👧 Med familjen</span>
+              <span className="text-[17px] font-semibold flex items-center gap-2"><Users size={18} /> Med familjen</span>
               <span className="text-sm text-secondary">Planera och handla ihop med partner eller barn.</span>
             </button>
-            <button className={backLink} onClick={() => setStep('name')}>← Tillbaka</button>
+            <button className={backLink} onClick={() => setStep('name')}><ArrowLeft size={14} /> Tillbaka</button>
           </>
         )}
 
@@ -120,18 +121,18 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
             ) : (
               <div className="bg-bg border-2 border-dashed border-secondary rounded-xl p-4 text-center mb-2">
                 <div className="font-mono text-[32px] font-bold text-primary tracking-[6px]">{generatedCode}</div>
-                <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-2 underline" onClick={copyCode}>
-                  {copied ? '✅ Kopierad!' : '📋 Kopiera koden'}
+                <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-2 underline inline-flex items-center gap-1" onClick={copyCode}>
+                  {copied ? <><Check size={14} /> Kopierad!</> : <><Copy size={14} /> Kopiera koden</>}
                 </button>
               </div>
             )}
             <button className={primaryBtn} onClick={handleFamilyCreate} disabled={codeChecking}>
-              Klar, starta →
+              Klar, starta <ArrowRight size={16} />
             </button>
             <button className={backLink} onClick={() => { setStep('family-join'); setErr('') }}>
               Har du redan fått en kod? Skriv in den här
             </button>
-            <button className={backLink} onClick={() => setStep('how')}>← Tillbaka</button>
+            <button className={backLink} onClick={() => setStep('how')}><ArrowLeft size={14} /> Tillbaka</button>
           </>
         )}
 
@@ -149,8 +150,8 @@ export default function FirstRunSetup({ onStart, initialJoinCode }: Props) {
               onKeyDown={e => e.key === 'Enter' && handleFamilyJoin()}
             />
             {err && <p className="text-error text-sm mt-1 mb-0">{err}</p>}
-            <button className={primaryBtn} onClick={handleFamilyJoin}>Gå med →</button>
-            <button className={backLink} onClick={() => { setStep('family-create'); setErr('') }}>← Tillbaka</button>
+            <button className={primaryBtn} onClick={handleFamilyJoin}>Gå med <ArrowRight size={16} /></button>
+            <button className={backLink} onClick={() => { setStep('family-create'); setErr('') }}><ArrowLeft size={14} /> Tillbaka</button>
           </>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { AuthError } from '@supabase/supabase-js'
+import { UtensilsCrossed, ShoppingCart, Users, Mail, ArrowLeft } from 'lucide-react'
 
 interface Props {
   onSignInWithPassword: (email: string, password: string) => Promise<{ error: AuthError | null }>
@@ -10,9 +11,9 @@ interface Props {
 }
 
 const featureCards = [
-  ['🍽', 'Välj veckans middagar', 'Fyll i rätterna dag för dag. Har du recept sparade fylls handlingslistan på automatiskt — men du kan också skriva in varor direkt.'],
-  ['🛒', 'Handla utan stress', 'Alla ingredienser samlas i en lista sorterad efter dina butikshyllor. Bocka av medan du handlar.'],
-  ['👨‍👩‍👧', 'Dela med familjen', 'Skapa ett familjerum och dela en länk — alla ser och redigerar samma lista i realtid.'],
+  [UtensilsCrossed, 'Välj veckans middagar', 'Fyll i rätterna dag för dag. Har du recept sparade fylls handlingslistan på automatiskt — men du kan också skriva in varor direkt.'],
+  [ShoppingCart, 'Handla utan stress', 'Alla ingredienser samlas i en lista sorterad efter dina butikshyllor. Bocka av medan du handlar.'],
+  [Users, 'Dela med familjen', 'Skapa ett familjerum och dela en länk — alla ser och redigerar samma lista i realtid.'],
 ] as const
 
 export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWithMagicLink, onResetPassword, onSignInWithGoogle }: Props) {
@@ -76,7 +77,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
     <div className="min-h-screen bg-bg flex flex-col items-center justify-start px-6 pt-8 pb-12">
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         <h1 className="font-serif text-primary text-3xl text-center mb-6">Veckoplanen</h1>
-        <div className="text-5xl text-center mb-3">📬</div>
+        <div className="flex justify-center mb-3 text-primary"><Mail size={44} /></div>
         <p className="text-[#444] text-center leading-relaxed text-base">Kontot skapat! Kolla din inkorg och klicka på bekräftelselänken, sedan kan du logga in.</p>
         <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-5 block w-full text-center underline" onClick={() => { setTab('login'); reset() }}>Tillbaka till inloggning</button>
       </div>
@@ -87,7 +88,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
     <div className="min-h-screen bg-bg flex flex-col items-center justify-start px-6 pt-8 pb-12">
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         <h1 className="font-serif text-primary text-3xl text-center mb-6">Veckoplanen</h1>
-        <div className="text-5xl text-center mb-3">📬</div>
+        <div className="flex justify-center mb-3 text-primary"><Mail size={44} /></div>
         <p className="text-[#444] text-center leading-relaxed text-base">Kolla din inkorg! Vi skickade en inloggningslänk till <strong>{email}</strong>.</p>
         <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-5 block w-full text-center underline" onClick={() => { setTab('login'); reset() }}>Försök med annan adress</button>
       </div>
@@ -103,9 +104,9 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
           Planera veckans middagar och få en smart handlingslista — ensam eller tillsammans med familjen.
         </p>
         <div className="flex flex-col gap-3 text-left">
-          {featureCards.map(([icon, title, desc]) => (
+          {featureCards.map(([Icon, title, desc]) => (
             <div key={title} className="flex gap-3 bg-white rounded-xl p-3.5 shadow-[0_2px_8px_rgba(45,80,22,0.07)]">
-              <span className="text-2xl leading-none shrink-0 mt-0.5">{icon}</span>
+              <span className="text-primary shrink-0 mt-0.5"><Icon size={22} /></span>
               <div>
                 <strong className="text-primary text-sm block mb-0.5">{title}</strong>
                 <span className="text-[#666] text-sm leading-snug">{desc}</span>
@@ -154,7 +155,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             <input className={inputCls} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
             {err && <p className="text-error text-sm mb-2.5">{err}</p>}
             <button className={primaryBtnCls} onClick={handleLogin} disabled={loading}>{loading ? 'Loggar in...' : 'Logga in'}</button>
-            <button className={secondaryBtnCls} onClick={() => { setTab('magic'); reset() }}>📬 Skicka magic link istället</button>
+            <button className={secondaryBtnCls} onClick={() => { setTab('magic'); reset() }}><Mail size={14} className="inline mr-1.5 align-[-2px]" />Skicka magic link istället</button>
             <button className="w-full py-2.5 bg-transparent border-0 text-[#aaa] text-sm cursor-pointer mt-1" onClick={() => { setTab('forgot'); reset() }}>Glömt lösenord?</button>
           </>
         )}
@@ -178,7 +179,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             <input className={inputCls} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="din@epost.se" autoFocus onKeyDown={e => e.key === 'Enter' && handleForgotPassword()} />
             {err && <p className="text-error text-sm mb-2.5">{err}</p>}
             <button className={primaryBtnCls} onClick={handleForgotPassword} disabled={loading}>{loading ? 'Skickar...' : 'Skicka återställningslänk'}</button>
-            <button className={secondaryBtnCls} onClick={() => { setTab('login'); reset() }}>← Tillbaka till inloggning</button>
+            <button className={secondaryBtnCls} onClick={() => { setTab('login'); reset() }}><ArrowLeft size={14} className="inline mr-1.5 align-[-2px]" />Tillbaka till inloggning</button>
           </>
         )}
 
@@ -189,7 +190,7 @@ export default function AuthScreen({ onSignInWithPassword, onSignUp, onSignInWit
             <input className={inputCls} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="din@epost.se" autoFocus onKeyDown={e => e.key === 'Enter' && handleMagicLink()} />
             {err && <p className="text-error text-sm mb-2.5">{err}</p>}
             <button className={primaryBtnCls} onClick={handleMagicLink} disabled={loading}>{loading ? 'Skickar...' : 'Skicka inloggningslänk'}</button>
-            <button className={secondaryBtnCls} onClick={() => { setTab('login'); reset() }}>← Tillbaka till lösenord</button>
+            <button className={secondaryBtnCls} onClick={() => { setTab('login'); reset() }}><ArrowLeft size={14} className="inline mr-1.5 align-[-2px]" />Tillbaka till lösenord</button>
           </>
         )}
       </div>

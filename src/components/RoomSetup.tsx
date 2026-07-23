@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { User, Home, Key, ArrowLeft, Pencil, Trash2, Copy, Check, X } from 'lucide-react'
 import { generateRoomCode, isValidRoomCode, normalizeRoomCode, ROOM_CODE_LENGTH } from '../utils/roomCode'
 import type { Session } from '../types'
 
@@ -30,9 +31,9 @@ async function findUniqueCode(): Promise<string> {
 }
 
 const MODE_OPTIONS = [
-  { key: 'solo', label: '👤 Eget (bara för mig)', desc: 'Ingen delning – perfekt om du planerar ensam.' },
-  { key: 'create', label: '🏠 Skapa familjerum', desc: 'Dela med partner eller familj via en rumskod.' },
-  { key: 'join', label: '🔑 Gå med i rum', desc: 'Du har fått en kod av en familjemedlem.' },
+  { key: 'solo', icon: User, label: 'Eget (bara för mig)', desc: 'Ingen delning – perfekt om du planerar ensam.' },
+  { key: 'create', icon: Home, label: 'Skapa familjerum', desc: 'Dela med partner eller familj via en rumskod.' },
+  { key: 'join', icon: Key, label: 'Gå med i rum', desc: 'Du har fått en kod av en familjemedlem.' },
 ] as const
 
 export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRooms = [], recentRoomsKey = null, userId }: Props) {
@@ -137,8 +138,8 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
         <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
           <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
-          <p className="text-secondary text-center mb-6 text-[15px]">
-            {isCreator ? '🏠' : '🔑'} Öppnar rummet{' '}
+          <p className="text-secondary text-center mb-6 text-[15px] flex items-center justify-center gap-1.5">
+            {isCreator ? <Home size={16} /> : <Key size={16} />} Öppnar rummet{' '}
             <span className="font-bold text-primary">{openingRoom.name || openingRoom.code}</span>
           </p>
           <label className={labelCls}>Ditt namn</label>
@@ -158,10 +159,10 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
             Öppna rum
           </button>
           <button
-            className="w-full py-2 bg-transparent border-0 text-secondary text-sm cursor-pointer underline"
+            className="w-full py-2 bg-transparent border-0 text-secondary text-sm cursor-pointer underline flex items-center justify-center gap-1"
             onClick={() => { setOpeningRoom(null); setErr('') }}
           >
-            ← Tillbaka
+            <ArrowLeft size={14} /> Tillbaka
           </button>
         </div>
       </div>
@@ -173,10 +174,10 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-[0_4px_20px_rgba(45,80,22,0.12)]">
         {onCancel && (
           <button
-            className="bg-transparent border-0 text-secondary text-sm cursor-pointer underline mb-4"
+            className="bg-transparent border-0 text-secondary text-sm cursor-pointer underline mb-4 flex items-center gap-1"
             onClick={onCancel}
           >
-            ← Tillbaka
+            <ArrowLeft size={14} /> Tillbaka
           </button>
         )}
         <h1 className="font-serif text-primary text-[28px] text-center mb-2">Veckoplanen</h1>
@@ -210,8 +211,8 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                       >Spara</button>
                       <button
                         onClick={() => setRenamingId(null)}
-                        className="shrink-0 w-9 h-9 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
-                      >×</button>
+                        className="shrink-0 w-9 h-9 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                      ><X size={16} /></button>
                     </div>
                   )
                 }
@@ -219,7 +220,7 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                 return (
                   <div key={room.id} className="flex items-center gap-1.5 mb-1.5">
                     <button className={roomRowCls} onClick={() => { setConfirmDeleteId(null); handleSelectRoom(room) }}>
-                      <span className="text-xl">{isOwner ? '🏠' : '🔑'}</span>
+                      <span className="text-primary">{isOwner ? <Home size={20} /> : <Key size={20} />}</span>
                       <span className="flex-1 min-w-0">
                         <span className="block text-primary font-semibold text-[15px] truncate">{room.name || room.code}</span>
                         {room.name && <span className="block font-mono text-secondary text-xs tracking-[0.5px]">{room.code}</span>}
@@ -228,9 +229,9 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                     </button>
                     <button
                       onClick={() => startRename(room)}
-                      className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-sm cursor-pointer flex items-center justify-center"
+                      className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
                       title="Namnge rum"
-                    >✏️</button>
+                    ><Pencil size={14} /></button>
                     {isOwner && (
                       isConfirming ? (
                         <>
@@ -240,15 +241,15 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                           >Radera</button>
                           <button
                             onClick={() => setConfirmDeleteId(null)}
-                            className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
-                          >×</button>
+                            className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
+                          ><X size={16} /></button>
                         </>
                       ) : (
                         <button
                           onClick={() => setConfirmDeleteId(room.id)}
-                          className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] text-base cursor-pointer flex items-center justify-center"
+                          className="shrink-0 w-8 h-8 bg-white border border-[#e0e0e0] rounded-lg text-[#aaa] cursor-pointer flex items-center justify-center"
                           title="Radera rum"
-                        >🗑</button>
+                        ><Trash2 size={14} /></button>
                       )
                     )}
                   </div>
@@ -260,13 +261,13 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
         )}
 
         <div className="mb-5">
-          {MODE_OPTIONS.map(({ key, label, desc }) => (
+          {MODE_OPTIONS.map(({ key, icon: Icon, label, desc }) => (
             <button
               key={key}
               onClick={() => { setMode(key); setErr(''); setConfirmDeleteId(null) }}
               className={`flex flex-col gap-0.5 w-full px-4 py-3.5 mb-2.5 border-2 border-primary rounded-xl text-base cursor-pointer text-left ${mode === key ? 'bg-primary text-white' : 'bg-white text-primary'}`}
             >
-              <span>{label}</span>
+              <span className="flex items-center gap-2"><Icon size={18} /> {label}</span>
               <span className={`text-xs font-normal ${mode === key ? 'opacity-80' : 'opacity-55'}`}>{desc}</span>
             </button>
           ))}
@@ -298,7 +299,9 @@ export default function RoomSetup({ onStart, onCancel, initialJoinCode, recentRo
                 ) : (
                   <div className="bg-bg border-2 border-dashed border-secondary rounded-xl p-3.5 text-center mb-4">
                     <div className="font-mono text-[28px] font-bold text-primary tracking-[4px]">{generatedCode}</div>
-                    <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-1.5 underline" onClick={copyCode}>{copied ? '✅ Kopierad!' : '📋 Kopiera koden'}</button>
+                    <button className="bg-transparent border-0 text-secondary text-sm cursor-pointer mt-1.5 underline inline-flex items-center gap-1" onClick={copyCode}>
+                      {copied ? <><Check size={14} /> Kopierad!</> : <><Copy size={14} /> Kopiera koden</>}
+                    </button>
                   </div>
                 )}
               </>

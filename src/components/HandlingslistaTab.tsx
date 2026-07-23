@@ -1,4 +1,9 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import {
+  ClipboardList, Pencil, Check, Share2, TriangleAlert, CircleCheck, Trash2,
+  Wallet, X, Lightbulb, BarChart3, UtensilsCrossed, ArrowUp, ArrowDown,
+  ShoppingCart, Package, ChevronUp, ChevronDown, Mic, PartyPopper,
+} from 'lucide-react'
 import { getWeekLabel } from '../utils/date'
 import { useAppContext } from '../context/AppContext'
 import { useVoiceDictation } from '../hooks/useVoiceDictation'
@@ -141,14 +146,14 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           className="fixed top-14 left-0 right-0 z-50 bg-primary text-white text-center py-3.5 text-base font-semibold shadow-lg"
           style={{ animation: 'celebrate-in 3.2s ease forwards' }}
         >
-          🎉 Klar med veckans handling!
+          <span className="inline-flex items-center gap-2"><PartyPopper size={18} /> Klar med veckans handling!</span>
         </div>
       )}
       <h2 className="font-serif text-primary text-[22px] mb-3">Handlingslista</h2>
 
       {/* Butiksväljare */}
       <div className="flex gap-2 overflow-x-auto mb-4 pb-0.5">
-        <button onClick={() => onSetActiveStore(null)} className={storeBtnCls(!activeStoreId)}>📋 Standard</button>
+        <button onClick={() => onSetActiveStore(null)} className={`${storeBtnCls(!activeStoreId)} flex items-center gap-1.5`}><ClipboardList size={14} /> Standard</button>
         {stores.map(store => (
           <button
             key={store.id}
@@ -158,7 +163,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           >
             {store.emoji} {store.name}
             {activeStoreId === store.id && (
-              <span onClick={e => { e.stopPropagation(); onEditStore(store) }} className="text-xs opacity-80">✏️</span>
+              <span onClick={e => { e.stopPropagation(); onEditStore(store) }} className="opacity-80 flex items-center"><Pencil size={12} /></span>
             )}
           </button>
         ))}
@@ -172,7 +177,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             <span>{checkedCount} av {totalItems} plockat</span>
             <div className="flex items-center gap-2.5">
               <span>{Math.round((checkedCount / totalItems) * 100)}%</span>
-              <button onClick={handleShare} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer">{copied ? '✅ Kopierad!' : '📤 Dela'}</button>
+              <button onClick={handleShare} className="bg-bg border border-border rounded-md px-2 py-0.5 text-xs text-primary cursor-pointer inline-flex items-center gap-1">{copied ? <><Check size={12} /> Kopierad!</> : <><Share2 size={12} /> Dela</>}</button>
             </div>
           </div>
           <div className="h-2 bg-border rounded-full overflow-hidden">
@@ -181,9 +186,13 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
           {checkedCount > 0 && (
             <button
               onClick={handleClearChecked}
-              className={`mt-2.5 w-full py-2.5 border-0 rounded-lg text-sm cursor-pointer transition-colors duration-200 ${confirmClear ? 'bg-error text-white' : checkedCount === totalItems ? 'bg-primary text-white' : 'bg-[#f5f5f5] text-[#888]'}`}
+              className={`mt-2.5 w-full py-2.5 border-0 rounded-lg text-sm cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1.5 ${confirmClear ? 'bg-error text-white' : checkedCount === totalItems ? 'bg-primary text-white' : 'bg-[#f5f5f5] text-[#888]'}`}
             >
-              {confirmClear ? '⚠️ Tryck igen för att bekräfta' : checkedCount === totalItems ? '✅ Klar med handlingen — rensa till ny vecka' : `🗑 Rensa ${checkedCount} ikryssade varor`}
+              {confirmClear
+                ? <><TriangleAlert size={14} /> Tryck igen för att bekräfta</>
+                : checkedCount === totalItems
+                  ? <><CircleCheck size={14} /> Klar med handlingen — rensa till ny vecka</>
+                  : <><Trash2 size={14} /> Rensa {checkedCount} ikryssade varor</>}
             </button>
           )}
         </div>
@@ -197,7 +206,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       )}
       {!showBudgetEdit && budget != null && (
         <div className="flex items-center gap-2.5 mb-3.5 bg-white rounded-xl px-3.5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <span className="text-base">💰</span>
+          <Wallet size={18} className="text-primary" />
           <div className="flex-1">
             {weeklySpend != null ? (
               <>
@@ -229,12 +238,12 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               <span className="text-sm text-secondary">Budget: {budget} kr — fyll i vad det kostade efter kassan</span>
             )}
           </div>
-          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} className="bg-transparent border-0 text-[#aaa] cursor-pointer text-sm p-1">✏️</button>
+          <button aria-label="Redigera budget" onClick={() => { setShowBudgetEdit(true); setBudgetInput(String(budget ?? '')); setSpendInput(String(weeklySpend ?? '')) }} className="bg-transparent border-0 text-[#aaa] cursor-pointer p-1 flex items-center"><Pencil size={14} /></button>
         </div>
       )}
       {showBudgetEdit && (
         <div className="bg-white rounded-xl p-3.5 mb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <p className="m-0 mb-2.5 font-bold text-primary text-sm">💰 Budget (valfritt)</p>
+          <p className="m-0 mb-2.5 font-bold text-primary text-sm flex items-center gap-1.5"><Wallet size={14} /> Budget (valfritt)</p>
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
               <label className="text-xs text-[#888] block mb-0.5">Budgetmål (kr)</label>
@@ -267,8 +276,8 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                   <span className={`flex-1 text-[15px] ${checked ? 'line-through text-[#aaa]' : 'text-[#222]'}`}>{item.name}</span>
                   {item.amount && <span className="text-xs text-[#888]">{item.amount}</span>}
                   {item.isExtra
-                    ? <button aria-label="Ta bort vara" className="bg-transparent border-0 text-error cursor-pointer text-base p-0 leading-none" onClick={() => onRemoveExtraItem(item.id!)}>×</button>
-                    : <button aria-label="Dölj — har hemma" className="bg-transparent border-0 text-[#ccc] cursor-pointer text-base p-0 leading-none" title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}>×</button>
+                    ? <button aria-label="Ta bort vara" className="bg-transparent border-0 text-error cursor-pointer p-0 leading-none flex items-center" onClick={() => onRemoveExtraItem(item.id!)}><X size={16} /></button>
+                    : <button aria-label="Dölj — har hemma" className="bg-transparent border-0 text-[#ccc] cursor-pointer p-0 leading-none flex items-center" title="Har hemma — dölj från listan" onClick={() => onHideIngredient(item.name)}><X size={16} /></button>
                   }
                 </div>
               )
@@ -294,14 +303,14 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
 
       {likelyEmptyItems.length > 0 && (
         <div className="mt-2 bg-[#fff8e1] rounded-xl px-3.5 py-3 border border-[#ffe082]">
-          <h3 className="text-sm font-bold text-[#f57f17] mb-2">⚠️ Borde vara slut hemma</h3>
+          <h3 className="text-sm font-bold text-[#f57f17] mb-2 flex items-center gap-1.5"><TriangleAlert size={14} /> Borde vara slut hemma</h3>
           {likelyEmptyItems.map((item, idx) => <div key={idx} className="text-sm text-[#555] py-0.5">• {item.name}</div>)}
         </div>
       )}
 
       {suggestedRebuys.length > 0 && (
         <div className="mt-3 bg-bg-subtle rounded-xl px-3.5 py-3 border border-border">
-          <h3 className="text-sm font-bold text-primary mb-2.5">💡 Dags att köpa igen?</h3>
+          <h3 className="text-sm font-bold text-primary mb-2.5 flex items-center gap-1.5"><Lightbulb size={14} /> Dags att köpa igen?</h3>
           <div className="flex flex-col gap-2">
             {suggestedRebuys.map(item => (
               <div key={item.name} className="flex items-center justify-between gap-3">
@@ -329,16 +338,16 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
 
       {(monthlySummary.ateOutCount > 0 || monthlySummary.impulseCount > 0) && (
         <div className="mt-3 bg-white rounded-xl px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.07)]">
-          <h3 className="text-sm font-bold text-primary mb-2">📊 Den här månaden</h3>
+          <h3 className="text-sm font-bold text-primary mb-2 flex items-center gap-1.5"><BarChart3 size={14} /> Den här månaden</h3>
           <div className="flex flex-col gap-1.5 text-sm text-[#444]">
             {monthlySummary.ateOutCount > 0 && (
               <div className="flex justify-between items-center">
-                <span>🍕 Åt ute</span>
+                <span className="flex items-center gap-1.5"><UtensilsCrossed size={14} /> Åt ute</span>
                 <span className="font-bold">
                   {monthlySummary.ateOutCount}×{monthlySummary.ateOutSpend > 0 ? ` (${monthlySummary.ateOutSpend} kr)` : ''}
                   {monthlySummary.prev.ateOutCount > 0 && (
-                    <span className={`ml-2 text-xs font-normal ${monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? 'text-error' : 'text-primary'}`}>
-                      {monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? '▲' : '▼'} vs förra månaden
+                    <span className={`ml-2 text-xs font-normal inline-flex items-center gap-0.5 ${monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? 'text-error' : 'text-primary'}`}>
+                      {monthlySummary.ateOutCount > monthlySummary.prev.ateOutCount ? <ArrowUp size={11} /> : <ArrowDown size={11} />} vs förra månaden
                     </span>
                   )}
                 </span>
@@ -346,12 +355,12 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
             )}
             {monthlySummary.impulseCount > 0 && (
               <div className="flex justify-between items-center">
-                <span>🛒 Spontanköp</span>
+                <span className="flex items-center gap-1.5"><ShoppingCart size={14} /> Spontanköp</span>
                 <span className="font-bold">
                   {monthlySummary.impulseCount} varor
                   {monthlySummary.prev.impulseCount > 0 && (
-                    <span className={`ml-2 text-xs font-normal ${monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? 'text-error' : 'text-primary'}`}>
-                      {monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? '▲' : '▼'} vs förra månaden
+                    <span className={`ml-2 text-xs font-normal inline-flex items-center gap-0.5 ${monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? 'text-error' : 'text-primary'}`}>
+                      {monthlySummary.impulseCount > monthlySummary.prev.impulseCount ? <ArrowUp size={11} /> : <ArrowDown size={11} />} vs förra månaden
                     </span>
                   )}
                 </span>
@@ -374,7 +383,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               placeholder="Varunamn"
               onKeyDown={e => e.key === 'Enter' && handleAddExtraItem()}
             />
-            {isDuplicate && <p className="m-0 mt-1 text-xs text-[#f57f17]">⚠️ Finns redan i listan</p>}
+            {isDuplicate && <p className="m-0 mt-1 text-xs text-[#f57f17] flex items-center gap-1"><TriangleAlert size={12} /> Finns redan i listan</p>}
             {extraSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-white border border-border rounded-b-lg z-20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                 {extraSuggestions.map(name => (
@@ -404,7 +413,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
       {/* Arkiverade handlingslistor */}
       {Object.keys(savedLists).length > 0 && (
         <div className="mt-6 border-t border-bg-subtle pt-5">
-          <h3 className="font-serif text-primary text-lg mb-3">📦 Arkiverade listor</h3>
+          <h3 className="font-serif text-primary text-lg mb-3 flex items-center gap-1.5"><Package size={18} /> Arkiverade listor</h3>
           {Object.entries(savedLists).sort(([a], [b]) => b.localeCompare(a)).map(([week, data]) => {
             const isOpen = openListKey === week
             return (
@@ -416,7 +425,7 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
                   <span className="font-bold text-primary text-[15px]">{getWeekLabel(week)}</span>
                   <div className="flex gap-2.5 items-center">
                     <span className="text-sm text-secondary">{data.items?.length || 0} varor</span>
-                    <span className="text-secondary">{isOpen ? '▲' : '▼'}</span>
+                    <span className="text-secondary">{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
                   </div>
                 </button>
                 {isOpen && (
@@ -479,13 +488,13 @@ export default function HandlingslistaTab({ onEditStore, onNewStore }: Props) {
               <button
                 onClick={toggleVoice}
                 aria-label={isListening ? 'Stoppa röstinmatning' : 'Starta röstinmatning'}
-                className={`shrink-0 py-2.5 border-0 rounded-xl transition-colors duration-150 font-semibold ${
+                className={`shrink-0 py-2.5 border-0 rounded-xl transition-colors duration-150 font-semibold flex items-center gap-1.5 ${
                   isListening
                     ? 'px-3 bg-error text-white cursor-pointer text-sm'
-                    : 'px-3 bg-bg border border-border cursor-pointer text-[18px] text-primary'
+                    : 'px-3 bg-bg border border-border cursor-pointer text-primary'
                 }`}
               >
-                {isListening ? '✕ Avbryta' : '🎤'}
+                {isListening ? <><X size={14} /> Avbryta</> : <Mic size={18} />}
               </button>
             )}
             <button

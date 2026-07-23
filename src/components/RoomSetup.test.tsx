@@ -8,7 +8,7 @@ describe('RoomSetup', () => {
     const onStart = vi.fn()
     render(<RoomSetup onStart={onStart} initialJoinCode={null} />)
 
-    await userEvent.click(screen.getByText('🔑 Gå med i rum'))
+    await userEvent.click(screen.getByText('Gå med i rum'))
     await userEvent.type(screen.getByPlaceholderText('t.ex. Erik'), 'Anna')
     await userEvent.type(screen.getByPlaceholderText('t.ex. ABCD2345'), 'abcd2345')
     await userEvent.click(screen.getByText('Gå med'))
@@ -20,7 +20,7 @@ describe('RoomSetup', () => {
     const onStart = vi.fn()
     render(<RoomSetup onStart={onStart} initialJoinCode={null} />)
 
-    await userEvent.click(screen.getByText('🔑 Gå med i rum'))
+    await userEvent.click(screen.getByText('Gå med i rum'))
     await userEvent.type(screen.getByPlaceholderText('t.ex. Erik'), 'Anna')
     await userEvent.type(screen.getByPlaceholderText('t.ex. ABCD2345'), 'ABCI2345')
     await userEvent.click(screen.getByText('Gå med'))

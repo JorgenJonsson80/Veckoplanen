@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { UtensilsCrossed, ShoppingCart, X } from 'lucide-react'
 import { useAppContext } from '../context/AppContext'
 import { WEEKDAYS } from '../hooks/useSharedState'
 
@@ -25,7 +26,7 @@ export default function YouthView({ onSwitchToFull }: Props) {
   return (
     <div className="p-4 pb-20">
       <section className="mb-8">
-        <h2 className="font-serif text-primary text-xl mb-3">🍕 Önska mat</h2>
+        <h2 className="font-serif text-primary text-xl mb-3 flex items-center gap-2"><UtensilsCrossed size={20} /> Önska mat</h2>
         <div className="bg-white rounded-2xl overflow-hidden border border-border">
           {WEEKDAYS.map((day, i) => (
             <div
@@ -45,7 +46,7 @@ export default function YouthView({ onSwitchToFull }: Props) {
       </section>
 
       <section className="mb-8">
-        <h2 className="font-serif text-primary text-xl mb-3">🛒 Handla det här</h2>
+        <h2 className="font-serif text-primary text-xl mb-3 flex items-center gap-2"><ShoppingCart size={20} /> Handla det här</h2>
         <div className="bg-white rounded-2xl overflow-hidden border border-border">
           <div className="flex items-center px-4 py-3 border-b border-border">
             <input
@@ -71,9 +72,9 @@ export default function YouthView({ onSwitchToFull }: Props) {
                 <span className="flex-1 text-base">{item.name}</span>
                 <button
                   onClick={() => removeExtraItem(item.id)}
-                  className="text-secondary text-xl border-0 bg-transparent cursor-pointer ml-2 leading-none"
+                  className="text-secondary border-0 bg-transparent cursor-pointer ml-2 leading-none flex items-center"
                   aria-label="Ta bort"
-                >×</button>
+                ><X size={18} /></button>
               </div>
             ))
           )}

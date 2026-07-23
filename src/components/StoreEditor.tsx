@@ -10,6 +10,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { GripVertical, Trash2 } from 'lucide-react'
 import type { Category, Store } from '../types'
 
 type StoreDraft = Omit<Store, 'id'> & { id: string | null }
@@ -38,7 +39,7 @@ function SortableStoreRow({ cat }: { cat: Category }) {
         opacity: isDragging ? 0.3 : 1,
       }}
     >
-      <span {...listeners} className="text-[#bbb] text-[22px] px-1.5 py-1 cursor-grab touch-none">⠿</span>
+      <span {...listeners} className="text-[#bbb] px-1.5 py-1 cursor-grab touch-none"><GripVertical size={18} /></span>
       <span className="text-xl">{cat.emoji}</span>
       <span className="flex-1 text-[15px]">{cat.name}</span>
     </div>
@@ -48,7 +49,7 @@ function SortableStoreRow({ cat }: { cat: Category }) {
 function StoreRowGhost({ cat }: { cat: Category }) {
   return (
     <div className="flex items-center bg-white rounded-xl px-3 py-2.5 gap-2.5 cursor-grabbing select-none border-2 border-primary shadow-[0_12px_32px_rgba(45,80,22,0.25)]">
-      <span className="text-[#bbb] text-lg">⠿</span>
+      <span className="text-[#bbb]"><GripVertical size={18} /></span>
       <span className="text-xl">{cat.emoji}</span>
       <span className="flex-1 text-[15px]">{cat.name}</span>
     </div>
@@ -132,7 +133,7 @@ export default function StoreEditor({ store, allCategories, onSave, onDelete, on
         <div className="flex gap-2.5 mt-4">
           <button className="flex-1 py-3 bg-bg text-primary border border-border rounded-xl text-base cursor-pointer" onClick={onClose}>Avbryt</button>
           {!isNew && store?.id && (
-            <button aria-label="Radera butik" className="px-4 py-3 bg-[#ffebee] text-error border-0 rounded-xl text-base cursor-pointer" onClick={() => onDelete(store.id!)}>🗑</button>
+            <button aria-label="Radera butik" className="px-4 py-3 bg-[#ffebee] text-error border-0 rounded-xl cursor-pointer flex items-center" onClick={() => onDelete(store.id!)}><Trash2 size={18} /></button>
           )}
           <button className="flex-1 py-3 bg-primary text-white border-0 rounded-xl text-base cursor-pointer font-serif" onClick={handleSave}>Spara</button>
         </div>
