@@ -4,6 +4,7 @@ import type { Session } from '../types'
 
 interface HeaderProps {
   session: Session
+  roomName?: string | null
   user: User
   onHome: () => void
   onShowActivity: () => void
@@ -11,7 +12,7 @@ interface HeaderProps {
   onSignOut: () => void
 }
 
-export default function Header({ session, user, onHome, onShowActivity, onSwitchRoom, onSignOut }: HeaderProps) {
+export default function Header({ session, roomName, user, onHome, onShowActivity, onSwitchRoom, onSignOut }: HeaderProps) {
   const [copied, setCopied] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -48,9 +49,9 @@ export default function Header({ session, user, onHome, onShowActivity, onSwitch
         aria-label="Gå till startsidan"
       >
         <h1 className="font-serif text-xl m-0 truncate">Veckoplanen</h1>
-        {user.email && (
+        {(roomName || session.roomCode) && (
           <div className="text-[11px] text-white/65 mt-px truncate">
-            {session.name} · {user.email.split('@')[0]}
+            🏠 {roomName || session.roomCode} · {session.name}
           </div>
         )}
       </button>

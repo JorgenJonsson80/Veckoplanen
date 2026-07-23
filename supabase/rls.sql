@@ -4,6 +4,8 @@
 alter table public.rooms enable row level security;
 alter table public.room_members enable row level security;
 
+alter table public.rooms add column if not exists name text;
+
 drop index if exists room_members_room_id_user_id_idx;
 alter table public.room_members
   drop constraint if exists room_members_room_id_user_id_key;
@@ -104,7 +106,7 @@ grant execute on function public.is_room_member(uuid) to authenticated;
 grant execute on function public.is_room_creator(uuid) to authenticated;
 
 create or replace function public.join_room_by_code(join_code text, display_name text)
-returns table(joined_room_id uuid, room_state jsonb)
+returns table(joined_room_id uuid, room_state jsonb, room_name text)
 language plpgsql
 security definer
 set search_path = public
@@ -118,7 +120,7 @@ begin
     raise exception 'Not authenticated';
   end if;
 
-  select r.id, r.state
+  select r.id, r.state, r.name
   into found_room
   from public.rooms r
   where r.code = clean_code
@@ -133,7 +135,7 @@ begin
   on conflict on constraint room_members_room_id_user_id_key
   do update set display_name = excluded.display_name;
 
-  return query select found_room.id, found_room.state::jsonb;
+  return query select found_room.id, found_room.state::jsonb, found_room.name;
 end;
 $$;
 

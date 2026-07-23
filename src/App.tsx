@@ -108,6 +108,7 @@ export default function App() {
     <div className="min-h-screen bg-bg font-sans max-w-150 mx-auto relative">
       <Header
         session={app.session}
+        roomName={app.roomName}
         user={user}
         onHome={() => setActiveTab('matsedel')}
         onShowActivity={() => setShowActivity(true)}
