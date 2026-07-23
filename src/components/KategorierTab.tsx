@@ -10,11 +10,18 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, X, Home, Check, Users, Minus, Plus, Bell, Smartphone, TriangleAlert, Trash2 } from 'lucide-react'
+import { GripVertical, X, Home, Check, Users, Minus, Plus, Bell, Smartphone, TriangleAlert, Trash2, Monitor, Sun, Moon } from 'lucide-react'
 import NewCategoryForm from './NewCategoryForm'
 import { useAppContext } from '../context/AppContext'
 import { usePushNotifications } from '../hooks/usePushNotifications'
+import { useTheme, type ThemePreference } from '../hooks/useTheme'
 import type { Category } from '../types'
+
+const THEME_OPTIONS: { key: ThemePreference; label: string; icon: typeof Monitor }[] = [
+  { key: 'system', label: 'Auto', icon: Monitor },
+  { key: 'light', label: 'Ljust', icon: Sun },
+  { key: 'dark', label: 'Mörkt', icon: Moon },
+]
 
 interface Props {
   onDeleteRoom: () => void
@@ -77,6 +84,7 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
     removeCategory: onRemoveCategory,
   } = useAppContext()
   const { supported: pushSupported, unsupportedReason, subscribed, loading: pushLoading, error: pushError, subscribe, unsubscribe } = usePushNotifications(session?.roomCode ?? null)
+  const { theme, setTheme } = useTheme()
   const [activeCatId, setActiveCatId] = useState<string | null>(null)
   const [showNewCat, setShowNewCat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -226,6 +234,20 @@ export default function KategorierTab({ onDeleteRoom, onEnableSimpleMode, onHome
               {pushLoading ? '...' : subscribed ? 'Stäng av' : 'Aktivera'}
             </button>
           )}
+        </div>
+
+        <p className="text-secondary text-xs mb-2 mt-4">Utseende</p>
+        <div className="flex bg-bg border border-border rounded-xl p-1 mb-3 gap-1">
+          {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTheme(key)}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold cursor-pointer flex items-center justify-center gap-1.5 transition-colors ${theme === key ? 'bg-primary text-white' : 'bg-transparent text-primary'}`}
+            >
+              <Icon size={15} /> {label}
+            </button>
+          ))}
         </div>
 
         <p className="text-secondary text-xs mb-2 mt-4">Läge</p>
